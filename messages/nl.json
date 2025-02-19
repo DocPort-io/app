@@ -1,4 +1,16 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hallo, {name} van het Nederlands!"
+	"hello_world": "Hallo, {name} van het Nederlands!",
+	"projects": "Projecten",
+	"dashboard": "Overzicht",
+	"english": "Engels",
+	"dutch": "Nederlands",
+	"language": "Taal",
+	"search": "Zoeken...",
+	"my_account": "Mijn Account",
+	"logout": "Uitloggen",
+	"settings": "Instellingen",
+	"support": "Ondersteuning",
+	"toggle_navigation_menu": "Navigatiemenu tonen",
+	"toggle_user_menu": "Gebruikermenu tonen"
 }

@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-	import Check from "lucide-svelte/icons/check";
-	import { cn } from "$lib/utils.js";
+	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import Check from 'lucide-svelte/icons/check';
+	import { cn } from '$lib/utils.js';
 
 	type $$Props = DropdownMenuPrimitive.CheckboxItemProps;
 	type $$Events = DropdownMenuPrimitive.CheckboxItemEvents;
 
-	let className: $$Props["class"] = undefined;
-	export let checked: $$Props["checked"] = undefined;
+	let className: $$Props['class'] = undefined;
+	export let checked: $$Props['checked'] = undefined;
 	export { className as class };
 </script>
 
 <DropdownMenuPrimitive.CheckboxItem
 	bind:checked
 	class={cn(
-		"data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
+		'data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50',
 		className
 	)}
 	{...$$restProps}
