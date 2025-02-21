@@ -12,5 +12,17 @@
 	"settings": "Settings",
 	"support": "Support",
 	"toggle_navigation_menu": "Toggle navigation menu",
-	"toggle_user_menu": "Toggle user menu"
+	"toggle_user_menu": "Toggle user menu",
+	"theme": "Theme",
+	"light": "Light",
+	"dark": "Dark",
+	"system": "System",
+	"only_nimble_martin_strive": "Manage your products and view their sales performance.",
+	"alive_ok_kangaroo_boil": "Active",
+	"green_white_eagle_scold": "Draft",
+	"petty_trick_ladybug_reap": "Archived",
+	"vexed_steep_piranha_kick": "Filter by",
+	"solid_heroic_poodle_dash": "All projects",
+	"that_weary_anteater_push": "Filter",
+	"stout_elegant_jan_flip": "Add Project"
 }

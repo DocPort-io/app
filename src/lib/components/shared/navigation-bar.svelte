@@ -3,6 +3,9 @@
 	import Paperclip from 'lucide-svelte/icons/paperclip';
 	import Search from 'lucide-svelte/icons/search';
 	import CircleUser from 'lucide-svelte/icons/circle-user';
+	import Sun from 'lucide-svelte/icons/sun';
+	import Moon from 'lucide-svelte/icons/moon';
+	import Computer from 'lucide-svelte/icons/computer';
 	import Menu from 'lucide-svelte/icons/menu';
 	import * as Sheet from '../ui/sheet';
 	import Button from '../ui/button/button.svelte';
@@ -14,6 +17,7 @@
 	import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 	import { i18n } from '$lib/i18n';
 	import { goto } from '$app/navigation';
+	import { resetMode, setMode } from 'mode-watcher';
 
 	interface Props {
 		className?: string;
@@ -29,7 +33,7 @@
 	}
 </script>
 
-<header class="bg-background sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6">
+<header class="bg-background sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6 z-10">
 	<nav
 		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
 	>
@@ -111,6 +115,20 @@
 				<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
 				<DropdownMenu.Item onclick={() => switchToLanguage('nl')}>{m.dutch()}</DropdownMenu.Item>
 				<DropdownMenu.Item onclick={() => switchToLanguage('en')}>{m.english()}</DropdownMenu.Item>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
+				<DropdownMenu.Item on:click={() => setMode('light')}>
+					<Sun class="mr-2 h-4 w-4" />
+					<span>{m.light()}</span>
+				</DropdownMenu.Item>
+				<DropdownMenu.Item on:click={() => setMode('dark')}>
+					<Moon class="mr-2 h-4 w-4" />
+					<span>{m.dark()}</span>
+				</DropdownMenu.Item>
+				<DropdownMenu.Item on:click={() => resetMode()}>
+					<Computer class="mr-2 h-4 w-4" />
+					<span>{m.system()}</span>
+				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</div>
