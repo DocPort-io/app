@@ -13,12 +13,107 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { AppRoute } from '$lib/constants';
 	import * as m from '$lib/paraglide/messages.js';
+	import PocketBase, { type RecordModel } from 'pocketbase';
+	import { asyncWritable } from '@square/svelte-store';
+	import { projectActions, projects } from '$lib/stores/projects';
 
 	let { data }: { data: PageData } = $props();
 
 	let filterActive = $state(true);
 	let filterArchived = $state(false);
 	let filterDraft = $state(false);
+
+	// const pb = new PocketBase('http://127.0.0.1:8090');
+
+	// const getProjects = async () => {
+	// 	const response = await pb.collection('projects').getList();
+	// 	console.log('Fetched projects', response.items);
+	// 	return response.items;
+	// };
+
+	// function isEqual(project1: RecordModel, project2: RecordModel) {
+	// 	// Deep comparison of two project objects
+	// 	// This is a simple example; you might need to adjust based on your RecordModel properties
+	// 	return JSON.stringify(project1) === JSON.stringify(project2);
+	// }
+
+	// const addProject = async (project: RecordModel) => {
+	// 	const response = await pb.collection('projects').create(project);
+	// 	console.log('Added project', response);
+	// 	return response;
+	// };
+
+	// const updateProject = async (project: RecordModel) => {
+	// 	const response = await pb.collection('projects').update(project.id, project);
+	// 	console.log('Updated project', response);
+	// 	return response;
+	// };
+
+	// const deleteProject = async (projectId: string) => {
+	// 	await pb.collection('projects').delete(projectId);
+	// 	console.log('Deleted project', projectId);
+	// };
+
+	// const updateProjects = async (
+	// 	newProjects: RecordModel[],
+	// 	_: unknown,
+	// 	oldProjects: RecordModel[] = []
+	// ) => {
+	// 	// Create maps for faster lookups
+	// 	const oldProjectsMap = new Map(oldProjects.map((project) => [project.id, project]));
+	// 	const newProjectsMap = new Map(newProjects.map((project) => [project.id, project]));
+
+	// 	// Find projects to add (in new but not in old)
+	// 	const projectsToAdd = newProjects.filter((project) => !oldProjectsMap.has(project.id));
+
+	// 	// Find projects to delete (in old but not in new)
+	// 	const projectsToDelete = oldProjects.filter((project) => !newProjectsMap.has(project.id));
+
+	// 	// Find projects to update (in both but might have changes)
+	// 	const projectsToUpdate = newProjects.filter((project) => {
+	// 		const oldProject = oldProjectsMap.get(project.id);
+	// 		return oldProject && !isEqual(project, oldProject);
+	// 	});
+
+	// 	// Initialize the final result array with projects that remain unchanged
+	// 	const finalProjects = newProjects.filter((project) => {
+	// 		const oldProject = oldProjectsMap.get(project.id);
+	// 		return oldProject && isEqual(project, oldProject);
+	// 	});
+
+	// 	// Process additions and collect updated objects with potential new IDs
+	// 	for (const project of projectsToAdd) {
+	// 		const addedProject = await addProject(project);
+	// 		finalProjects.push(addedProject); // Use the response which might contain a new ID
+	// 	}
+
+	// 	// Process updates and collect updated objects
+	// 	for (const project of projectsToUpdate) {
+	// 		const updatedProject = await updateProject(project);
+	// 		finalProjects.push(updatedProject); // Use the response which might contain updated data
+	// 	}
+
+	// 	// Process deletions (no need to add these to the final array)
+	// 	for (const project of projectsToDelete) {
+	// 		await deleteProject(project.id);
+	// 	}
+
+	// 	return finalProjects;
+	// };
+
+	// const addXProject = () => {
+	// 	console.log('Add project');
+	// 	projects.update((projects: RecordModel[]) => {
+	// 		return [
+	// 			...projects,
+	// 			{
+	// 				name: 'Project X'
+	// 			}
+	// 		] as RecordModel[];
+	// 	});
+	// };
+
+	// const projects = asyncWritable([], getProjects, updateProjects);
 </script>
 
 <UserPageLayout>
@@ -45,7 +140,9 @@
 				<DropdownMenu.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="outline" size="sm" class="h-8 gap-1">
 						<ListFilter class="h-3.5 w-3.5" />
-						<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.that_weary_anteater_push()}</span>
+						<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
+							>{m.that_weary_anteater_push()}</span
+						>
 					</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
@@ -66,9 +163,10 @@
 				<File class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
 			</Button>
-			<Button size="sm" class="h-8 gap-1">
+			<Button size="sm" class="h-8 gap-1" onclick={projectActions.createProject}>
 				<CirclePlus class="h-3.5 w-3.5" />
-				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.stout_elegant_jan_flip()}</span>
+				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.stout_elegant_jan_flip()}</span
+				>
 			</Button>
 		</div>
 	</div>
@@ -95,7 +193,51 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					<Table.Row>
+					{#await projects.load()}
+						<p>Currently loading...</p>
+					{:then}
+						{#each $projects as project (project.id)}
+							<Table.Row>
+								<Table.Cell class="hidden sm:table-cell">
+									<img
+										alt="Product example"
+										class="aspect-square rounded-md object-cover"
+										height="64"
+										src="/images/placeholder.svg"
+										width="64"
+									/>
+								</Table.Cell>
+								<Table.Cell class="font-medium">{project.name}</Table.Cell>
+								<Table.Cell>
+									<Badge variant="outline">Draft</Badge>
+									{#if project._isOptimistic}
+										<Badge variant="outline">Saving...</Badge>
+									{/if}
+								</Table.Cell>
+								<Table.Cell class="hidden md:table-cell">$499.99</Table.Cell>
+								<Table.Cell class="hidden md:table-cell">25</Table.Cell>
+								<Table.Cell class="hidden md:table-cell">2023-07-12 10:42 AM</Table.Cell>
+								<Table.Cell>
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger asChild let:builder>
+											<Button aria-haspopup="true" size="icon" variant="ghost" builders={[builder]}>
+												<Ellipsis class="h-4 w-4" />
+												<span class="sr-only">Toggle menu</span>
+											</Button>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content align="end">
+											<DropdownMenu.Label>Actions</DropdownMenu.Label>
+											<DropdownMenu.Item>Edit</DropdownMenu.Item>
+											<DropdownMenu.Item>Delete</DropdownMenu.Item>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								</Table.Cell>
+							</Table.Row>
+						{/each}
+					{:catch error}
+						<p>Failed to load projects: {error.message}</p>
+					{/await}
+					<!-- <Table.Row>
 						<Table.Cell class="hidden sm:table-cell">
 							<img
 								alt="Product example"
@@ -292,7 +434,7 @@
 								</DropdownMenu.Content>
 							</DropdownMenu.Root>
 						</Table.Cell>
-					</Table.Row>
+					</Table.Row> -->
 				</Table.Body>
 			</Table.Root>
 		</Card.Content>

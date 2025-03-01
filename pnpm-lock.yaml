@@ -24,6 +24,9 @@ importers:
       '@playwright/test':
         specifier: ^1.49.1
         version: 1.50.1
+      '@square/svelte-store':
+        specifier: ^1.0.18
+        version: 1.0.18(svelte@5.20.0)
       '@sveltejs/adapter-cloudflare':
         specifier: ^5.0.1
         version: 5.0.2(@sveltejs/kit@2.17.1(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.20.0)(vite@6.1.0(@types/node@22.13.2)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0)))(svelte@5.20.0)(vite@6.1.0(@types/node@22.13.2)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0)))(wrangler@3.108.1(@cloudflare/workers-types@4.20250204.0))
@@ -81,6 +84,9 @@ importers:
       paneforge:
         specifier: ^0.0.6
         version: 0.0.6(svelte@5.20.0)
+      pocketbase:
+        specifier: ^0.25.1
+        version: 0.25.1
       prettier:
         specifier: ^3.4.2
         version: 3.5.1
@@ -1083,6 +1089,11 @@ packages:
   '@sinclair/typebox@0.34.21':
     resolution: {integrity: sha512-G+7YVIZalo+N+h7KapWBxRH2at9yO4yIHq49PkQLTQQkPTM0ZYaPOfPDpeNv/ukWjm8a1GdnO3yDC7bietT23A==}
 
+  '@square/svelte-store@1.0.18':
+    resolution: {integrity: sha512-BCiUhDlF2XSY6P+MLvJTA7mh15yAXcuNDtf/GTG0XWSjatW0+4wQv++uijz14L0Bc+KKAGXz4T6/9N+JrTfAAA==}
+    peerDependencies:
+      svelte: '>= 3.0.0 < 5.0.0'
+
   '@sveltejs/adapter-cloudflare@5.0.2':
     resolution: {integrity: sha512-jlNRYFQ5mfmHmBqF79GhbFty/BTU+HZvgaT1uDREQmUcngT5j8yV85pxCOORl1r7rIVd0silRNBD5RJFsU5UUg==}
     peerDependencies:
@@ -1558,6 +1569,9 @@ packages:
   consola@3.2.3:
     resolution: {integrity: sha512-I5qxpzLv+sJhTVEoLYNcTW+bThDCPsit0vLNKShZx6rLtpilNpmmeTPaeqJb9ZE9dV3DGaeby6Vuhrw38WjeyQ==}
     engines: {node: ^14.18.0 || >=16.10.0}
+
+  cookie-storage@6.1.0:
+    resolution: {integrity: sha512-HeVqbVy8BjXhAAuFtL6MTG+witHoLbxfky2jgVh9FmxmyL6IKa9gSSyPNjevXCCCxPu6Tzd9J8+eXTRQzYU/cg==}
 
   cookie@0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
@@ -2368,6 +2382,9 @@ packages:
     resolution: {integrity: sha512-G8rwsOQJ63XG6BbKj2w5rHeavFjy5zynBA9zsJMMtBoe/Uf757oG12NXz6e6OirF7RCrTVAKFXbLmn1RbL7Qaw==}
     engines: {node: '>=18'}
     hasBin: true
+
+  pocketbase@0.25.1:
+    resolution: {integrity: sha512-2IH0KLI/qMNR/E17C7BGWX2FxW7Tead+igLHOWZ45P56v/NyVT18Jnmddeft+3qWWGL1Hog2F8bc4orWV/+Fcg==}
 
   postcss-load-config@3.1.4:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
@@ -3963,6 +3980,11 @@ snapshots:
   '@sinclair/typebox@0.34.21':
     optional: true
 
+  '@square/svelte-store@1.0.18(svelte@5.20.0)':
+    dependencies:
+      cookie-storage: 6.1.0
+      svelte: 5.20.0
+
   '@sveltejs/adapter-cloudflare@5.0.2(@sveltejs/kit@2.17.1(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.20.0)(vite@6.1.0(@types/node@22.13.2)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0)))(svelte@5.20.0)(vite@6.1.0(@types/node@22.13.2)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0)))(wrangler@3.108.1(@cloudflare/workers-types@4.20250204.0))':
     dependencies:
       '@cloudflare/workers-types': 4.20250204.0
@@ -4479,6 +4501,8 @@ snapshots:
   confbox@0.1.8: {}
 
   consola@3.2.3: {}
+
+  cookie-storage@6.1.0: {}
 
   cookie@0.5.0: {}
 
@@ -5274,6 +5298,8 @@ snapshots:
       playwright-core: 1.50.1
     optionalDependencies:
       fsevents: 2.3.2
+
+  pocketbase@0.25.1: {}
 
   postcss-load-config@3.1.4(postcss@8.5.2):
     dependencies:
