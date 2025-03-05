@@ -13,9 +13,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { AppRoute } from '$lib/constants';
 	import * as m from '$lib/paraglide/messages.js';
-	import PocketBase, { type RecordModel } from 'pocketbase';
-	import { asyncWritable } from '@square/svelte-store';
-	import { projectActions, projects } from '$lib/stores/projects';
+	import { getProjectsState } from '$lib/states/projects.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -23,97 +21,17 @@
 	let filterArchived = $state(false);
 	let filterDraft = $state(false);
 
-	// const pb = new PocketBase('http://127.0.0.1:8090');
+	const projectsState = getProjectsState();
 
-	// const getProjects = async () => {
-	// 	const response = await pb.collection('projects').getList();
-	// 	console.log('Fetched projects', response.items);
-	// 	return response.items;
-	// };
+	$effect(() => {
+		projectsState.load();
+	});
 
-	// function isEqual(project1: RecordModel, project2: RecordModel) {
-	// 	// Deep comparison of two project objects
-	// 	// This is a simple example; you might need to adjust based on your RecordModel properties
-	// 	return JSON.stringify(project1) === JSON.stringify(project2);
-	// }
+	$inspect(projectsState.projects);
 
-	// const addProject = async (project: RecordModel) => {
-	// 	const response = await pb.collection('projects').create(project);
-	// 	console.log('Added project', response);
-	// 	return response;
-	// };
-
-	// const updateProject = async (project: RecordModel) => {
-	// 	const response = await pb.collection('projects').update(project.id, project);
-	// 	console.log('Updated project', response);
-	// 	return response;
-	// };
-
-	// const deleteProject = async (projectId: string) => {
-	// 	await pb.collection('projects').delete(projectId);
-	// 	console.log('Deleted project', projectId);
-	// };
-
-	// const updateProjects = async (
-	// 	newProjects: RecordModel[],
-	// 	_: unknown,
-	// 	oldProjects: RecordModel[] = []
-	// ) => {
-	// 	// Create maps for faster lookups
-	// 	const oldProjectsMap = new Map(oldProjects.map((project) => [project.id, project]));
-	// 	const newProjectsMap = new Map(newProjects.map((project) => [project.id, project]));
-
-	// 	// Find projects to add (in new but not in old)
-	// 	const projectsToAdd = newProjects.filter((project) => !oldProjectsMap.has(project.id));
-
-	// 	// Find projects to delete (in old but not in new)
-	// 	const projectsToDelete = oldProjects.filter((project) => !newProjectsMap.has(project.id));
-
-	// 	// Find projects to update (in both but might have changes)
-	// 	const projectsToUpdate = newProjects.filter((project) => {
-	// 		const oldProject = oldProjectsMap.get(project.id);
-	// 		return oldProject && !isEqual(project, oldProject);
-	// 	});
-
-	// 	// Initialize the final result array with projects that remain unchanged
-	// 	const finalProjects = newProjects.filter((project) => {
-	// 		const oldProject = oldProjectsMap.get(project.id);
-	// 		return oldProject && isEqual(project, oldProject);
-	// 	});
-
-	// 	// Process additions and collect updated objects with potential new IDs
-	// 	for (const project of projectsToAdd) {
-	// 		const addedProject = await addProject(project);
-	// 		finalProjects.push(addedProject); // Use the response which might contain a new ID
-	// 	}
-
-	// 	// Process updates and collect updated objects
-	// 	for (const project of projectsToUpdate) {
-	// 		const updatedProject = await updateProject(project);
-	// 		finalProjects.push(updatedProject); // Use the response which might contain updated data
-	// 	}
-
-	// 	// Process deletions (no need to add these to the final array)
-	// 	for (const project of projectsToDelete) {
-	// 		await deleteProject(project.id);
-	// 	}
-
-	// 	return finalProjects;
-	// };
-
-	// const addXProject = () => {
-	// 	console.log('Add project');
-	// 	projects.update((projects: RecordModel[]) => {
-	// 		return [
-	// 			...projects,
-	// 			{
-	// 				name: 'Project X'
-	// 			}
-	// 		] as RecordModel[];
-	// 	});
-	// };
-
-	// const projects = asyncWritable([], getProjects, updateProjects);
+	const addProject = () => {
+		projectsState.add();
+	};
 </script>
 
 <UserPageLayout>
@@ -163,7 +81,7 @@
 				<File class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
 			</Button>
-			<Button size="sm" class="h-8 gap-1" onclick={projectActions.createProject}>
+			<Button size="sm" class="h-8 gap-1" onclick={addProject}>
 				<CirclePlus class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.stout_elegant_jan_flip()}</span
 				>
@@ -193,10 +111,10 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#await projects.load()}
+					{#await projectsState.loadingPromise}
 						<p>Currently loading...</p>
 					{:then}
-						{#each $projects as project (project.id)}
+						{#each projectsState.projects as project (project.id)}
 							<Table.Row>
 								<Table.Cell class="hidden sm:table-cell">
 									<img
@@ -234,8 +152,8 @@
 								</Table.Cell>
 							</Table.Row>
 						{/each}
-					{:catch error}
-						<p>Failed to load projects: {error.message}</p>
+					{:catch err}
+						<p>Failed to load projects: {err instanceof Error ? err.message : err}</p>
 					{/await}
 					<!-- <Table.Row>
 						<Table.Cell class="hidden sm:table-cell">
