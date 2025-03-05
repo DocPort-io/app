@@ -17,7 +17,9 @@
 	import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 	import { i18n } from '$lib/i18n';
 	import { goto } from '$app/navigation';
-	import { resetMode, setMode } from 'mode-watcher';
+	import { useDebounce } from '$lib/hooks/useDebounce.svelte';
+	import { getAppState } from '$lib/states/app.svelte';
+	import { getUserState } from '$lib/states/user.svelte';
 
 	interface Props {
 		className?: string;
@@ -31,9 +33,15 @@
 		const localisedPath = i18n.resolveRoute(canonicalPath, newLanguage);
 		goto(localisedPath);
 	}
+
+	let search = $state('');
+	let debouncedSearch = useDebounce(() => search, 500);
+
+	const appState = getAppState();
+	const userState = getUserState();
 </script>
 
-<header class="bg-background sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6 z-10">
+<header class="bg-background sticky top-0 z-10 flex h-16 items-center gap-4 border-b px-4 md:px-6">
 	<nav
 		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
 	>
@@ -94,9 +102,11 @@
 					type="search"
 					placeholder={m.search()}
 					class="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+					bind:value={search}
 				/>
 			</div>
 		</form>
+		<div>{m.fair_known_reindeer_bless({ name: userState.name })}</div>
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" size="icon" class="rounded-full">
@@ -117,15 +127,15 @@
 				<DropdownMenu.Item onclick={() => switchToLanguage('en')}>{m.english()}</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
-				<DropdownMenu.Item on:click={() => setMode('light')}>
+				<DropdownMenu.Item on:click={() => appState.activateLightTheme()}>
 					<Sun class="mr-2 h-4 w-4" />
 					<span>{m.light()}</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => setMode('dark')}>
+				<DropdownMenu.Item on:click={() => appState.activateDarkTheme()}>
 					<Moon class="mr-2 h-4 w-4" />
 					<span>{m.dark()}</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => resetMode()}>
+				<DropdownMenu.Item on:click={() => appState.activateSystemTheme()}>
 					<Computer class="mr-2 h-4 w-4" />
 					<span>{m.system()}</span>
 				</DropdownMenu.Item>
