@@ -13,8 +13,8 @@
 	import * as Table from '$lib/components/ui/table';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { AppRoute } from '$lib/constants';
-	import * as m from '$lib/paraglide/messages.js';
 	import { getProjectsState } from '$lib/states/projects.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let { data }: { data: PageData } = $props();
 

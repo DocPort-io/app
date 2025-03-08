@@ -11,7 +11,7 @@
 	import Activity from 'lucide-svelte/icons/activity';
 	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
-	import * as m from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages';
 
 	let { data }: { data: PageData } = $props();
 </script>

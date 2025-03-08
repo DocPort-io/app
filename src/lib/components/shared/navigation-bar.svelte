@@ -11,7 +11,7 @@
 	import { Button } from '../ui/button';
 	import { Input } from '../ui/input';
 	import * as DropdownMenu from '../ui/dropdown-menu';
-	import * as m from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages';
 	import { cn } from '$lib/utils';
 	import { page } from '$app/state';
 	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
