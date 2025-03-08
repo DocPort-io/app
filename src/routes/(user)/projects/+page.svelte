@@ -1,7 +1,7 @@
 <script lang="ts">
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import CreateProjectDialog from './_components/_dialogs/create-project.dialog.svelte';
-	import type { PageData } from './$types';
+	import CreateProjectDialog from './_components/_dialogs/create-project-dialog.svelte';
+	import type { PageProps } from './$types';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
 	import File from 'lucide-svelte/icons/file';
@@ -13,32 +13,30 @@
 	import * as Table from '$lib/components/ui/table';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { AppRoute } from '$lib/constants';
-	import { getProjectsState } from '$lib/states/projects.svelte';
+	import { getProjects } from '$lib/states/projects.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import DeleteProjectDialog from './_components/_dialogs/delete-project-dialog.svelte';
+	import type { ProjectDeleteSchema } from '$lib/schemas/project.schema';
+	import { getLocale } from '$lib/paraglide/runtime';
 
-	let { data }: { data: PageData } = $props();
+	let { data }: PageProps = $props();
 
 	let filterActive = $state(true);
 	let filterArchived = $state(false);
 	let filterDraft = $state(false);
 
 	let createProjectDialogOpen = $state(false);
+	let deleteProjectDialogOpen = $state(false);
+	let deleteProject = $state<ProjectDeleteSchema>({ id: '' });
 
-	const projectsState = getProjectsState();
+	const projects = getProjects();
 
 	$effect(() => {
-		projectsState.load();
+		projects.load();
 	});
-
-	$inspect(projectsState.projects);
-
-	const addProject = () => {
-		projectsState.add();
-	};
 </script>
 
 <UserPageLayout>
-	<!-- <h1>Test</h1> -->
 	<div class="flex items-center">
 		<Breadcrumb.Root class="hidden md:flex">
 			<Breadcrumb.List>
@@ -82,7 +80,9 @@
 			</DropdownMenu.Root>
 			<Button size="sm" variant="outline" class="h-8 gap-1">
 				<File class="h-3.5 w-3.5" />
-				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
+				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
+					>{m.slow_great_gadfly_expand()}</span
+				>
 			</Button>
 			<Button size="sm" class="h-8 gap-1" onclick={() => (createProjectDialogOpen = true)}>
 				<CirclePlus class="h-3.5 w-3.5" />
@@ -103,10 +103,10 @@
 						<Table.Head class="hidden w-[100px] sm:table-cell">
 							<span class="sr-only">Image</span>
 						</Table.Head>
-						<Table.Head>Name</Table.Head>
-						<Table.Head>Status</Table.Head>
-						<Table.Head class="hidden md:table-cell">Price</Table.Head>
-						<Table.Head class="hidden md:table-cell">Total Sales</Table.Head>
+						<Table.Head>{m.weak_few_ant_link()}</Table.Head>
+						<!-- <Table.Head>Status</Table.Head> -->
+						<!-- <Table.Head class="hidden md:table-cell">Price</Table.Head> -->
+						<!-- <Table.Head class="hidden md:table-cell">Total Sales</Table.Head> -->
 						<Table.Head class="hidden md:table-cell">Created at</Table.Head>
 						<Table.Head>
 							<span class="sr-only">Actions</span>
@@ -114,10 +114,10 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#await projectsState.loadingPromise}
+					{#await projects.loadingPromise}
 						<p>Currently loading...</p>
 					{:then}
-						{#each projectsState.projects as project (project.id)}
+						{#each projects.projects as project (project.id)}
 							<Table.Row>
 								<Table.Cell class="hidden sm:table-cell">
 									<img
@@ -129,15 +129,20 @@
 									/>
 								</Table.Cell>
 								<Table.Cell class="font-medium">{project.name}</Table.Cell>
-								<Table.Cell>
+								<!-- <Table.Cell>
 									<Badge variant="outline">Draft</Badge>
 									{#if project._isOptimistic}
 										<Badge variant="outline">Saving...</Badge>
 									{/if}
-								</Table.Cell>
-								<Table.Cell class="hidden md:table-cell">$499.99</Table.Cell>
-								<Table.Cell class="hidden md:table-cell">25</Table.Cell>
-								<Table.Cell class="hidden md:table-cell">2023-07-12 10:42 AM</Table.Cell>
+								</Table.Cell> -->
+								<!-- <Table.Cell class="hidden md:table-cell">$499.99</Table.Cell> -->
+								<!-- <Table.Cell class="hidden md:table-cell">25</Table.Cell> -->
+								<Table.Cell class="hidden md:table-cell"
+									>{new Date(project.created).toLocaleString(getLocale(), {
+										dateStyle: 'long',
+										timeStyle: 'short'
+									})}</Table.Cell
+								>
 								<Table.Cell>
 									<DropdownMenu.Root>
 										<DropdownMenu.Trigger asChild let:builder>
@@ -149,7 +154,14 @@
 										<DropdownMenu.Content align="end">
 											<DropdownMenu.Label>Actions</DropdownMenu.Label>
 											<DropdownMenu.Item>Edit</DropdownMenu.Item>
-											<DropdownMenu.Item>Delete</DropdownMenu.Item>
+											<DropdownMenu.Item
+												onclick={() => {
+													deleteProject = project;
+													deleteProjectDialogOpen = true;
+												}}
+											>
+												{m.fuzzy_lofty_stork_jest()}
+											</DropdownMenu.Item>
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>
 								</Table.Cell>
@@ -158,212 +170,19 @@
 					{:catch err}
 						<p>Failed to load projects: {err instanceof Error ? err.message : err}</p>
 					{/await}
-					<!-- <Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product example"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">Laser Lemonade Machine</Table.Cell>
-						<Table.Cell>
-							<Badge variant="outline">Draft</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$499.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">25</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2023-07-12 10:42 AM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button aria-haspopup="true" size="icon" variant="ghost" builders={[builder]}>
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row>
-					<Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">Hypernova Headphones</Table.Cell>
-						<Table.Cell>
-							<Badge variant="outline">Active</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$129.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">100</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2023-10-18 03:21 PM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button builders={[builder]} aria-haspopup="true" size="icon" variant="ghost">
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row>
-					<Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">AeroGlow Desk Lamp</Table.Cell>
-						<Table.Cell>
-							<Badge variant="outline">Active</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$39.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">50</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2023-11-29 08:15 AM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button builders={[builder]} aria-haspopup="true" size="icon" variant="ghost">
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row>
-					<Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">TechTonic Energy Drink</Table.Cell>
-						<Table.Cell>
-							<Badge variant="secondary">Draft</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$2.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">0</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2023-12-25 11:59 PM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button builders={[builder]} aria-haspopup="true" size="icon" variant="ghost">
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row>
-					<Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">Gamer Gear Pro Controller</Table.Cell>
-						<Table.Cell>
-							<Badge variant="outline">Active</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$59.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">75</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2024-01-01 12:00 AM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button builders={[builder]} aria-haspopup="true" size="icon" variant="ghost">
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row>
-					<Table.Row>
-						<Table.Cell class="hidden sm:table-cell">
-							<img
-								alt="Product"
-								class="aspect-square rounded-md object-cover"
-								height="64"
-								src="/images/placeholder.svg"
-								width="64"
-							/>
-						</Table.Cell>
-						<Table.Cell class="font-medium">Luminous VR Headset</Table.Cell>
-						<Table.Cell>
-							<Badge variant="outline">Active</Badge>
-						</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">$199.99</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">30</Table.Cell>
-						<Table.Cell class="hidden md:table-cell">2024-02-14 02:14 PM</Table.Cell>
-						<Table.Cell>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button builders={[builder]} aria-haspopup="true" size="icon" variant="ghost">
-										<Ellipsis class="h-4 w-4" />
-										<span class="sr-only">Toggle menu</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Actions</DropdownMenu.Label>
-									<DropdownMenu.Item>Edit</DropdownMenu.Item>
-									<DropdownMenu.Item>Delete</DropdownMenu.Item>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</Table.Cell>
-					</Table.Row> -->
 				</Table.Body>
 			</Table.Root>
 		</Card.Content>
 		<Card.Footer>
 			<div class="text-muted-foreground text-xs">
-				Showing <strong>1-10</strong> of <strong>32</strong> products
+				{m.weird_sharp_javelina_sail({
+					amount: projects.projects.length,
+					start: 1,
+					end: projects.projects.length
+				})}
 			</div>
 		</Card.Footer>
 	</Card.Root>
 	<CreateProjectDialog bind:open={createProjectDialogOpen} />
+	<DeleteProjectDialog bind:open={deleteProjectDialogOpen} project={deleteProject} />
 </UserPageLayout>

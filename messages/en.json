@@ -17,7 +17,7 @@
 	"light": "Light",
 	"dark": "Dark",
 	"system": "System",
-	"only_nimble_martin_strive": "Manage your products and view their sales performance.",
+	"only_nimble_martin_strive": "Manage your projects.",
 	"alive_ok_kangaroo_boil": "Active",
 	"green_white_eagle_scold": "Draft",
 	"petty_trick_ladybug_reap": "Archived",
@@ -32,5 +32,15 @@
 	"weak_weak_bulldog_assure": "Create project",
 	"proof_noisy_monkey_type": "Add a new project to your workspace.",
 	"hour_swift_crab_breathe": "Create",
-	"red_same_flea_clip": "Cancel"
+	"red_same_flea_clip": "Cancel",
+	"busy_tame_jackdaw_read": "Enter a meaningful name for your project.",
+	"tame_candid_platypus_care": "Project name is required",
+	"long_gross_stingray_snip": "Project name cannot be longer than 100 characters",
+	"equal_crisp_crow_edit": "Are you sure you want to delete this project? This action cannot be undone.",
+	"ornate_wise_lemur_dance": "Delete project",
+	"mellow_dark_puma_boil": "Delete",
+	"fuzzy_lofty_stork_jest": "Delete",
+	"weird_sharp_javelina_sail": "Showing {start}-{end} of {amount} products",
+	"slow_great_gadfly_expand": "Export",
+	"weak_few_ant_link": "Name"
 }

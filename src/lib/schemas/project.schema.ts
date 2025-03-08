@@ -1,10 +1,15 @@
+import { m } from '$lib/paraglide/messages';
 import { z } from 'zod';
 
 export const projectSchema = z.object({
-	name: z
-		.string()
-		.min(1, 'Project name is required')
-		.max(255, 'Project name cannot be longer than 255 characters')
+	id: z.string(),
+	name: z.string().min(1, m.tame_candid_platypus_care()).max(100, m.long_gross_stingray_snip()),
+	created: z.string(),
+	updated: z.string()
 });
+export const projectCreateSchema = projectSchema.omit({ id: true, created: true, updated: true });
+export const projectDeleteSchema = projectSchema.pick({ id: true });
 
-export type ProjectData = z.infer<typeof projectSchema>;
+export type ProjectSchema = z.infer<typeof projectSchema>;
+export type ProjectCreateSchema = z.infer<typeof projectCreateSchema>;
+export type ProjectDeleteSchema = z.infer<typeof projectDeleteSchema>;

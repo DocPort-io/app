@@ -1,3 +1,4 @@
+import type { ProjectCreateSchema, ProjectDeleteSchema } from '$lib/schemas/project.schema';
 import PocketBase, { type RecordModel } from 'pocketbase';
 import { getContext, setContext } from 'svelte';
 
@@ -7,7 +8,7 @@ type Project = RecordModel & {
 	updated: string;
 };
 
-export class ProjectsState {
+export class Projects {
 	#pocketBase: PocketBase;
 	projects = $state<Project[]>([]);
 	loadingPromise = $state<Promise<void> | undefined>();
@@ -30,22 +31,23 @@ export class ProjectsState {
 		this.projects = records.items;
 	};
 
-	async add() {
-		const projectData: Partial<Project> = {
-			name: `Project ${crypto.randomUUID()}`
-		};
+	async add(project: ProjectCreateSchema) {
+		await this.#pocketBase.collection<Project>('projects').create(project);
+		await this.#fetch();
+	}
 
-		await this.#pocketBase.collection<Project>('projects').create(projectData);
-		this.load();
+	async remove(project: ProjectDeleteSchema) {
+		await this.#pocketBase.collection<Project>('projects').delete(project.id);
+		await this.#fetch();
 	}
 }
 
-const PROJECTS_STATE_KEY = Symbol('PROJECTS_STATE');
+const PROJECTS_KEY = Symbol('PROJECTS');
 
-export const setProjectsState = () => {
-	return setContext(PROJECTS_STATE_KEY, new ProjectsState());
+export const setProjects = () => {
+	return setContext(PROJECTS_KEY, new Projects());
 };
 
-export const getProjectsState = () => {
-	return getContext<ReturnType<typeof setProjectsState>>(PROJECTS_STATE_KEY);
+export const getProjects = () => {
+	return getContext<ReturnType<typeof setProjects>>(PROJECTS_KEY);
 };
