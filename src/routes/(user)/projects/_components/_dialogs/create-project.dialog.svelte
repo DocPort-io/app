@@ -45,8 +45,8 @@
 			</div>
 			<Dialog.Footer>
 				<Button type="button" variant="outline" on:click={() => (open = false)}
-					>{m.red_same_flea_clip()}</Button
-				>
+					>{m.red_same_flea_clip()}
+				</Button>
 				<Button type="submit" disabled={isSubmitting}>
 					{isSubmitting ? m.fuzzy_inner_fireant_feast() : m.hour_swift_crab_breathe()}
 				</Button>
