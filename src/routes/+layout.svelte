@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { i18n } from '$lib/i18n';
-	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
 	import { ModeWatcher, setMode, mode } from 'mode-watcher';
 	import { setAppState } from '$lib/states/app.svelte';
@@ -19,6 +17,4 @@
 </script>
 
 <ModeWatcher />
-<ParaglideJS {i18n}>
-	{@render children()}
-</ParaglideJS>
+{@render children()}

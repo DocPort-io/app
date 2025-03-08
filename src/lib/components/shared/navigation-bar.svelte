@@ -8,15 +8,13 @@
 	import Computer from 'lucide-svelte/icons/computer';
 	import Menu from 'lucide-svelte/icons/menu';
 	import * as Sheet from '../ui/sheet';
-	import Button from '../ui/button/button.svelte';
-	import Input from '../ui/input/input.svelte';
+	import { Button } from '../ui/button';
+	import { Input } from '../ui/input';
 	import * as DropdownMenu from '../ui/dropdown-menu';
 	import * as m from '$lib/paraglide/messages.js';
 	import { cn } from '$lib/utils';
 	import { page } from '$app/state';
-	import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
-	import { i18n } from '$lib/i18n';
-	import { goto } from '$app/navigation';
+	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
 	import { useDebounce } from '$lib/hooks/useDebounce.svelte';
 	import { getAppState } from '$lib/states/app.svelte';
 	import { getUserState } from '$lib/states/user.svelte';
@@ -27,12 +25,7 @@
 
 	let { className }: Props = $props();
 
-	let canonicalPath = $derived(i18n.route(page.url.pathname));
-
-	function switchToLanguage(newLanguage: AvailableLanguageTag) {
-		const localisedPath = i18n.resolveRoute(canonicalPath, newLanguage);
-		goto(localisedPath);
-	}
+	let canonicalPath = $derived(deLocalizeHref(page.url.pathname));
 
 	let search = $state('');
 	let debouncedSearch = useDebounce(() => search, 500);
@@ -123,8 +116,8 @@
 				<DropdownMenu.Item>{m.logout()}</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
-				<DropdownMenu.Item onclick={() => switchToLanguage('nl')}>{m.dutch()}</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => switchToLanguage('en')}>{m.english()}</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
 				<DropdownMenu.Item on:click={() => appState.activateLightTheme()}>

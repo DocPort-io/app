@@ -21,7 +21,7 @@ export class ProjectsState {
 	}
 
 	#fetch = async () => {
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		const records = await this.#pocketBase.collection<Project>('projects').getList(1, 50, {
 			sort: '-created'

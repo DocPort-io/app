@@ -1,16 +1,17 @@
 <script lang="ts">
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import CreateProjectDialog from './_components/_dialogs/create-project.dialog.svelte';
 	import type { PageData } from './$types';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
 	import File from 'lucide-svelte/icons/file';
 	import ListFilter from 'lucide-svelte/icons/list-filter';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Table from '$lib/components/ui/table';
+	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { AppRoute } from '$lib/constants';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getProjectsState } from '$lib/states/projects.svelte';
@@ -20,6 +21,8 @@
 	let filterActive = $state(true);
 	let filterArchived = $state(false);
 	let filterDraft = $state(false);
+
+	let createProjectDialogOpen = $state(false);
 
 	const projectsState = getProjectsState();
 
@@ -81,7 +84,7 @@
 				<File class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
 			</Button>
-			<Button size="sm" class="h-8 gap-1" onclick={addProject}>
+			<Button size="sm" class="h-8 gap-1" onclick={() => (createProjectDialogOpen = true)}>
 				<CirclePlus class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.stout_elegant_jan_flip()}</span
 				>
@@ -362,4 +365,5 @@
 			</div>
 		</Card.Footer>
 	</Card.Root>
+	<CreateProjectDialog bind:open={createProjectDialogOpen} />
 </UserPageLayout>
