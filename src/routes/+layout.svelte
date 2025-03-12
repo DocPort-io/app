@@ -1,9 +1,11 @@
 <script lang="ts">
 	import '../app.css';
+
+	import { setAppState } from '$lib/stores/app.svelte';
+	import { setProjects } from '$lib/stores/projects.svelte';
+	import { setUserState } from '$lib/stores/user.svelte';
 	import { ModeWatcher, setMode, mode } from 'mode-watcher';
-	import { setAppState } from '$lib/states/app.svelte';
-	import { setUserState } from '$lib/states/user.svelte';
-	import { setProjects } from '$lib/states/projects.svelte';
+
 	let { children } = $props();
 
 	const appState = setAppState();

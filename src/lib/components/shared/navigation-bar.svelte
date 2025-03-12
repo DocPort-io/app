@@ -1,34 +1,27 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { AppRoute } from '$lib/constants';
-	import Paperclip from 'lucide-svelte/icons/paperclip';
-	import Search from 'lucide-svelte/icons/search';
+	import { m } from '$lib/paraglide/messages';
+	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
+	import { getAppState } from '$lib/stores/app.svelte';
+	import { getUserState } from '$lib/stores/user.svelte';
+	import { cn } from '$lib/utils';
 	import CircleUser from 'lucide-svelte/icons/circle-user';
-	import Sun from 'lucide-svelte/icons/sun';
-	import Moon from 'lucide-svelte/icons/moon';
 	import Computer from 'lucide-svelte/icons/computer';
 	import Menu from 'lucide-svelte/icons/menu';
-	import * as Sheet from '../ui/sheet';
+	import Moon from 'lucide-svelte/icons/moon';
+	import Paperclip from 'lucide-svelte/icons/paperclip';
+	import Search from 'lucide-svelte/icons/search';
+	import Sun from 'lucide-svelte/icons/sun';
+
 	import { Button } from '../ui/button';
-	import { Input } from '../ui/input';
 	import * as DropdownMenu from '../ui/dropdown-menu';
-	import { m } from '$lib/paraglide/messages';
-	import { cn } from '$lib/utils';
-	import { page } from '$app/state';
-	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
-	import { useDebounce } from '$lib/hooks/useDebounce.svelte';
-	import { getAppState } from '$lib/states/app.svelte';
-	import { getUserState } from '$lib/states/user.svelte';
-
-	interface Props {
-		className?: string;
-	}
-
-	let { className }: Props = $props();
+	import { Input } from '../ui/input';
+	import * as Sheet from '../ui/sheet';
 
 	let canonicalPath = $derived(deLocalizeHref(page.url.pathname));
 
 	let search = $state('');
-	let debouncedSearch = useDebounce(() => search, 500);
 
 	const appState = getAppState();
 	const userState = getUserState();

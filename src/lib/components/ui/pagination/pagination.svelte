@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Pagination as PaginationPrimitive } from 'bits-ui';
-
 	import { cn } from '$lib/utils.js';
+	import { Pagination as PaginationPrimitive } from 'bits-ui';
 
 	type $$Props = PaginationPrimitive.Props;
 	type $$Events = PaginationPrimitive.Events;

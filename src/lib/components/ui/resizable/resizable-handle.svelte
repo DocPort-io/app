@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { cn } from '$lib/utils.js';
 	import GripVertical from 'lucide-svelte/icons/grip-vertical';
 	import * as ResizablePrimitive from 'paneforge';
-	import { cn } from '$lib/utils.js';
 
 	type $$Props = ResizablePrimitive.PaneResizerProps & {
 		withHandle?: boolean;

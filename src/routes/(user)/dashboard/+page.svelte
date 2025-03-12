@@ -1,19 +1,15 @@
 <script lang="ts">
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import type { PageData } from './$types';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
-	import * as Avatar from '$lib/components/ui/avatar';
-	import { Button } from '$lib/components/ui/button';
-	import { Badge } from '$lib/components/ui/badge';
-	import Users from 'lucide-svelte/icons/users';
-	import CreditCard from 'lucide-svelte/icons/credit-card';
 	import Activity from 'lucide-svelte/icons/activity';
-	import DollarSign from 'lucide-svelte/icons/dollar-sign';
 	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
-	import { m } from '$lib/paraglide/messages';
-
-	let { data }: { data: PageData } = $props();
+	import CreditCard from 'lucide-svelte/icons/credit-card';
+	import DollarSign from 'lucide-svelte/icons/dollar-sign';
+	import Users from 'lucide-svelte/icons/users';
 </script>
 
 <UserPageLayout>

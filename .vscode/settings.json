@@ -1,4 +1,4 @@
 {
-	"html.customData": ["./node_modules/@shoelace-style/shoelace/dist/vscode.html-custom-data.json"],
-	"editor.formatOnSave": true
+	"editor.formatOnSave": true,
+	"eslint.validate": ["typescript", "svelte"]
 }

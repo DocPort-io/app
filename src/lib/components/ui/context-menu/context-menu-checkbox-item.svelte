@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { cn } from '$lib/utils.js';
 	import { ContextMenu as ContextMenuPrimitive } from 'bits-ui';
 	import Check from 'lucide-svelte/icons/check';
-	import { cn } from '$lib/utils.js';
 
 	type $$Props = ContextMenuPrimitive.CheckboxItemProps;
 	type $$Events = ContextMenuPrimitive.CheckboxItemEvents;
