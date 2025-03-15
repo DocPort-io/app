@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { CircleUser, Computer, Menu, Moon, Paperclip, Search, Sun } from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
@@ -6,13 +7,6 @@
 	import { getAppState } from '$lib/stores/app.svelte';
 	import { getUserState } from '$lib/stores/user.svelte';
 	import { cn } from '$lib/utils';
-	import CircleUser from 'lucide-svelte/icons/circle-user';
-	import Computer from 'lucide-svelte/icons/computer';
-	import Menu from 'lucide-svelte/icons/menu';
-	import Moon from 'lucide-svelte/icons/moon';
-	import Paperclip from 'lucide-svelte/icons/paperclip';
-	import Search from 'lucide-svelte/icons/search';
-	import Sun from 'lucide-svelte/icons/sun';
 
 	import { Button } from '../ui/button';
 	import * as DropdownMenu from '../ui/dropdown-menu';
@@ -106,7 +100,7 @@
 				<DropdownMenu.Item>{m.settings()}</DropdownMenu.Item>
 				<DropdownMenu.Item>{m.support()}</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item>{m.logout()}</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
 				<DropdownMenu.Item onclick={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>

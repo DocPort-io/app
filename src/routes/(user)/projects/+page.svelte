@@ -5,6 +5,7 @@
 		ProjectUpdateSchema
 	} from '$lib/schemas/project.schema';
 
+	import { CirclePlus, File, ListFilter } from '@lucide/svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { Button } from '$lib/components/ui/button';
@@ -14,9 +15,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
 	import { getProjects } from '$lib/stores/projects.svelte';
-	import CirclePlus from 'lucide-svelte/icons/circle-plus';
-	import File from 'lucide-svelte/icons/file';
-	import ListFilter from 'lucide-svelte/icons/list-filter';
 
 	import CreateProjectDialog from './_components/_dialogs/create-project-dialog.svelte';
 	import DeleteProjectDialog from './_components/_dialogs/delete-project-dialog.svelte';

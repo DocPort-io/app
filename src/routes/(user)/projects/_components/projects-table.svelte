@@ -19,9 +19,9 @@
 <Table.Root>
 	<Table.Header>
 		<Table.Row>
-			<Table.Head class="hidden w-[100px] sm:table-cell">
+			<!-- <Table.Head class="hidden w-[100px] sm:table-cell">
 				<span class="sr-only">Image</span>
-			</Table.Head>
+			</Table.Head> -->
 			<Table.Head>{m.weak_few_ant_link()}</Table.Head>
 			<!-- <Table.Head>Status</Table.Head> -->
 			<!-- <Table.Head class="hidden md:table-cell">Price</Table.Head> -->

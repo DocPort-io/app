@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils.js';
 	import { RadioGroup as RadioGroupPrimitive } from 'bits-ui';
-	import Circle from 'lucide-svelte/icons/circle';
+	import { Circle } from '@lucide/svelte';
 
 	type $$Props = RadioGroupPrimitive.ItemProps;
 	type $$Events = RadioGroupPrimitive.ItemEvents;

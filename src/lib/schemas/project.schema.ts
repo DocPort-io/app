@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const projectSchema = z.object({
 	id: z.string(),
 	name: z.string().min(1, m.tame_candid_platypus_care()).max(100, m.long_gross_stingray_snip()),
+	team: z.string(),
 	created: z.string(),
 	updated: z.string()
 });

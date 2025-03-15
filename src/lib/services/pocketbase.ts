@@ -1,12 +1,15 @@
 import type { ProjectSchema } from '$lib/schemas/project.schema';
+import type { UserSchema } from '$lib/schemas/user.schema';
 
-import PocketBase, { RecordService } from 'pocketbase';
+import PocketBase, { LocalAuthStore, RecordService } from 'pocketbase';
 
 export interface TypedPocketBase extends PocketBase {
 	collection(idOrName: string): RecordService; // default fallback for any other collection
 	collection(idOrName: 'projects'): RecordService<ProjectSchema>;
+	collection(idOrName: 'users'): RecordService<UserSchema>;
 }
 
-export const getPocketBase = (): TypedPocketBase => {
-	return new PocketBase('http://127.0.0.1:8090');
-};
+const authStore = new LocalAuthStore();
+const pocketBase = new PocketBase('http://127.0.0.1:8090', authStore) as TypedPocketBase;
+
+export const getPocketBase = () => pocketBase;

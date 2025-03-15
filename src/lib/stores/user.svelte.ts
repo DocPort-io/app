@@ -1,7 +1,47 @@
+import type { UserSchema } from '$lib/schemas/user.schema';
+import type { AuthRecord } from 'pocketbase';
+
+import { getPocketBase, type TypedPocketBase } from '$lib/services/pocketbase';
 import { getContext, setContext } from 'svelte';
 
 export class UserState {
-	name = $state<string>('Jonas');
+	token = $state<string>('');
+	name = $state<string>('');
+
+	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {
+		this.token = pocketbase.authStore.token;
+		this.updateUserFromAuthRecord(pocketbase.authStore.record);
+
+		pocketbase.authStore.onChange((token, record) => {
+			this.token = token;
+			this.updateUserFromAuthRecord(record);
+		});
+	}
+
+	protected updateUserFromAuthRecord(record: AuthRecord) {
+		if (!record) return;
+
+		const authRecord = record as unknown as UserSchema;
+		this.name = authRecord.name;
+	}
+
+	async signIn(email: string, password: string) {
+		await this.pocketbase.collection('users').authWithPassword(email, password);
+	}
+
+	logout() {
+		this.pocketbase.authStore.clear();
+	}
+
+	async getOAuth2Providers() {
+		return (await this.pocketbase.collection('users').listAuthMethods()).oauth2.providers;
+	}
+
+	async signInWithExternalProvider(provider: string) {
+		await this.pocketbase.collection('users').authWithOAuth2({
+			provider
+		});
+	}
 }
 
 const USER_STATE_KEY = Symbol('USER_STATE');

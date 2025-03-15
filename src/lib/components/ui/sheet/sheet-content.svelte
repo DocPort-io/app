@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { X } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import { Dialog as SheetPrimitive } from 'bits-ui';
-	import X from 'lucide-svelte/icons/x';
 	import { fly } from 'svelte/transition';
 
 	import {

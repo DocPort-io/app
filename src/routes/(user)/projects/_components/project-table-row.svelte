@@ -5,12 +5,12 @@
 		ProjectUpdateSchema
 	} from '$lib/schemas/project.schema';
 
+	import { Ellipsis } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Table from '$lib/components/ui/table';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 
 	type Props = {
 		project: ProjectSchema;
@@ -22,7 +22,7 @@
 </script>
 
 <Table.Row>
-	<Table.Cell class="hidden sm:table-cell">
+	<!-- <Table.Cell class="hidden sm:table-cell">
 		<img
 			alt="Product example"
 			class="aspect-square rounded-md object-cover"
@@ -30,7 +30,7 @@
 			src="/images/placeholder.svg"
 			width="64"
 		/>
-	</Table.Cell>
+	</Table.Cell> -->
 	<Table.Cell class="font-medium">{project.name}</Table.Cell>
 	<!-- <Table.Cell>
         <Badge variant="outline">Draft</Badge>

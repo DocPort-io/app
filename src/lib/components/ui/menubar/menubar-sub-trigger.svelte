@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils.js';
 	import { Menubar as MenubarPrimitive } from 'bits-ui';
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
+	import { ChevronRight } from '@lucide/svelte';
 
 	type $$Props = MenubarPrimitive.SubTriggerProps & {
 		inset?: boolean;

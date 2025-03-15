@@ -3,7 +3,7 @@
 
 	import { Button, type Props, type buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
-	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import { ArrowRight } from '@lucide/svelte';
 
 	import { getEmblaContext } from './context.js';
 

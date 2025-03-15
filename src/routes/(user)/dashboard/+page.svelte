@@ -5,11 +5,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
-	import Activity from 'lucide-svelte/icons/activity';
-	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
-	import CreditCard from 'lucide-svelte/icons/credit-card';
-	import DollarSign from 'lucide-svelte/icons/dollar-sign';
-	import Users from 'lucide-svelte/icons/users';
+	import { Activity } from '@lucide/svelte';
+	import { ArrowUpRight } from '@lucide/svelte';
+	import { CreditCard } from '@lucide/svelte';
+	import { DollarSign } from '@lucide/svelte';
+	import { Users } from '@lucide/svelte';
 </script>
 
 <UserPageLayout>
