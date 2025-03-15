@@ -7,6 +7,7 @@ export const projectSchema = z.object({
 	created: z.string(),
 	updated: z.string()
 });
+
 export const projectCreateSchema = projectSchema.omit({ id: true, created: true, updated: true });
 export const projectUpdateSchema = projectSchema.omit({ id: true, created: true, updated: true });
 export const projectDeleteSchema = projectSchema.pick({ id: true });
