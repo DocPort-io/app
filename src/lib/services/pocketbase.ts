@@ -10,6 +10,7 @@ export interface TypedPocketBase extends PocketBase {
 }
 
 const authStore = new LocalAuthStore();
-const pocketBase = new PocketBase('http://127.0.0.1:8090', authStore) as TypedPocketBase;
+// const pocketBase = new PocketBase('http://127.0.0.1:8090', authStore) as TypedPocketBase;
+const pocketBase = new PocketBase('https://api.docport.io', authStore) as TypedPocketBase;
 
 export const getPocketBase = () => pocketBase;

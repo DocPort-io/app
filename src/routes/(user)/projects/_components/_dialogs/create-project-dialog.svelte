@@ -23,7 +23,7 @@
 		validators: zodClient(projectCreateSchema),
 		onUpdate: async ({ form }) => {
 			if (!form.valid) return;
-			await handleCreateProject({ ...form.data, team: 'wdqkmp0jbmm5ua5' });
+			await handleCreateProject({ ...form.data, team: 'p5vtfmy64xst2lh' });
 			dialogController.close();
 		}
 	});
