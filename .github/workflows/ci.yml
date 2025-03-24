@@ -36,7 +36,7 @@ jobs:
           file: Dockerfile.backend
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/backend:latest
-            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            ghcr.io/docport-io/backend:latest
+            ghcr.io/docport-io/backend:${{ github.sha }}
               cache-from: type=gha
               cache-to: type=gha,mode=max
