@@ -38,5 +38,5 @@ jobs:
           tags: |
             ghcr.io/docport-io/backend:latest
             ghcr.io/docport-io/backend:${{ github.sha }}
-              cache-from: type=gha
-              cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
