@@ -1,6 +1,11 @@
 <script lang="ts">
-	import { CircleUser, Computer, Menu, Moon, Paperclip, Search, Sun } from '@lucide/svelte';
+	import { Computer, Menu, Moon, Paperclip, Search, Sun } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Input } from '$lib/components/ui/input';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
 	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
@@ -8,17 +13,18 @@
 	import { getUserState } from '$lib/stores/user.svelte';
 	import { cn } from '$lib/utils';
 
-	import { Button } from '../ui/button';
-	import * as DropdownMenu from '../ui/dropdown-menu';
-	import { Input } from '../ui/input';
-	import * as Sheet from '../ui/sheet';
-
 	let canonicalPath = $derived(deLocalizeHref(page.url.pathname));
 
 	let search = $state('');
 
 	const appState = getAppState();
 	const userState = getUserState();
+
+	let initials = $derived.by(() => {
+		const splitName = userState.name.toUpperCase().split(' ');
+		if (splitName.length === 1) return splitName[0][0];
+		return `${splitName[0][0]}${splitName[splitName.length - 1][0]}`;
+	});
 </script>
 
 <header class="bg-background sticky top-0 z-10 flex h-16 items-center gap-4 border-b px-4 md:px-6">
@@ -86,11 +92,13 @@
 				/>
 			</div>
 		</form>
-		<div>{m.fair_known_reindeer_bless({ name: userState.name })}</div>
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" size="icon" class="rounded-full">
-					<CircleUser class="h-5 w-5" />
+					<Avatar.Root>
+						<Avatar.Image src={userState.avatarUrl} alt={initials} />
+						<Avatar.Fallback>{initials}</Avatar.Fallback>
+					</Avatar.Root>
 					<span class="sr-only">{m.toggle_user_menu()}</span>
 				</Button>
 			</DropdownMenu.Trigger>

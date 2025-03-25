@@ -7,6 +7,7 @@ import { getContext, setContext } from 'svelte';
 export class UserState {
 	token = $state<string>('');
 	name = $state<string>('');
+	avatarUrl = $state<string | null>(null);
 
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {
 		this.token = pocketbase.authStore.token;
@@ -23,6 +24,7 @@ export class UserState {
 
 		const authRecord = record as unknown as UserSchema;
 		this.name = authRecord.name;
+		this.avatarUrl = this.pocketbase.files.getURL(authRecord, authRecord.avatar) || null;
 	}
 
 	async signIn(email: string, password: string) {
