@@ -41,3 +41,15 @@ jobs:
             ghcr.io/docport-io/backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.frontend
+          push: true
+          tags: |
+            ghcr.io/docport-io/frontend:latest
+            ghcr.io/docport-io/frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

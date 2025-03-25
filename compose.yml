@@ -11,3 +11,14 @@ services:
       - GOMEMLIMIT=128MiB
     volumes:
       - ./pb_data:/pb/pb_data
+
+  frontend:
+    image: ghcr.io/docport-io/frontend:latest
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - PUBLIC_POCKETBASE_URL=http://localhost:8080
