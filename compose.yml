@@ -1,0 +1,13 @@
+services:
+  backend:
+    image: ghcr.io/docport-io/backend:latest
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      - GOMEMLIMIT=128MiB
+    volumes:
+      - ./pb_data:/pb/pb_data
