@@ -4,12 +4,17 @@
 	import NavigationBar from '../shared/navigation-bar.svelte';
 
 	interface Props {
+		title?: string;
 		hideNavbar?: boolean;
 		children?: Snippet;
 	}
 
-	let { hideNavbar = false, children }: Props = $props();
+	let { title, hideNavbar = false, children }: Props = $props();
 </script>
+
+<svelte:head>
+	<title>{`DocPort - ${title || 'App'}`}</title>
+</svelte:head>
 
 <div class="flex min-h-screen w-full flex-col">
 	{#if !hideNavbar}

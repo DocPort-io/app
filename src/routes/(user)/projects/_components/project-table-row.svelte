@@ -22,24 +22,7 @@
 </script>
 
 <Table.Row>
-	<!-- <Table.Cell class="hidden sm:table-cell">
-		<img
-			alt="Product example"
-			class="aspect-square rounded-md object-cover"
-			height="64"
-			src="/images/placeholder.svg"
-			width="64"
-		/>
-	</Table.Cell> -->
 	<Table.Cell class="font-medium">{project.name}</Table.Cell>
-	<!-- <Table.Cell>
-        <Badge variant="outline">Draft</Badge>
-        {#if project._isOptimistic}
-            <Badge variant="outline">Saving...</Badge>
-        {/if}
-    </Table.Cell> -->
-	<!-- <Table.Cell class="hidden md:table-cell">$499.99</Table.Cell> -->
-	<!-- <Table.Cell class="hidden md:table-cell">25</Table.Cell> -->
 	<Table.Cell class="hidden md:table-cell"
 		>{new Date(project.created).toLocaleString(getLocale(), {
 			dateStyle: 'long',

@@ -4,6 +4,7 @@
 	import { dev } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { setAppState } from '$lib/stores/app.svelte';
 	import { setProjects } from '$lib/stores/projects.svelte';
 	import { setUserState } from '$lib/stores/user.svelte';
@@ -43,4 +44,5 @@
 	<RenderScan />
 {/if}
 <ModeWatcher />
+<Toaster />
 {@render children()}

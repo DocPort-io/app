@@ -20,7 +20,6 @@ export class Projects {
 	}
 
 	#fetch = async () => {
-		await new Promise((resolve) => setTimeout(resolve, 500));
 		this.projects = await this.service.getProjects();
 	};
 
