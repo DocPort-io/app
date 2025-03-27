@@ -28,14 +28,20 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#await projectStore.loadingPromise}
+		{#if projectStore.loading}
 			<ProjectTableRowSkeleton />
 			<ProjectTableRowSkeleton />
 			<ProjectTableRowSkeleton />
-		{:then}
+		{:else if projectStore.error}
+			<Table.Row>
+				<Table.Cell colspan={3} class="text-center">
+					{projectStore.error}
+				</Table.Cell>
+			</Table.Row>
+		{:else}
 			{#each projectStore.projects as project (project.id)}
 				<ProjectTableRow {project} {handleEditProject} {handleDeleteProject} />
 			{/each}
-		{/await}
+		{/if}
 	</Table.Body>
 </Table.Root>

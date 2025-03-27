@@ -1,30 +1,18 @@
 <script lang="ts">
-	import { Computer, Menu, Moon, Paperclip, Search, Sun } from '@lucide/svelte';
+	import { Menu, Paperclip } from '@lucide/svelte';
 	import { page } from '$app/state';
-	import * as Avatar from '$lib/components/ui/avatar';
 	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Input } from '$lib/components/ui/input';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
-	import { deLocalizeHref, setLocale } from '$lib/paraglide/runtime';
-	import { getAppState } from '$lib/stores/app.svelte';
-	import { getUserState } from '$lib/stores/user.svelte';
+	import { deLocalizeHref } from '$lib/paraglide/runtime';
 	import { cn } from '$lib/utils';
 
+	import ProfileMenu from './navigation-bar/profile-menu.svelte';
+	import Search from './navigation-bar/search.svelte';
+	import TeamSwitcher from './navigation-bar/team-switcher.svelte';
+
 	let canonicalPath = $derived(deLocalizeHref(page.url.pathname));
-
-	let search = $state('');
-
-	const appState = getAppState();
-	const userState = getUserState();
-
-	let initials = $derived.by(() => {
-		const splitName = userState.name.toUpperCase().split(' ');
-		if (splitName.length === 1) return splitName[0][0];
-		return `${splitName[0][0]}${splitName[splitName.length - 1][0]}`;
-	});
 </script>
 
 <header class="bg-background sticky top-0 z-10 flex h-16 items-center gap-4 border-b px-4 md:px-6">
@@ -81,53 +69,8 @@
 		</Sheet.Content>
 	</Sheet.Root>
 	<div class="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-		<form class="ml-auto flex-1 sm:flex-initial">
-			<div class="relative">
-				<Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-				<Input
-					type="search"
-					placeholder={m.search()}
-					class="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-					bind:value={search}
-				/>
-			</div>
-		</form>
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="icon" class="rounded-full">
-					<Avatar.Root>
-						<Avatar.Image src={userState.avatarUrl} alt={initials} />
-						<Avatar.Fallback>{initials}</Avatar.Fallback>
-					</Avatar.Root>
-					<span class="sr-only">{m.toggle_user_menu()}</span>
-				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end">
-				<DropdownMenu.Label>{m.my_account()}</DropdownMenu.Label>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item>{m.settings()}</DropdownMenu.Item>
-				<DropdownMenu.Item>{m.support()}</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item onclick={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
-				<DropdownMenu.Item onclick={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
-				<DropdownMenu.Item on:click={() => appState.activateLightTheme()}>
-					<Sun class="mr-2 h-4 w-4" />
-					<span>{m.light()}</span>
-				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => appState.activateDarkTheme()}>
-					<Moon class="mr-2 h-4 w-4" />
-					<span>{m.dark()}</span>
-				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => appState.activateSystemTheme()}>
-					<Computer class="mr-2 h-4 w-4" />
-					<span>{m.system()}</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+		<Search />
+		<TeamSwitcher />
+		<ProfileMenu />
 	</div>
 </header>

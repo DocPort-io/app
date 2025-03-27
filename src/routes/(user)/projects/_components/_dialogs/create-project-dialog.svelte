@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
+	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { m } from '$lib/paraglide/messages';
 	import { projectCreateSchema, type ProjectCreateSchema } from '$lib/schemas/project.schema';
-	import { defaults, superForm } from 'sveltekit-superforms';
+	import { getTeamState } from '$lib/stores/team.svelte';
+	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
@@ -17,18 +19,22 @@
 
 	let { dialogController, handleCreateProject, ...restProps }: Props = $props();
 
+	const teamState = getTeamState();
+
 	const form = superForm(defaults(zod(projectCreateSchema)), {
 		id: 'create-project-form',
 		SPA: true,
 		validators: zodClient(projectCreateSchema),
 		onUpdate: async ({ form }) => {
 			if (!form.valid) return;
-			await handleCreateProject({ ...form.data, team: 'p5vtfmy64xst2lh' });
+			if (!teamState.selectedTeam) return setError(form, 'Please select a team first.');
+
+			await handleCreateProject({ ...form.data, team: teamState.selectedTeam.id });
 			dialogController.close();
 		}
 	});
 
-	const { form: formData, constraints, enhance } = form;
+	const { form: formData, constraints, enhance, submitting, delayed } = form;
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -47,6 +53,7 @@
 							{...$constraints.name}
 							bind:value={$formData.name}
 							placeholder={m.alert_nimble_pug_play()}
+							disabled={$submitting}
 						/>
 					{/snippet}
 				</Form.Control>
@@ -55,11 +62,23 @@
 			</Form.Field>
 
 			<Dialog.Footer>
-				<Button type="reset" variant="outline" on:click={() => dialogController.close()}
-					>{m.red_same_flea_clip()}
+				<Button
+					type="reset"
+					variant="outline"
+					on:click={() => dialogController.close()}
+					disabled={$submitting}
+				>
+					{m.red_same_flea_clip()}
 				</Button>
-				<Form.Button type="submit">
-					{m.hour_swift_crab_breathe()}
+				<Form.Button type="submit" disabled={$submitting}>
+					{#if $delayed}
+						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					{#if $submitting}
+						Creating...
+					{:else}
+						{m.hour_swift_crab_breathe()}
+					{/if}
 				</Form.Button>
 			</Dialog.Footer>
 		</form>

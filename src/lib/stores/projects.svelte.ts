@@ -11,17 +11,30 @@ import { getContext, setContext } from 'svelte';
 
 export class Projects {
 	projects = $state<ProjectSchema[]>([]);
-	loadingPromise = $state<Promise<void> | undefined>();
+	loading = $state(false);
+	error = $state<string | null>(null);
 
 	constructor(protected readonly service: IProjectService = new ProjectService()) {}
 
 	load() {
-		this.loadingPromise = this.#fetch();
+		this.#fetch();
 	}
 
-	#fetch = async () => {
-		this.projects = await this.service.getProjects();
-	};
+	async #fetch() {
+		this.loading = true;
+		this.error = null;
+
+		return this.service
+			.getProjects()
+			.then((projects) => {
+				this.projects = projects;
+				this.loading = false;
+			})
+			.catch((err) => {
+				this.error = err instanceof Error ? err.message : err;
+				this.loading = false;
+			});
+	}
 
 	async add(project: ProjectCreateSchema) {
 		await this.service.createProject(project);
