@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
+	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
@@ -31,7 +32,14 @@
 		})
 	);
 
-	const { form: formData, constraints, enhance, validateForm } = $derived(form);
+	const {
+		form: formData,
+		constraints,
+		enhance,
+		validateForm,
+		submitting,
+		delayed
+	} = $derived(form);
 
 	$effect(() => {
 		validateForm({ update: true });
@@ -54,6 +62,7 @@
 							{...$constraints.name}
 							bind:value={$formData.name}
 							placeholder={m.alert_nimble_pug_play()}
+							disabled={$submitting}
 						/>
 					{/snippet}
 				</Form.Control>
@@ -61,11 +70,18 @@
 				<Form.FieldErrors />
 			</Form.Field>
 			<Dialog.Footer>
-				<Button variant="outline" on:click={() => dialogController.close()}>
+				<Button variant="outline" on:click={() => dialogController.close()} disabled={$submitting}>
 					{m.red_same_flea_clip()}
 				</Button>
-				<Form.Button type="submit">
-					{m.big_male_bear_peek()}
+				<Form.Button type="submit" disabled={$submitting}>
+					{#if $delayed}
+						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					{#if $submitting}
+						Saving...
+					{:else}
+						{m.big_male_bear_peek()}
+					{/if}
 				</Form.Button>
 			</Dialog.Footer>
 		</form>

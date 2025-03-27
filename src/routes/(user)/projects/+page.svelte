@@ -51,12 +51,11 @@
 	});
 
 	$effect(() => {
-		projectStore.loadingPromise?.catch(() => {
-			toast.error('An error occurred', {
-				description:
-					"Your projects could not be loaded. We're sorry for the inconvenience. Please try again later.",
-				duration: 10_000
-			});
+		if (!projectStore.error) return;
+		toast.error('An error occurred', {
+			description:
+				"Your projects could not be loaded. We're sorry for the inconvenience. Please try again later.",
+			duration: 10_000
 		});
 	});
 </script>

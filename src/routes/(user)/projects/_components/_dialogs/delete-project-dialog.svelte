@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
+	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
@@ -29,7 +30,7 @@
 		})
 	);
 
-	const { enhance, validateForm } = $derived(form);
+	const { enhance, validateForm, submitting, delayed } = $derived(form);
 
 	$effect(() => {
 		validateForm({ update: true });
@@ -46,11 +47,18 @@
 		</Dialog.Header>
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Dialog.Footer>
-				<Button variant="outline" on:click={() => dialogController.close()}>
+				<Button variant="outline" on:click={() => dialogController.close()} disabled={$submitting}>
 					{m.red_same_flea_clip()}
 				</Button>
-				<Form.Button type="submit" variant="destructive">
-					{m.mellow_dark_puma_boil()}
+				<Form.Button type="submit" variant="destructive" disabled={$submitting}>
+					{#if $delayed}
+						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					{#if $submitting}
+						Deleting...
+					{:else}
+						{m.mellow_dark_puma_boil()}
+					{/if}
 				</Form.Button>
 			</Dialog.Footer>
 		</form>
