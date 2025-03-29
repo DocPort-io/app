@@ -1,18 +1,18 @@
 <script lang="ts">
+	import { Activity } from '@lucide/svelte';
+	import { ArrowUpRight } from '@lucide/svelte';
+	import { CreditCard } from '@lucide/svelte';
+	import { DollarSign } from '@lucide/svelte';
+	import { Users } from '@lucide/svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
-	import { Activity } from '@lucide/svelte';
-	import { ArrowUpRight } from '@lucide/svelte';
-	import { CreditCard } from '@lucide/svelte';
-	import { DollarSign } from '@lucide/svelte';
-	import { Users } from '@lucide/svelte';
 </script>
 
-<UserPageLayout>
+<UserPageLayout title="Dashboard">
 	<h1 class="text-3xl font-bold">Test</h1>
 	<div class="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
 		<Card.Root

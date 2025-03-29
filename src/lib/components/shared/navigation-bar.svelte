@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Menu, Paperclip } from '@lucide/svelte';
+	import { Menu } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import DocPortLogo from '$lib/assets/logo.svg';
 	import { Button } from '$lib/components/ui/button';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { AppRoute } from '$lib/constants';
@@ -20,7 +21,13 @@
 		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
 	>
 		<a href={AppRoute.DASHBOARD} class="flex items-center gap-2 text-lg font-semibold md:text-base">
-			<Paperclip class="h-6 w-6" />
+			<img
+				src={DocPortLogo}
+				alt="DocPort Logo"
+				class="aspect-square rounded-md object-cover"
+				height="64"
+				width="64"
+			/>
 			<span class="sr-only">DocPort</span>
 		</a>
 		<a
@@ -48,7 +55,13 @@
 		<Sheet.Content side="left">
 			<nav class="grid gap-6 text-lg font-medium">
 				<a href={AppRoute.DASHBOARD} class="flex items-center gap-2 text-lg font-semibold">
-					<Paperclip class="h-6 w-6" />
+					<img
+						src={DocPortLogo}
+						alt="DocPort Logo"
+						class="aspect-square rounded-md object-cover"
+						height="64"
+						width="64"
+					/>
 					<span class="sr-only">DocPort</span>
 				</a>
 				<a
