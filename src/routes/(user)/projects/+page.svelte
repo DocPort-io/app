@@ -15,7 +15,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
 	import { getProjects } from '$lib/stores/projects.svelte';
-	import { toast } from 'svelte-sonner';
 
 	import CreateProjectDialog from './_components/_dialogs/create-project-dialog.svelte';
 	import DeleteProjectDialog from './_components/_dialogs/delete-project-dialog.svelte';
@@ -45,19 +44,6 @@
 	const handleDeleteProject = async (data: ProjectDeleteSchema) => {
 		await projectStore.remove(data);
 	};
-
-	$effect(() => {
-		projectStore.load();
-	});
-
-	$effect(() => {
-		if (!projectStore.error) return;
-		toast.error('An error occurred', {
-			description:
-				"Your projects could not be loaded. We're sorry for the inconvenience. Please try again later.",
-			duration: 10_000
-		});
-	});
 </script>
 
 <UserPageLayout title="Projects">
