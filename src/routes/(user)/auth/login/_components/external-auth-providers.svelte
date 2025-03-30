@@ -39,7 +39,7 @@
 				<Button
 					variant="outline"
 					class="w-full"
-					onclick={() => userStore.signInWithExternalProvider(oauth2Provider.name)}
+					on:click={() => userStore.signInWithExternalProvider(oauth2Provider.name)}
 				>
 					<Fingerprint class="mr-2 h-4 w-4" />
 					{oauth2Provider.displayName}

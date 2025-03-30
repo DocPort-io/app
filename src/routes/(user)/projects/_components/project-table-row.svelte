@@ -6,6 +6,7 @@
 	} from '$lib/schemas/project.schema';
 
 	import { Ellipsis } from '@lucide/svelte';
+	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Table from '$lib/components/ui/table';
@@ -14,15 +15,26 @@
 
 	type Props = {
 		project: ProjectSchema;
+		handleViewProject: (project: ProjectSchema) => void;
 		handleEditProject: (id: string, project: ProjectUpdateSchema) => void;
 		handleDeleteProject: (project: ProjectDeleteSchema) => void;
 	};
 
-	let { project, handleEditProject, handleDeleteProject }: Props = $props();
+	let { project, handleViewProject, handleEditProject, handleDeleteProject }: Props = $props();
+
+	const statusMap = {
+		active: 'Active',
+		completed: 'Completed'
+	};
 </script>
 
 <Table.Row>
-	<Table.Cell class="font-medium">{project.name}</Table.Cell>
+	<Table.Cell class="font-medium">
+		{project.name}
+	</Table.Cell>
+	<Table.Cell>
+		<Badge>{statusMap[project.status]}</Badge>
+	</Table.Cell>
 	<Table.Cell class="hidden md:table-cell"
 		>{new Date(project.created).toLocaleString(getLocale(), {
 			dateStyle: 'long',
@@ -39,10 +51,13 @@
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
 				<DropdownMenu.Label>{m.trite_gaudy_marten_scold()}</DropdownMenu.Label>
-				<DropdownMenu.Item onclick={() => handleEditProject(project.id, project)}>
+				<DropdownMenu.Item on:click={() => handleViewProject(project)}>
+					{m.view()}
+				</DropdownMenu.Item>
+				<DropdownMenu.Item on:click={() => handleEditProject(project.id, project)}>
 					{m.lucky_factual_marmot_scoop()}
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => handleDeleteProject(project)}>
+				<DropdownMenu.Item on:click={() => handleDeleteProject(project)}>
 					{m.fuzzy_lofty_stork_jest()}
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>

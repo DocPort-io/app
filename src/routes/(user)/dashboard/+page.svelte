@@ -13,7 +13,6 @@
 </script>
 
 <UserPageLayout title="Dashboard">
-	<h1 class="text-3xl font-bold">Test</h1>
 	<div class="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
 		<Card.Root
 			data-x-chunk-name="dashboard-01-chunk-0"

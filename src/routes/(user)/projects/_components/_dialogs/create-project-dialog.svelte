@@ -14,7 +14,7 @@
 
 	type Props = {
 		dialogController: DialogController<unknown>;
-		handleCreateProject: (data: ProjectCreateSchema) => unknown;
+		handleCreateProject: (data: ProjectCreateSchema) => Promise<unknown>;
 	};
 
 	let { dialogController, handleCreateProject, ...restProps }: Props = $props();
@@ -29,7 +29,11 @@
 			if (!form.valid) return;
 			if (!teamState.selectedTeam) return setError(form, 'Please select a team first.');
 
-			await handleCreateProject({ ...form.data, team: teamState.selectedTeam.id });
+			await handleCreateProject({
+				...form.data,
+				status: 'active',
+				team: teamState.selectedTeam.id
+			});
 			dialogController.close();
 		}
 	});

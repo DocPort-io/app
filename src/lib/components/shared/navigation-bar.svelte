@@ -20,7 +20,10 @@
 	<nav
 		class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
 	>
-		<a href={AppRoute.DASHBOARD} class="flex items-center gap-2 text-lg font-semibold md:text-base">
+		<a
+			href={AppRoute.DASHBOARD()}
+			class="flex items-center gap-2 text-lg font-semibold md:text-base"
+		>
 			<img
 				src={DocPortLogo}
 				alt="DocPort Logo"
@@ -31,17 +34,17 @@
 			<span class="sr-only">DocPort</span>
 		</a>
 		<a
-			href={AppRoute.DASHBOARD}
+			href={AppRoute.DASHBOARD()}
 			class={cn(
 				'text-muted-foreground hover:text-foreground transition-colors',
-				canonicalPath === AppRoute.DASHBOARD && 'text-foreground'
+				canonicalPath === AppRoute.DASHBOARD() && 'text-foreground'
 			)}>{m.dashboard()}</a
 		>
 		<a
-			href={AppRoute.PROJECTS}
+			href={AppRoute.PROJECTS()}
 			class={cn(
 				'text-muted-foreground hover:text-foreground transition-colors',
-				canonicalPath === AppRoute.PROJECTS && 'text-foreground'
+				canonicalPath === AppRoute.PROJECTS() && 'text-foreground'
 			)}>{m.projects()}</a
 		>
 	</nav>
@@ -54,7 +57,7 @@
 		</Sheet.Trigger>
 		<Sheet.Content side="left">
 			<nav class="grid gap-6 text-lg font-medium">
-				<a href={AppRoute.DASHBOARD} class="flex items-center gap-2 text-lg font-semibold">
+				<a href={AppRoute.DASHBOARD()} class="flex items-center gap-2 text-lg font-semibold">
 					<img
 						src={DocPortLogo}
 						alt="DocPort Logo"
@@ -65,17 +68,17 @@
 					<span class="sr-only">DocPort</span>
 				</a>
 				<a
-					href={AppRoute.DASHBOARD}
+					href={AppRoute.DASHBOARD()}
 					class={cn(
 						'text-muted-foreground hover:text-foreground',
-						canonicalPath === AppRoute.DASHBOARD && 'text-foreground'
+						canonicalPath === AppRoute.DASHBOARD() && 'text-foreground'
 					)}>{m.dashboard()}</a
 				>
 				<a
-					href={AppRoute.PROJECTS}
+					href={AppRoute.PROJECTS()}
 					class={cn(
 						'text-muted-foreground hover:text-foreground',
-						canonicalPath === AppRoute.PROJECTS && 'text-foreground'
+						canonicalPath === AppRoute.PROJECTS() && 'text-foreground'
 					)}>{m.projects()}</a
 				>
 			</nav>

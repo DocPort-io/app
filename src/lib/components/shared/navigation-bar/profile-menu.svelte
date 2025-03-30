@@ -34,11 +34,11 @@
 		<DropdownMenu.Item>{m.settings()}</DropdownMenu.Item>
 		<DropdownMenu.Item>{m.support()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item onclick={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
-		<DropdownMenu.Item onclick={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
 		<DropdownMenu.Item on:click={() => appState.activateLightTheme()}>

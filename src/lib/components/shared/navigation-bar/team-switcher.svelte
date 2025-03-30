@@ -20,7 +20,7 @@
 		{#each teamState.teams as team}
 			<DropdownMenu.Item
 				class={cn(team.id === teamState.selectedTeam?.id && 'bg-accent')}
-				onclick={() => teamState.selectTeam(team)}
+				on:click={() => teamState.selectTeam(team)}
 			>
 				{team.name}
 			</DropdownMenu.Item>
