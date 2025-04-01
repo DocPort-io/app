@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
-	import { LoaderCircle } from '@lucide/svelte';
+	import { AlertTriangle, LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
@@ -11,6 +11,7 @@
 	import { getTeamState } from '$lib/stores/team.svelte';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
+	import * as Alert from '$lib/components/ui/alert';
 
 	type Props = {
 		dialogController: DialogController<unknown>;
@@ -29,16 +30,24 @@
 			if (!form.valid) return;
 			if (!teamState.selectedTeam) return setError(form, 'Please select a team first.');
 
-			await handleCreateProject({
-				...form.data,
-				status: 'active',
-				team: teamState.selectedTeam.id
-			});
-			dialogController.close();
+			try {
+				await handleCreateProject({
+					...form.data,
+					status: 'active',
+					team: teamState.selectedTeam.id
+				});
+				dialogController.close();
+			} catch (err) {
+				setError(form, 'Failed to create project. Please try again.');
+			}
 		}
 	});
 
-	const { form: formData, constraints, enhance, submitting, delayed } = form;
+	const { form: formData, constraints, enhance, submitting, delayed, allErrors } = form;
+
+	let formErrors = $derived(
+		$allErrors.filter((error) => error.path === '_errors').flatMap((error) => error.messages)
+	);
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -47,6 +56,15 @@
 			<Dialog.Title>{m.weak_weak_bulldog_assure()}</Dialog.Title>
 			<Dialog.Description>{m.proof_noisy_monkey_type()}</Dialog.Description>
 		</Dialog.Header>
+
+		{#if formErrors.length > 0}
+			<Alert.Root variant="destructive" class="mt-4">
+				<AlertTriangle class="mr-2 h-4 w-4" />
+				<Alert.Title>Error</Alert.Title>
+				<Alert.Description>{formErrors[0]}</Alert.Description>
+			</Alert.Root>
+		{/if}
+
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Form.Field {form} name="name">
 				<Form.Control>
