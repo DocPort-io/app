@@ -2,6 +2,7 @@ import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import perfectionist from 'eslint-plugin-perfectionist';
+import playwright from 'eslint-plugin-playwright';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +40,13 @@ export default ts.config(
 		},
 		rules: {
 			'perfectionist/sort-imports': 'error'
+		}
+	},
+	{
+		...playwright.configs['flat/recommended'],
+		files: ['e2e/**'],
+		rules: {
+			...playwright.configs['flat/recommended'].rules
 		}
 	}
 );
