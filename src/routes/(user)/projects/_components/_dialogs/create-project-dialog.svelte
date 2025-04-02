@@ -2,6 +2,7 @@
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
 	import { AlertTriangle, LoaderCircle } from '@lucide/svelte';
+	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
@@ -11,7 +12,6 @@
 	import { getTeamState } from '$lib/stores/team.svelte';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
-	import * as Alert from '$lib/components/ui/alert';
 
 	type Props = {
 		dialogController: DialogController<unknown>;
@@ -37,7 +37,7 @@
 					team: teamState.selectedTeam.id
 				});
 				dialogController.close();
-			} catch (err) {
+			} catch {
 				setError(form, 'Failed to create project. Please try again.');
 			}
 		}
