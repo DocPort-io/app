@@ -51,7 +51,7 @@
 </script>
 
 <UserPageLayout title="Projects">
-	<Card.Root>
+	<Card.Root data-testid="projects-card">
 		<Card.Header class="flex flex-row items-center">
 			<div class="grid gap-2">
 				<Card.Title>{m.projects()}</Card.Title>

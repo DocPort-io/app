@@ -22,8 +22,8 @@
 	let { projectStore, handleViewProject, handleEditProject, handleDeleteProject }: Props = $props();
 </script>
 
-<Table.Root>
-	<Table.Header>
+<Table.Root data-testid="projects-table">
+	<Table.Header data-testid="projects-table-header">
 		<Table.Row>
 			<Table.Head>{m.weak_few_ant_link()}</Table.Head>
 			<Table.Head>Status</Table.Head>
@@ -33,7 +33,7 @@
 			</Table.Head>
 		</Table.Row>
 	</Table.Header>
-	<Table.Body>
+	<Table.Body data-testid="projects-table-body">
 		{#if projectStore.loading}
 			<ProjectTableRowSkeleton />
 			<ProjectTableRowSkeleton />

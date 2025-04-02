@@ -7,6 +7,8 @@ export const createPocketBase = async () => {
 
 	const pocketBase = new PocketBase(TEST_POCKETBASE_URL);
 
+	pocketBase.autoCancellation(false);
+
 	await pocketBase
 		.collection('_superusers')
 		.authWithPassword(TEST_POCKETBASE_ADMIN_EMAIL, TEST_POCKETBASE_ADMIN_PASSWORD);

@@ -11,6 +11,12 @@ export class TeamState {
 	selectedTeam = $state<TeamSchema | null>(null);
 
 	constructor(protected readonly service: ITeamService = new TeamService()) {
+		$effect(() => {
+			if (this.selectedTeam) return;
+			if (this.teams.length === 0) return;
+			this.selectTeam(this.teams[0]);
+		});
+
 		this.#loadTeamFromLocalStorage();
 	}
 

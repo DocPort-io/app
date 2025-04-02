@@ -28,7 +28,7 @@
 	};
 </script>
 
-<Table.Row>
+<Table.Row data-testid="projects-table-row">
 	<Table.Cell class="font-medium">
 		{project.name}
 	</Table.Cell>

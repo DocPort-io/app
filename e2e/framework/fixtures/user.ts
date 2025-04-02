@@ -11,6 +11,7 @@ export const createUser = async (pocketBase: PocketBase): Promise<TestUser> => {
 	const password = 'password123';
 
 	const { id } = await pocketBase.collection('users').create({
+		name: 'Test User',
 		email,
 		password,
 		passwordConfirm: password

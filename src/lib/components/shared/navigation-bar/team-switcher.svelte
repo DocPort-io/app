@@ -9,8 +9,16 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button variant="outline" size="sm" builders={[builder]} class="gap-1">
-			<span>{teamState.selectedTeam?.name || 'No team selected'}</span>
+		<Button
+			variant="outline"
+			size="sm"
+			builders={[builder]}
+			class="gap-1"
+			data-testid="team-switcher-button"
+		>
+			<span data-testid="team-switcher-button-text"
+				>{teamState.selectedTeam?.name || 'No team selected'}</span
+			>
 			<span class="sr-only">Switch team</span>
 		</Button>
 	</DropdownMenu.Trigger>
@@ -21,6 +29,7 @@
 			<DropdownMenu.Item
 				class={cn(team.id === teamState.selectedTeam?.id && 'bg-accent')}
 				on:click={() => teamState.selectTeam(team)}
+				data-testid="team-switcher-item"
 			>
 				{team.name}
 			</DropdownMenu.Item>

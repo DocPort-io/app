@@ -56,12 +56,6 @@
 		if (userState.token === '') return;
 		teamState.load();
 	});
-
-	$effect(() => {
-		if (teamState.selectedTeam) return;
-		if (teamState.teams.length === 0) return;
-		teamState.selectTeam(teamState.teams[0]);
-	});
 </script>
 
 {#if dev}
