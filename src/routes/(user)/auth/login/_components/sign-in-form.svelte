@@ -42,16 +42,16 @@
 </script>
 
 {#if formErrors.length > 0}
-	<Alert.Root variant="destructive" class="mb-4">
+	<Alert.Root variant="destructive" class="mt-4">
 		<AlertTriangle class="mr-2 h-4 w-4" />
-		<Alert.Title>Oops!</Alert.Title>
+		<Alert.Title data-testid="login-error-title">Oops!</Alert.Title>
 		{#each formErrors as formError}
-			<Alert.Description>{formError}</Alert.Description>
+			<Alert.Description data-testid="login-error-description">{formError}</Alert.Description>
 		{/each}
 	</Alert.Root>
 {/if}
 
-<form method="POST" class="space-y-4" use:enhance>
+<form method="POST" class="grid gap-4 py-4" use:enhance>
 	<Form.Field {form} name="email">
 		<Form.Control>
 			{#snippet children({ props }: { props: object })}
@@ -62,6 +62,7 @@
 					bind:value={$formData.email}
 					placeholder={m.heavy_honest_ladybug_gasp()}
 					type="email"
+					data-testid="login-email"
 				/>
 			{/snippet}
 		</Form.Control>
@@ -83,6 +84,7 @@
 					{...$constraints.password}
 					bind:value={$formData.password}
 					type="password"
+					data-testid="login-password"
 				/>
 			{/snippet}
 		</Form.Control>
@@ -90,7 +92,7 @@
 		<Form.FieldErrors />
 	</Form.Field>
 
-	<Button type="submit" class="w-full" disabled={$submitting}>
+	<Button type="submit" class="w-full" disabled={$submitting} data-testid="login-signin">
 		{#if $submitting}
 			<span class="mr-2 animate-spin"><LoaderCircle /></span>
 			{m.salty_best_zebra_race()}

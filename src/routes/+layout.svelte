@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { AppRoute } from '$lib/constants';
 	import { setAppState } from '$lib/stores/app.svelte';
 	import { setProjects } from '$lib/stores/projects.svelte';
 	import { setTeamState } from '$lib/stores/team.svelte';
@@ -34,11 +35,21 @@
 
 	$effect(() => {
 		if (userState.token === '') return;
-		if (page.url.searchParams.has('redirect')) {
-			const redirect = page.url.searchParams.get('redirect');
-			if (!redirect) return;
-			goto(redirect);
+		if (page.url.pathname !== '/auth/login') return;
+
+		if (!page.url.searchParams.has('redirect')) {
+			goto(AppRoute.DASHBOARD());
+			return;
 		}
+
+		const redirect = page.url.searchParams.get('redirect');
+
+		if (!redirect) {
+			goto(AppRoute.DASHBOARD());
+			return;
+		}
+
+		goto(redirect);
 	});
 
 	$effect(() => {
