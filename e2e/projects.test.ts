@@ -8,7 +8,7 @@ const projects: TestProject[] = [];
 
 test.beforeEach(async ({ testTeam, pocketBase }) => {
 	await Promise.all(
-		Array.from({ length: 5 }).map(async () => {
+		Array.from({ length: 500 }).map(async () => {
 			const project = await createProject(pocketBase, testTeam);
 			projects.push(project);
 		})

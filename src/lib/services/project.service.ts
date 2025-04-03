@@ -11,12 +11,25 @@ import { getPocketBase, type TypedPocketBase } from './pocketbase';
 export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
-	async getProjects(): Promise<ProjectSchema[]> {
-		const records = await this.pocketbase.collection('projects').getList(1, 50, {
-			sort: '-created'
+	async getProjects({
+		page = 1,
+		perPage = 5,
+		filter
+	}: {
+		page?: number;
+		perPage?: number;
+		filter?: string;
+	}): Promise<{ items: ProjectSchema[]; totalItems: number; totalPages: number }> {
+		const records = await this.pocketbase.collection('projects').getList(page, perPage, {
+			sort: '-created',
+			filter
 		});
 
-		return records.items;
+		return {
+			items: records.items as ProjectSchema[],
+			totalItems: records.totalItems,
+			totalPages: records.totalPages
+		};
 	}
 
 	async createProject(data: ProjectCreateSchema): Promise<ProjectSchema> {

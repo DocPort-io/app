@@ -7,19 +7,27 @@
 
 	import * as Table from '$lib/components/ui/table';
 	import { m } from '$lib/paraglide/messages';
-	import { Projects } from '$lib/stores/projects.svelte';
 
 	import ProjectTableRowSkeleton from './project-table-row-skeleton.svelte';
 	import ProjectTableRow from './project-table-row.svelte';
 
 	type Props = {
-		projectStore: Projects;
+		loading: boolean;
+		error: string | null;
+		projects: ProjectSchema[];
 		handleViewProject: (project: ProjectSchema) => void;
 		handleEditProject: (id: string, project: ProjectUpdateSchema) => void;
 		handleDeleteProject: (project: ProjectDeleteSchema) => void;
 	};
 
-	let { projectStore, handleViewProject, handleEditProject, handleDeleteProject }: Props = $props();
+	let {
+		loading,
+		error,
+		projects,
+		handleViewProject,
+		handleEditProject,
+		handleDeleteProject
+	}: Props = $props();
 </script>
 
 <Table.Root data-testid="projects-table">
@@ -34,18 +42,18 @@
 		</Table.Row>
 	</Table.Header>
 	<Table.Body data-testid="projects-table-body">
-		{#if projectStore.loading}
+		{#if loading}
 			<ProjectTableRowSkeleton />
 			<ProjectTableRowSkeleton />
 			<ProjectTableRowSkeleton />
-		{:else if projectStore.error}
+		{:else if error}
 			<Table.Row>
 				<Table.Cell colspan={3} class="text-center">
-					{projectStore.error}
+					{error}
 				</Table.Cell>
 			</Table.Row>
 		{:else}
-			{#each projectStore.projects as project (project.id)}
+			{#each projects as project (project.id)}
 				<ProjectTableRow {project} {handleViewProject} {handleEditProject} {handleDeleteProject} />
 			{/each}
 		{/if}

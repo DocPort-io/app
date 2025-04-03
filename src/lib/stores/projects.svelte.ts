@@ -7,19 +7,25 @@ import type {
 import type { IProjectService } from '$lib/services/interfaces/project-service.interface';
 
 import { ProjectService } from '$lib/services/project.service';
-import { getContext, onMount, setContext } from 'svelte';
+import { getContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
 
-export class Projects {
+import { getTeamState, TeamState } from './team.svelte';
+
+export class ProjectsState {
 	projects = $state<ProjectSchema[]>([]);
+	totalItems = $state<number>(0);
+	totalPages = $state<number>(0);
+	currentPage = $state<number>(1);
+	perPage = $state<number>(20);
+	filters = $state<{ active: boolean; completed: false }>({ active: true, completed: false });
 	loading = $state(false);
 	error = $state<string | null>(null);
 
-	constructor(protected readonly service: IProjectService = new ProjectService()) {
-		onMount(() => {
-			void this.getAll();
-		});
-
+	constructor(
+		protected readonly service: IProjectService = new ProjectService(),
+		protected readonly teamState: TeamState = getTeamState()
+	) {
 		$effect(() => {
 			if (!this.error) return;
 			toast.error('An error occurred', {
@@ -28,16 +34,43 @@ export class Projects {
 				duration: 10_000
 			});
 		});
+
+		$effect(() => {
+			void this.getAll();
+		});
 	}
 
 	async getAll() {
 		this.loading = true;
 		this.error = null;
 
+		const filterAnd: string[] = [];
+		const statusOr = [];
+
+		filterAnd.push(`team='${this.teamState.selectedTeam?.id}'`);
+
+		if (this.filters.active) {
+			statusOr.push('active');
+		}
+
+		if (this.filters.completed) {
+			statusOr.push('completed');
+		}
+
+		if (statusOr.length) {
+			filterAnd.push(`status='${statusOr.join("' || status='")}'`);
+		}
+
 		return this.service
-			.getProjects()
-			.then((projects) => {
-				this.projects = projects;
+			.getProjects({
+				page: this.currentPage,
+				perPage: this.perPage,
+				filter: filterAnd.join('&&')
+			})
+			.then(({ items, totalItems, totalPages }) => {
+				this.projects = items;
+				this.totalItems = totalItems;
+				this.totalPages = totalPages;
 				this.loading = false;
 			})
 			.catch((err) => {
@@ -65,7 +98,7 @@ export class Projects {
 const PROJECTS_KEY = Symbol('PROJECTS');
 
 export const setProjects = () => {
-	return setContext(PROJECTS_KEY, new Projects());
+	return setContext(PROJECTS_KEY, new ProjectsState());
 };
 
 export const getProjects = () => {

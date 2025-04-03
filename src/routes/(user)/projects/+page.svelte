@@ -23,9 +23,6 @@
 	import EditProjectDialog from './_components/_dialogs/edit-project-dialog.svelte';
 	import ProjectsTable from './_components/projects-table.svelte';
 
-	let filterActive = $state(true);
-	let filterCompleted = $state(false);
-
 	const projectStore = getProjects();
 
 	// Dialog handlers
@@ -48,6 +45,17 @@
 		await projectStore.remove(data);
 		toast.success('Project deleted successfully!');
 	};
+
+	const resultsStart = $derived(
+		projectStore.projects.length === 0
+			? 0
+			: (projectStore.currentPage - 1) * projectStore.perPage + 1
+	);
+	const resultsEnd = $derived(
+		projectStore.projects.length === 0
+			? 0
+			: (projectStore.currentPage - 1) * projectStore.perPage + 1 + projectStore.projects.length - 1
+	);
 </script>
 
 <UserPageLayout title="Projects">
@@ -70,10 +78,10 @@
 					<DropdownMenu.Content align="end">
 						<DropdownMenu.Label>{m.vexed_steep_piranha_kick()}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						<DropdownMenu.CheckboxItem bind:checked={filterActive}>
+						<DropdownMenu.CheckboxItem bind:checked={projectStore.filters.active}>
 							{m.alive_ok_kangaroo_boil()}
 						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={filterCompleted}>
+						<DropdownMenu.CheckboxItem bind:checked={projectStore.filters.completed}>
 							Completed
 						</DropdownMenu.CheckboxItem>
 					</DropdownMenu.Content>
@@ -88,7 +96,9 @@
 		</Card.Header>
 		<Card.Content>
 			<ProjectsTable
-				{projectStore}
+				loading={projectStore.loading}
+				error={projectStore.error}
+				projects={projectStore.projects}
 				handleViewProject={(project) => {
 					goto(AppRoute.PROJECT_VIEW(project.id));
 				}}
@@ -106,36 +116,44 @@
 			<div class="flex w-full items-center justify-between">
 				<div class="text-muted-foreground text-xs">
 					{m.weird_sharp_javelina_sail({
-						amount: projectStore.projects.length,
-						start: 1,
-						end: projectStore.projects.length
+						start: resultsStart,
+						end: resultsEnd,
+						amount: projectStore.totalItems
 					})}
 				</div>
-				<div>
-					<Pagination.Root count={100} perPage={10} let:pages let:currentPage>
-						<Pagination.Content>
-							<Pagination.Item>
-								<Pagination.PrevButton />
-							</Pagination.Item>
-							{#each pages as page (page.key)}
-								{#if page.type === 'ellipsis'}
-									<Pagination.Item>
-										<Pagination.Ellipsis />
-									</Pagination.Item>
-								{:else}
-									<Pagination.Item>
-										<Pagination.Link {page} isActive={currentPage == page.value}>
-											{page.value}
-										</Pagination.Link>
-									</Pagination.Item>
-								{/if}
-							{/each}
-							<Pagination.Item>
-								<Pagination.NextButton />
-							</Pagination.Item>
-						</Pagination.Content>
-					</Pagination.Root>
-				</div>
+				{#if projectStore.projects.length > 0}
+					<div>
+						<Pagination.Root
+							count={projectStore.totalItems}
+							perPage={projectStore.perPage}
+							let:pages
+							let:currentPage
+							bind:page={projectStore.currentPage}
+						>
+							<Pagination.Content>
+								<Pagination.Item>
+									<Pagination.PrevButton />
+								</Pagination.Item>
+								{#each pages as page (page.key)}
+									{#if page.type === 'ellipsis'}
+										<Pagination.Item>
+											<Pagination.Ellipsis />
+										</Pagination.Item>
+									{:else}
+										<Pagination.Item>
+											<Pagination.Link {page} isActive={currentPage == page.value}>
+												{page.value}
+											</Pagination.Link>
+										</Pagination.Item>
+									{/if}
+								{/each}
+								<Pagination.Item>
+									<Pagination.NextButton />
+								</Pagination.Item>
+							</Pagination.Content>
+						</Pagination.Root>
+					</div>
+				{/if}
 			</div>
 		</Card.Footer>
 	</Card.Root>
