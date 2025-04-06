@@ -1,0 +1,7 @@
+{
+	"compilerOptions": {
+		"types": ["../pb_data/types.d.ts"],
+		"noEmit": true
+	},
+	"include": ["./**/*.ts"]
+}
