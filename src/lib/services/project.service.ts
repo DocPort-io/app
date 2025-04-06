@@ -4,7 +4,11 @@ import type {
 	ProjectUpdateSchema
 } from '$lib/schemas/project.schema';
 
-import type { IProjectService } from './interfaces/project-service.interface';
+import type {
+	IProjectService,
+	ProjectServiceGetProjectsOptions,
+	ProjectServiceGetProjectsResult
+} from './interfaces/project.service';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 
@@ -14,19 +18,15 @@ export class ProjectService implements IProjectService {
 	async getProjects({
 		page = 1,
 		perPage = 5,
-		filter
-	}: {
-		page?: number;
-		perPage?: number;
-		filter?: string;
-	}): Promise<{ items: ProjectSchema[]; totalItems: number; totalPages: number }> {
+		team
+	}: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult> {
 		const records = await this.pocketbase.collection('projects').getList(page, perPage, {
 			sort: '-created',
-			filter
+			filter: this.pocketbase.filter('team = {:team}', { team })
 		});
 
 		return {
-			items: records.items as ProjectSchema[],
+			items: records.items,
 			totalItems: records.totalItems,
 			totalPages: records.totalPages
 		};

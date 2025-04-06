@@ -1,6 +1,6 @@
 import type { TeamCreateSchema, TeamSchema, TeamUpdateSchema } from '$lib/schemas/team.schema';
 
-import type { ITeamService } from './interfaces/team-service.interface';
+import type { ITeamService } from './interfaces/team.service';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 

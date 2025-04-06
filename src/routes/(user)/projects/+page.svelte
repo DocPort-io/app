@@ -5,13 +5,13 @@
 		ProjectUpdateSchema
 	} from '$lib/schemas/project.schema';
 
-	import { CirclePlus, ListFilter } from '@lucide/svelte';
+	import { CirclePlus } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
+	import ResultsInfo from '$lib/components/results-info.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Pagination from '$lib/components/ui/pagination';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
@@ -45,17 +45,6 @@
 		await projectStore.remove(data);
 		toast.success('Project deleted successfully!');
 	};
-
-	const resultsStart = $derived(
-		projectStore.projects.length === 0
-			? 0
-			: (projectStore.currentPage - 1) * projectStore.perPage + 1
-	);
-	const resultsEnd = $derived(
-		projectStore.projects.length === 0
-			? 0
-			: (projectStore.currentPage - 1) * projectStore.perPage + 1 + projectStore.projects.length - 1
-	);
 </script>
 
 <UserPageLayout title="Projects">
@@ -66,26 +55,6 @@
 				<Card.Description>{m.only_nimble_martin_strive()}</Card.Description>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="outline" size="sm" class="h-8 gap-1">
-							<ListFilter class="h-3.5 w-3.5" />
-							<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
-								>{m.that_weary_anteater_push()}</span
-							>
-						</Button>
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="end">
-						<DropdownMenu.Label>{m.vexed_steep_piranha_kick()}</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.CheckboxItem bind:checked={projectStore.filters.active}>
-							{m.alive_ok_kangaroo_boil()}
-						</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem bind:checked={projectStore.filters.completed}>
-							Completed
-						</DropdownMenu.CheckboxItem>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
 				<Button size="sm" class="h-8 gap-1" on:click={() => createDialog.open()}>
 					<CirclePlus class="h-3.5 w-3.5" />
 					<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
@@ -112,50 +81,17 @@
 				}}
 			/>
 		</Card.Content>
-		<Card.Footer>
-			<div class="flex w-full items-center justify-between">
-				<div class="text-muted-foreground text-xs">
-					{m.weird_sharp_javelina_sail({
-						start: resultsStart,
-						end: resultsEnd,
-						amount: projectStore.totalItems
-					})}
+		{#if projectStore.pagination.totalItems > 0}
+			<Card.Footer>
+				<div class="flex w-full flex-col items-center justify-between md:flex-row">
+					<ResultsInfo
+						amountShown={projectStore.projects.length}
+						pagination={projectStore.pagination}
+					/>
+					<Pagination pagination={projectStore.pagination} />
 				</div>
-				{#if projectStore.projects.length > 0}
-					<div>
-						<Pagination.Root
-							count={projectStore.totalItems}
-							perPage={projectStore.perPage}
-							let:pages
-							let:currentPage
-							bind:page={projectStore.currentPage}
-						>
-							<Pagination.Content>
-								<Pagination.Item>
-									<Pagination.PrevButton />
-								</Pagination.Item>
-								{#each pages as page (page.key)}
-									{#if page.type === 'ellipsis'}
-										<Pagination.Item>
-											<Pagination.Ellipsis />
-										</Pagination.Item>
-									{:else}
-										<Pagination.Item>
-											<Pagination.Link {page} isActive={currentPage == page.value}>
-												{page.value}
-											</Pagination.Link>
-										</Pagination.Item>
-									{/if}
-								{/each}
-								<Pagination.Item>
-									<Pagination.NextButton />
-								</Pagination.Item>
-							</Pagination.Content>
-						</Pagination.Root>
-					</div>
-				{/if}
-			</div>
-		</Card.Footer>
+			</Card.Footer>
+		{/if}
 	</Card.Root>
 
 	<CreateProjectDialog dialogController={createDialog} {handleCreateProject} />
