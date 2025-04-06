@@ -43,6 +43,12 @@ export default ts.config(
 		}
 	},
 	{
+		files: ['pb_hooks/**/*.js'],
+		rules: {
+			'@typescript-eslint/triple-slash-reference': 'off'
+		}
+	},
+	{
 		...playwright.configs['flat/recommended'],
 		files: ['e2e/**'],
 		rules: {
