@@ -14,5 +14,6 @@ export interface TypedPocketBase extends PocketBase {
 
 const authStore = new LocalAuthStore();
 const pocketBase = new PocketBase(env.PUBLIC_POCKETBASE_URL, authStore) as TypedPocketBase;
+pocketBase.autoCancellation(false); // Disable auto cancellation for all requests
 
 export const getPocketBase = () => pocketBase;
