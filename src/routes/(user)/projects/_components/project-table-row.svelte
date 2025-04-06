@@ -32,7 +32,7 @@
 	<Table.Cell class="font-medium">
 		{project.name}
 	</Table.Cell>
-	<Table.Cell>
+	<Table.Cell class="hidden md:table-cell">
 		<Badge>{statusMap[project.status]}</Badge>
 	</Table.Cell>
 	<Table.Cell class="hidden md:table-cell"

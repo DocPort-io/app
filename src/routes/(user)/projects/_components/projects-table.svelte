@@ -34,7 +34,7 @@
 	<Table.Header data-testid="projects-table-header">
 		<Table.Row>
 			<Table.Head>{m.weak_few_ant_link()}</Table.Head>
-			<Table.Head>Status</Table.Head>
+			<Table.Head class="hidden md:table-cell">Status</Table.Head>
 			<Table.Head class="hidden md:table-cell">Created at</Table.Head>
 			<Table.Head>
 				<span class="sr-only">Actions</span>
