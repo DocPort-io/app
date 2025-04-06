@@ -43,7 +43,7 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['pb_hooks/**/*.js'],
+		files: ['pb_hooks/**/*.js', 'pb_migrations/**/*.js'],
 		rules: {
 			'@typescript-eslint/triple-slash-reference': 'off'
 		}

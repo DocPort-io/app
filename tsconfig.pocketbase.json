@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"types": ["./pb_data/types.d.ts"],
+		"allowJs": true,
+		"emitDeclarationOnly": true
+	},
+	"include": ["./pb_migrations/**/*", "./pb_hooks/**/*"]
+}
