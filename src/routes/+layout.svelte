@@ -17,7 +17,7 @@
 
 	const appState = setAppState();
 	const userState = setUserState();
-	const teamState = setTeamState();
+	setTeamState();
 	setProjects();
 
 	$effect(() => {
@@ -26,16 +26,16 @@
 	});
 
 	$effect(() => {
-		if (userState.token !== '') return;
-		if (page.url.pathname === '/auth/login') return;
+		if (userState.isValid) return;
+		if (page.url.pathname === AppRoute.LOGIN()) return;
 
 		const redirect = page.url.href.replace(page.url.origin, '');
-		goto(`/auth/login?redirect=${redirect}`);
+		goto(`${AppRoute.LOGIN()}?redirect=${redirect}`);
 	});
 
 	$effect(() => {
-		if (userState.token === '') return;
-		if (page.url.pathname !== '/auth/login') return;
+		if (!userState.isValid) return;
+		if (page.url.pathname !== AppRoute.LOGIN()) return;
 
 		if (!page.url.searchParams.has('redirect')) {
 			goto(AppRoute.DASHBOARD());
@@ -53,8 +53,8 @@
 	});
 
 	$effect(() => {
-		if (userState.token === '') return;
-		teamState.load();
+		if (userState.isValid) return;
+		goto(AppRoute.LOGIN());
 	});
 </script>
 

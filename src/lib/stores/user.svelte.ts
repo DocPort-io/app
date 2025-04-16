@@ -5,16 +5,19 @@ import { getPocketBase, type TypedPocketBase } from '$lib/services/pocketbase';
 import { getContext, setContext } from 'svelte';
 
 export class UserState {
+	isValid = $state<boolean>(false);
 	token = $state<string>('');
 	name = $state<string>('');
 	avatarUrl = $state<string | null>(null);
 
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {
 		this.token = pocketbase.authStore.token;
+		this.isValid = pocketbase.authStore.isValid;
 		this.updateUserFromAuthRecord(pocketbase.authStore.record);
 
 		pocketbase.authStore.onChange((token, record) => {
 			this.token = token;
+			this.isValid = pocketbase.authStore.isValid;
 			this.updateUserFromAuthRecord(record);
 		});
 	}

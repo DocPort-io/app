@@ -12,6 +12,7 @@ import { toast } from 'svelte-sonner';
 
 import { createPaginationController } from './pagination.svelte';
 import { getTeamState, TeamState } from './team.svelte';
+import { getUserState, type UserState } from './user.svelte';
 
 export class ProjectsState {
 	projects = $state<ProjectSchema[]>([]);
@@ -21,7 +22,8 @@ export class ProjectsState {
 
 	constructor(
 		protected readonly service: IProjectService = new ProjectService(),
-		protected readonly teamState: TeamState = getTeamState()
+		protected readonly teamState: TeamState = getTeamState(),
+		protected readonly userState: UserState = getUserState()
 	) {
 		$effect(() => {
 			if (!this.error) return;
@@ -34,11 +36,13 @@ export class ProjectsState {
 		});
 
 		$effect(() => {
+			if (!userState.isValid) return;
 			void this.getAll();
 		});
 	}
 
 	async getAll() {
+		console.log('ProjectsState.getAll()');
 		if (!this.teamState.selectedTeam) return;
 
 		this.loading = true;

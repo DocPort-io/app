@@ -4,13 +4,25 @@ import type { ITeamService } from '$lib/services/interfaces/team.service';
 import { TeamService } from '$lib/services/team.service';
 import { getContext, setContext } from 'svelte';
 
-export class TeamState {
+import { getUserState, type UserState } from './user.svelte';
+
+export interface ITeamState {
+	teams: TeamSchema[];
+	loading: boolean;
+	error: string | null;
+	selectedTeam: TeamSchema | null;
+}
+
+export class TeamState implements ITeamState {
 	teams = $state<TeamSchema[]>([]);
 	loading = $state(false);
 	error = $state<string | null>(null);
 	selectedTeam = $state<TeamSchema | null>(null);
 
-	constructor(protected readonly service: ITeamService = new TeamService()) {
+	constructor(
+		protected readonly service: ITeamService = new TeamService(),
+		protected readonly userState: UserState = getUserState()
+	) {
 		$effect(() => {
 			if (this.selectedTeam) return;
 			if (this.teams.length === 0) return;
@@ -18,6 +30,11 @@ export class TeamState {
 		});
 
 		this.#loadTeamFromLocalStorage();
+
+		$effect(() => {
+			if (!userState.isValid) return;
+			void this.#fetch();
+		});
 	}
 
 	load() {
