@@ -11,6 +11,8 @@ export interface ITeamState {
 	loading: boolean;
 	error: string | null;
 	selectedTeam: TeamSchema | null;
+	load: () => void;
+	selectTeam: (team: TeamSchema) => void;
 }
 
 export class TeamState implements ITeamState {

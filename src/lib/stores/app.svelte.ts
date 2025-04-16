@@ -2,7 +2,14 @@ import { getContext, setContext } from 'svelte';
 
 type Theme = 'light' | 'dark' | 'system' | undefined;
 
-export class AppState {
+export interface IAppState {
+	theme: Theme;
+	activateSystemTheme: () => void;
+	activateLightTheme: () => void;
+	activateDarkTheme: () => void;
+}
+
+export class AppState implements IAppState {
 	theme = $state<Theme>();
 
 	activateSystemTheme() {

@@ -1,8 +1,13 @@
 import type { TeamCreateSchema, TeamSchema, TeamUpdateSchema } from '$lib/schemas/team.schema';
 
-import type { ITeamService } from './interfaces/team.service';
-
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
+
+export interface ITeamService {
+	getTeams(): Promise<TeamSchema[]>;
+	createTeam(data: TeamCreateSchema): Promise<TeamSchema>;
+	updateTeam(id: string, data: TeamUpdateSchema): Promise<TeamSchema>;
+	deleteTeam(id: string): Promise<void>;
+}
 
 export class TeamService implements ITeamService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}

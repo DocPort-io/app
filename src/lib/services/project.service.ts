@@ -4,13 +4,26 @@ import type {
 	ProjectUpdateSchema
 } from '$lib/schemas/project.schema';
 
-import type {
-	IProjectService,
-	ProjectServiceGetProjectsOptions,
-	ProjectServiceGetProjectsResult
-} from './interfaces/project.service';
-
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
+
+export type ProjectServiceGetProjectsOptions = {
+	page?: number;
+	perPage?: number;
+	team: string;
+};
+
+export type ProjectServiceGetProjectsResult = {
+	items: ProjectSchema[];
+	totalItems: number;
+	totalPages: number;
+};
+
+export interface IProjectService {
+	getProjects(options: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult>;
+	createProject(data: ProjectCreateSchema): Promise<ProjectSchema>;
+	updateProject(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
+	deleteProject(id: string): Promise<void>;
+}
 
 export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}

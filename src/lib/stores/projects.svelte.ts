@@ -4,17 +4,27 @@ import type {
 	ProjectSchema,
 	ProjectUpdateSchema
 } from '$lib/schemas/project.schema';
-import type { IProjectService } from '$lib/services/interfaces/project.service';
 
-import { ProjectService } from '$lib/services/project.service';
+import { ProjectService, type IProjectService } from '$lib/services/project.service';
 import { getContext, setContext } from 'svelte';
 import { toast } from 'svelte-sonner';
 
-import { createPaginationController } from './pagination.svelte';
+import { createPaginationController, type IPaginationController } from './pagination.svelte';
 import { getTeamState, TeamState } from './team.svelte';
 import { getUserState, type UserState } from './user.svelte';
 
-export class ProjectsState {
+export interface IProjectsState {
+	projects: ProjectSchema[];
+	loading: boolean;
+	error: string | null;
+	pagination: IPaginationController;
+	add: (project: ProjectCreateSchema) => Promise<void>;
+	edit: (id: string, project: ProjectUpdateSchema) => Promise<void>;
+	remove: (project: ProjectDeleteSchema) => Promise<void>;
+	getAll: () => Promise<void>;
+}
+
+export class ProjectsState implements IProjectsState {
 	projects = $state<ProjectSchema[]>([]);
 	pagination = createPaginationController({ page: 1, perPage: 25 });
 	loading = $state(false);

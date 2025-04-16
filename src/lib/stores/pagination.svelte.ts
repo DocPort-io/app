@@ -1,3 +1,10 @@
+export interface IPaginationController {
+	page: number;
+	perPage: number;
+	totalItems: number;
+	totalPages: number;
+}
+
 export type PaginationControllerOptions = {
 	page?: number;
 	perPage?: number;
@@ -5,7 +12,7 @@ export type PaginationControllerOptions = {
 	totalPages?: number;
 };
 
-export class PaginationController {
+export class PaginationController implements IPaginationController {
 	page = $state<number>(1);
 	perPage = $state<number>(20);
 	totalItems = $state<number>(0);

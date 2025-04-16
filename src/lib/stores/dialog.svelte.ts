@@ -1,4 +1,11 @@
-export class DialogController<T> {
+export interface IDialogController<T> {
+	isOpen: boolean;
+	data: T | undefined;
+	open: () => void;
+	close: () => void;
+}
+
+export class DialogController<T> implements IDialogController<T> {
 	isOpen = $state<boolean>(false);
 	data = $state<T | undefined>(undefined);
 

@@ -1,10 +1,21 @@
 import type { UserSchema } from '$lib/schemas/user.schema';
-import type { AuthRecord } from 'pocketbase';
+import type { AuthProviderInfo, AuthRecord } from 'pocketbase';
 
 import { getPocketBase, type TypedPocketBase } from '$lib/services/pocketbase';
 import { getContext, setContext } from 'svelte';
 
-export class UserState {
+export interface IUserState {
+	isValid: boolean;
+	token: string;
+	name: string;
+	avatarUrl: string | null;
+	signIn: (email: string, password: string) => Promise<void>;
+	logout: () => void;
+	getOAuth2Providers: () => Promise<AuthProviderInfo[]>;
+	signInWithExternalProvider: (provider: string) => Promise<void>;
+}
+
+export class UserState implements IUserState {
 	isValid = $state<boolean>(false);
 	token = $state<string>('');
 	name = $state<string>('');
