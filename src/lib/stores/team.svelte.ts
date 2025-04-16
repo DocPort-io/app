@@ -1,7 +1,6 @@
 import type { TeamSchema } from '$lib/schemas/team.schema';
-import type { ITeamService } from '$lib/services/interfaces/team.service';
 
-import { TeamService } from '$lib/services/team.service';
+import { TeamService, type ITeamService } from '$lib/services/team.service';
 import { getContext, setContext } from 'svelte';
 
 import { getUserState, type UserState } from './user.svelte';
