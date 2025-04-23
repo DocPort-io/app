@@ -38,6 +38,18 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.0.16
         version: 4.0.16(vite@6.2.3(@types/node@22.13.17)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0))
+      '@tanstack/query-sync-storage-persister':
+        specifier: ^5.74.4
+        version: 5.74.4
+      '@tanstack/svelte-query':
+        specifier: ^5.74.4
+        version: 5.74.4(svelte@5.25.3)
+      '@tanstack/svelte-query-devtools':
+        specifier: ^5.74.4
+        version: 5.74.4(@tanstack/svelte-query@5.74.4(svelte@5.25.3))(svelte@5.25.3)
+      '@tanstack/svelte-query-persist-client':
+        specifier: ^5.74.4
+        version: 5.74.4(@tanstack/svelte-query@5.74.4(svelte@5.25.3))(svelte@5.25.3)
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.6.3
@@ -789,6 +801,35 @@ packages:
     resolution: {integrity: sha512-6mZVWhAyjVNMMRw0Pvv2RZfTttjsAClU8HouLNZbeLbX0yURMa0UYEY/qS4dB1tZlRpiDBnCLsGsWbxEyIjW6A==}
     peerDependencies:
       vite: ^5.2.0 || ^6
+
+  '@tanstack/query-core@5.74.4':
+    resolution: {integrity: sha512-YuG0A0+3i9b2Gfo9fkmNnkUWh5+5cFhWBN0pJAHkHilTx6A0nv8kepkk4T4GRt4e5ahbtFj2eTtkiPcVU1xO4A==}
+
+  '@tanstack/query-devtools@5.73.3':
+    resolution: {integrity: sha512-hBQyYwsOuO7QOprK75NzfrWs/EQYjgFA0yykmcvsV62q0t6Ua97CU3sYgjHx0ZvxkXSOMkY24VRJ5uv9f5Ik4w==}
+
+  '@tanstack/query-persist-client-core@5.74.4':
+    resolution: {integrity: sha512-jeFRIOfnoJUtivYv4KD0xFkQHtF4QpJl/hD3uvPSFH6qN51+cDUGRiEibLVjD8exkh48GTG8cmgk69ugMJ/S6Q==}
+
+  '@tanstack/query-sync-storage-persister@5.74.4':
+    resolution: {integrity: sha512-hUg7RezHQTxschr2QGN3ELp69eindGe0z7ihDV7wyngXvQZdE0MATwql+efZp9fpATO5QzTm7sKQgwvGazZQcQ==}
+
+  '@tanstack/svelte-query-devtools@5.74.4':
+    resolution: {integrity: sha512-zUdN2fAUh3tpOsYjFlXR5OHfv0PQdNvdWZKtHn7isfdsRnkhltutZ78obxNLZKAtGgunW8St/t4W5T3xtQcUcw==}
+    peerDependencies:
+      '@tanstack/svelte-query': ^5.74.4
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
+
+  '@tanstack/svelte-query-persist-client@5.74.4':
+    resolution: {integrity: sha512-Y5NIWHd0jHFPH7OGJ0uCRVtd3nnx2CYnOn0/PH7SmSPE6Pr/ZgXY8HUzuQ+J32WVFiS70M/GiPVg7SWqcgNiKg==}
+    peerDependencies:
+      '@tanstack/svelte-query': ^5.74.4
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
+
+  '@tanstack/svelte-query@5.74.4':
+    resolution: {integrity: sha512-qbbjgXYo4qvK2bIriRPq/jQwxz+qPwWo7EbbqEkt1eKbyTyRxgO+1oCsKXLuYbC1pp1a1WBZSorn53CdFBrE8A==}
+    peerDependencies:
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
 
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
@@ -2998,6 +3039,37 @@ snapshots:
       lightningcss: 1.29.2
       tailwindcss: 4.0.16
       vite: 6.2.3(@types/node@22.13.17)(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.0)
+
+  '@tanstack/query-core@5.74.4': {}
+
+  '@tanstack/query-devtools@5.73.3': {}
+
+  '@tanstack/query-persist-client-core@5.74.4':
+    dependencies:
+      '@tanstack/query-core': 5.74.4
+
+  '@tanstack/query-sync-storage-persister@5.74.4':
+    dependencies:
+      '@tanstack/query-core': 5.74.4
+      '@tanstack/query-persist-client-core': 5.74.4
+
+  '@tanstack/svelte-query-devtools@5.74.4(@tanstack/svelte-query@5.74.4(svelte@5.25.3))(svelte@5.25.3)':
+    dependencies:
+      '@tanstack/query-devtools': 5.73.3
+      '@tanstack/svelte-query': 5.74.4(svelte@5.25.3)
+      esm-env: 1.2.2
+      svelte: 5.25.3
+
+  '@tanstack/svelte-query-persist-client@5.74.4(@tanstack/svelte-query@5.74.4(svelte@5.25.3))(svelte@5.25.3)':
+    dependencies:
+      '@tanstack/query-persist-client-core': 5.74.4
+      '@tanstack/svelte-query': 5.74.4(svelte@5.25.3)
+      svelte: 5.25.3
+
+  '@tanstack/svelte-query@5.74.4(svelte@5.25.3)':
+    dependencies:
+      '@tanstack/query-core': 5.74.4
+      svelte: 5.25.3
 
   '@testing-library/dom@10.4.0':
     dependencies:

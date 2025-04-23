@@ -6,16 +6,18 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
 	import { m } from '$lib/paraglide/messages';
+	import { createDeleteProjectMutation } from '$lib/queries/projects';
 	import { projectDeleteSchema, type ProjectDeleteSchema } from '$lib/schemas/project.schema';
-	import { defaults, superForm } from 'sveltekit-superforms';
+	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<ProjectDeleteSchema>;
-		handleDeleteProject: (data: ProjectDeleteSchema) => unknown;
 	};
 
-	let { dialogController, handleDeleteProject, ...restProps }: Props = $props();
+	let { dialogController, ...restProps }: Props = $props();
+
+	const deleteMutation = createDeleteProjectMutation();
 
 	const form = $derived(
 		superForm(defaults(dialogController.data, zod(projectDeleteSchema)), {
@@ -24,8 +26,15 @@
 			validators: zodClient(projectDeleteSchema),
 			onUpdate: async ({ form }) => {
 				if (!form.valid) return;
-				await handleDeleteProject(form.data);
-				dialogController.close();
+
+				await $deleteMutation.mutateAsync(form.data.id, {
+					onSuccess: () => {
+						dialogController.close();
+					},
+					onError: () => {
+						setError(form, 'Failed to delete project. Please try again.');
+					}
+				});
 			}
 		})
 	);

@@ -14,12 +14,15 @@ export type ProjectServiceGetProjectsOptions = {
 
 export type ProjectServiceGetProjectsResult = {
 	items: ProjectSchema[];
+	page: number;
+	perPage: number;
 	totalItems: number;
 	totalPages: number;
 };
 
 export interface IProjectService {
 	getProjects(options: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult>;
+	getProject(id: string): Promise<ProjectSchema>;
 	createProject(data: ProjectCreateSchema): Promise<ProjectSchema>;
 	updateProject(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
 	deleteProject(id: string): Promise<void>;
@@ -33,16 +36,14 @@ export class ProjectService implements IProjectService {
 		perPage = 5,
 		team
 	}: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult> {
-		const records = await this.pocketbase.collection('projects').getList(page, perPage, {
+		return await this.pocketbase.collection('projects').getList(page, perPage, {
 			sort: '-created',
 			filter: this.pocketbase.filter('team = {:team}', { team })
 		});
+	}
 
-		return {
-			items: records.items,
-			totalItems: records.totalItems,
-			totalPages: records.totalPages
-		};
+	async getProject(id: string): Promise<ProjectSchema> {
+		return await this.pocketbase.collection('projects').getOne(id);
 	}
 
 	async createProject(data: ProjectCreateSchema): Promise<ProjectSchema> {
@@ -50,6 +51,7 @@ export class ProjectService implements IProjectService {
 	}
 
 	async updateProject(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema> {
+		await new Promise((resolve) => setTimeout(resolve, 5000));
 		return await this.pocketbase.collection('projects').update(id, data);
 	}
 

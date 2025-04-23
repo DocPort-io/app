@@ -8,19 +8,21 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { m } from '$lib/paraglide/messages';
-	import { projectCreateSchema, type ProjectCreateSchema } from '$lib/schemas/project.schema';
+	import { createAddProjectMutation } from '$lib/queries/projects';
+	import { projectCreateSchema } from '$lib/schemas/project.schema';
 	import { getTeamState } from '$lib/stores/team.svelte';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<unknown>;
-		handleCreateProject: (data: ProjectCreateSchema) => Promise<unknown>;
 	};
 
-	let { dialogController, handleCreateProject, ...restProps }: Props = $props();
+	let { dialogController, ...restProps }: Props = $props();
 
 	const teamState = getTeamState();
+
+	const addMutation = createAddProjectMutation();
 
 	const form = superForm(defaults(zod(projectCreateSchema)), {
 		id: 'create-project-form',
@@ -28,18 +30,23 @@
 		validators: zodClient(projectCreateSchema),
 		onUpdate: async ({ form }) => {
 			if (!form.valid) return;
-			if (!teamState.selectedTeam) return setError(form, 'Please select a team first.');
+			if (!teamState.currentTeam) return setError(form, 'Please select a team first.');
 
-			try {
-				await handleCreateProject({
+			await $addMutation.mutateAsync(
+				{
 					...form.data,
 					status: 'active',
-					team: teamState.selectedTeam.id
-				});
-				dialogController.close();
-			} catch {
-				setError(form, 'Failed to create project. Please try again.');
-			}
+					team: teamState.currentTeam
+				},
+				{
+					onSuccess: () => {
+						dialogController.close();
+					},
+					onError: () => {
+						setError(form, 'Failed to create project. Please try again.');
+					}
+				}
+			);
 		}
 	});
 

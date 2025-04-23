@@ -9,7 +9,7 @@ export interface ITeamState {
 	teams: TeamSchema[];
 	loading: boolean;
 	error: string | null;
-	selectedTeam: TeamSchema | null;
+	currentTeam: string | null;
 	load: () => void;
 	selectTeam: (team: TeamSchema) => void;
 }
@@ -18,14 +18,14 @@ export class TeamState implements ITeamState {
 	teams = $state<TeamSchema[]>([]);
 	loading = $state(false);
 	error = $state<string | null>(null);
-	selectedTeam = $state<TeamSchema | null>(null);
+	currentTeam = $state<string | null>(null);
 
 	constructor(
 		protected readonly service: ITeamService = new TeamService(),
 		protected readonly userState: UserState = getUserState()
 	) {
 		$effect(() => {
-			if (this.selectedTeam) return;
+			if (this.currentTeam) return;
 			if (this.teams.length === 0) return;
 			this.selectTeam(this.teams[0]);
 		});
@@ -59,17 +59,22 @@ export class TeamState implements ITeamState {
 	}
 
 	selectTeam(team: TeamSchema) {
-		this.selectedTeam = team;
+		this.currentTeam = team.id;
 		this.#saveTeamToLocalStorage();
 	}
 
 	#saveTeamToLocalStorage() {
-		localStorage.setItem('team', JSON.stringify(this.selectedTeam));
+		if (!this.currentTeam) {
+			localStorage.removeItem('team');
+			return;
+		}
+
+		localStorage.setItem('team', this.currentTeam);
 	}
 
 	#loadTeamFromLocalStorage() {
 		const team = localStorage.getItem('team');
-		this.selectedTeam = team ? JSON.parse(team) : null;
+		this.currentTeam = team;
 	}
 }
 

@@ -1,11 +1,8 @@
 <script lang="ts">
-	import type {
-		ProjectCreateSchema,
-		ProjectDeleteSchema,
-		ProjectUpdateSchema
-	} from '$lib/schemas/project.schema';
+	import type { ProjectUpdateSchema } from '$lib/schemas/project.schema';
 
 	import { CirclePlus } from '@lucide/svelte';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import Pagination from '$lib/components/pagination.svelte';
@@ -14,37 +11,37 @@
 	import * as Card from '$lib/components/ui/card';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
+	import { createPaginatedProjectsQuery } from '$lib/queries/projects';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
-	import { getProjects } from '$lib/stores/projects.svelte';
-	import { toast } from 'svelte-sonner';
+	import { createPaginationController } from '$lib/stores/pagination.svelte';
+	import { getTeamState } from '$lib/stores/team.svelte';
 
 	import CreateProjectDialog from './_components/_dialogs/create-project-dialog.svelte';
 	import DeleteProjectDialog from './_components/_dialogs/delete-project-dialog.svelte';
 	import EditProjectDialog from './_components/_dialogs/edit-project-dialog.svelte';
 	import ProjectsTable from './_components/projects-table.svelte';
 
-	const projectStore = getProjects();
-
 	// Dialog handlers
 	const createDialog = createDialogController();
 	const editDialog = createDialogController<{ id: string; project: ProjectUpdateSchema }>();
-	const deleteDialog = createDialogController<ProjectDeleteSchema>();
+	const deleteDialog = createDialogController<{ id: string }>();
 
-	// Action handlers
-	const handleCreateProject = async (data: ProjectCreateSchema) => {
-		await projectStore.add(data);
-		toast.success('Project created successfully!');
-	};
+	const teamState = getTeamState();
 
-	const handleUpdateProject = async (id: string, data: ProjectUpdateSchema) => {
-		await projectStore.edit(id, data);
-		toast.success('Project updated successfully!');
-	};
+	const pagination = createPaginationController({
+		page: 1,
+		perPage: 2
+	});
 
-	const handleDeleteProject = async (data: ProjectDeleteSchema) => {
-		await projectStore.remove(data);
-		toast.success('Project deleted successfully!');
-	};
+	const projectsQuery = $derived.by(() =>
+		createQuery(
+			createPaginatedProjectsQuery({
+				team: teamState.currentTeam ?? '',
+				page: pagination.page,
+				perPage: pagination.perPage
+			})
+		)
+	);
 </script>
 
 <UserPageLayout title="Projects">
@@ -65,9 +62,9 @@
 		</Card.Header>
 		<Card.Content>
 			<ProjectsTable
-				loading={projectStore.loading}
-				error={projectStore.error}
-				projects={projectStore.projects}
+				loading={$projectsQuery.isLoading}
+				error={$projectsQuery.error?.message ?? null}
+				projects={$projectsQuery.data?.items ?? []}
 				handleViewProject={(project) => {
 					goto(AppRoute.PROJECT_VIEW(project.id));
 				}}
@@ -81,20 +78,22 @@
 				}}
 			/>
 		</Card.Content>
-		{#if projectStore.pagination.totalItems > 0}
+		{#if $projectsQuery.data?.totalItems && $projectsQuery.data.totalItems > 0}
 			<Card.Footer>
 				<div class="flex w-full flex-col items-center justify-between md:flex-row">
 					<ResultsInfo
-						amountShown={projectStore.projects.length}
-						pagination={projectStore.pagination}
+						results={$projectsQuery.data?.items.length ?? 0}
+						page={$projectsQuery.data?.page ?? 0}
+						perPage={$projectsQuery.data?.perPage ?? 0}
+						totalItems={$projectsQuery.data?.totalItems ?? 0}
 					/>
-					<Pagination pagination={projectStore.pagination} />
+					<Pagination {pagination} totalItems={$projectsQuery.data?.totalItems ?? 0} />
 				</div>
 			</Card.Footer>
 		{/if}
 	</Card.Root>
 
-	<CreateProjectDialog dialogController={createDialog} {handleCreateProject} />
-	<EditProjectDialog dialogController={editDialog} {handleUpdateProject} />
-	<DeleteProjectDialog dialogController={deleteDialog} {handleDeleteProject} />
+	<CreateProjectDialog dialogController={createDialog} />
+	<EditProjectDialog dialogController={editDialog} />
+	<DeleteProjectDialog dialogController={deleteDialog} />
 </UserPageLayout>

@@ -1,15 +1,11 @@
 export interface IPaginationController {
 	page: number;
 	perPage: number;
-	totalItems: number;
-	totalPages: number;
 }
 
 export type PaginationControllerOptions = {
 	page?: number;
 	perPage?: number;
-	totalItems?: number;
-	totalPages?: number;
 };
 
 export class PaginationController implements IPaginationController {
@@ -18,11 +14,9 @@ export class PaginationController implements IPaginationController {
 	totalItems = $state<number>(0);
 	totalPages = $state<number>(0);
 
-	constructor({ page, perPage, totalItems, totalPages }: PaginationControllerOptions = {}) {
+	constructor({ page, perPage }: PaginationControllerOptions = {}) {
 		if (page) this.page = page;
 		if (perPage) this.perPage = perPage;
-		if (totalItems) this.totalItems = totalItems;
-		if (totalPages) this.totalPages = totalPages;
 	}
 }
 

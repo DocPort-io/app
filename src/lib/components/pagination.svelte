@@ -5,14 +5,15 @@
 
 	type Props = {
 		pagination: PaginationController;
+		totalItems: number;
 	};
 
-	let { pagination }: Props = $props();
+	let { pagination, totalItems }: Props = $props();
 </script>
 
 <div>
 	<Pagination.Root
-		count={pagination.totalItems}
+		count={totalItems}
 		perPage={pagination.perPage}
 		let:pages
 		let:currentPage

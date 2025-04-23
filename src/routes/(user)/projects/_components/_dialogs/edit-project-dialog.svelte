@@ -7,16 +7,18 @@
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import { m } from '$lib/paraglide/messages';
+	import { createUpdateProjectMutation } from '$lib/queries/projects';
 	import { projectUpdateSchema, type ProjectUpdateSchema } from '$lib/schemas/project.schema';
-	import { defaults, superForm } from 'sveltekit-superforms';
+	import { defaults, setError, superForm } from 'sveltekit-superforms';
 	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<{ id: string; project: ProjectUpdateSchema }>;
-		handleUpdateProject: (id: string, data: ProjectUpdateSchema) => unknown;
 	};
 
-	let { dialogController, handleUpdateProject, ...restProps }: Props = $props();
+	let { dialogController, ...restProps }: Props = $props();
+
+	const updateMutation = createUpdateProjectMutation();
 
 	const form = $derived(
 		superForm(defaults(dialogController.data?.project, zod(projectUpdateSchema)), {
@@ -26,8 +28,18 @@
 			onUpdate: async ({ form }) => {
 				if (!form.valid) return;
 				if (!dialogController.data?.id) return;
-				await handleUpdateProject(dialogController.data.id, form.data);
-				dialogController.close();
+
+				await $updateMutation.mutateAsync(
+					{ id: dialogController.data.id, project: form.data },
+					{
+						onSuccess: () => {
+							dialogController.close();
+						},
+						onError: () => {
+							setError(form, 'Failed to update project. Please try again.');
+						}
+					}
+				);
 			}
 		})
 	);

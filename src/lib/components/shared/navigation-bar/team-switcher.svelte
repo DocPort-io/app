@@ -5,6 +5,8 @@
 	import { cn } from '$lib/utils';
 
 	const teamState = getTeamState();
+
+	const team = $derived(teamState.teams.find((team) => team.id === teamState.currentTeam));
 </script>
 
 <DropdownMenu.Root>
@@ -16,9 +18,7 @@
 			class="gap-1"
 			data-testid="team-switcher-button"
 		>
-			<span data-testid="team-switcher-button-text"
-				>{teamState.selectedTeam?.name || 'No team selected'}</span
-			>
+			<span data-testid="team-switcher-button-text">{team?.name || 'No team selected'}</span>
 			<span class="sr-only">Switch team</span>
 		</Button>
 	</DropdownMenu.Trigger>
@@ -27,7 +27,7 @@
 		<DropdownMenu.Separator />
 		{#each teamState.teams as team}
 			<DropdownMenu.Item
-				class={cn(team.id === teamState.selectedTeam?.id && 'bg-accent')}
+				class={cn(team.id === teamState.currentTeam && 'bg-accent')}
 				on:click={() => teamState.selectTeam(team)}
 				data-testid="team-switcher-item"
 			>

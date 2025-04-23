@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { CirclePlus, File, ListFilter } from '@lucide/svelte';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
@@ -8,15 +9,19 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
-	import { getProjects } from '$lib/stores/projects.svelte';
+	import { createProjectQuery } from '$lib/queries/project';
 
 	let filterActive = $state(true);
 	let filterArchived = $state(false);
 	let filterDraft = $state(false);
 
-	const projectStore = getProjects();
-
-	const project = projectStore.projects.find((p) => p.id === page.params.id);
+	const projectQuery = $derived.by(() =>
+		createQuery(
+			createProjectQuery({
+				id: page.params.id
+			})
+		)
+	);
 </script>
 
 <UserPageLayout title="Projects">
@@ -32,7 +37,7 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page>{project?.name}</Breadcrumb.Page>
+					<Breadcrumb.Page>{$projectQuery.data?.name}</Breadcrumb.Page>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
@@ -81,14 +86,6 @@
 			<Card.Description>{m.only_nimble_martin_strive()}</Card.Description>
 		</Card.Header>
 		<Card.Content></Card.Content>
-		<Card.Footer>
-			<div class="text-muted-foreground text-xs">
-				{m.weird_sharp_javelina_sail({
-					amount: projectStore.projects.length,
-					start: 1,
-					end: projectStore.projects.length
-				})}
-			</div>
-		</Card.Footer>
+		<Card.Footer></Card.Footer>
 	</Card.Root>
 </UserPageLayout>

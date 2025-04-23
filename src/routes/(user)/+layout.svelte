@@ -1,13 +1,16 @@
 <script lang="ts">
-	import '../app.css';
+	import '../../app.css';
 
-	import { dev } from '$app/environment';
+	import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+	import { QueryClient } from '@tanstack/svelte-query';
+	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
+	import { PersistQueryClientProvider } from '@tanstack/svelte-query-persist-client';
+	import { browser, dev } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { AppRoute } from '$lib/constants';
 	import { setAppState } from '$lib/stores/app.svelte';
-	import { setProjects } from '$lib/stores/projects.svelte';
 	import { setTeamState } from '$lib/stores/team.svelte';
 	import { setUserState } from '$lib/stores/user.svelte';
 	import { ModeWatcher, setMode, mode } from 'mode-watcher';
@@ -18,7 +21,6 @@
 	const appState = setAppState();
 	const userState = setUserState();
 	setTeamState();
-	setProjects();
 
 	$effect(() => {
 		if (!appState.theme) appState.theme = $mode;
@@ -56,6 +58,18 @@
 		if (userState.isValid) return;
 		goto(AppRoute.LOGIN());
 	});
+
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				enabled: browser
+			}
+		}
+	});
+
+	const persister = createSyncStoragePersister({
+		storage: browser ? window.localStorage : null
+	});
 </script>
 
 {#if dev}
@@ -63,4 +77,9 @@
 {/if}
 <ModeWatcher />
 <Toaster />
-{@render children()}
+<PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+	{@render children()}
+	{#if dev}
+		<SvelteQueryDevtools initialIsOpen={true} />
+	{/if}
+</PersistQueryClientProvider>
