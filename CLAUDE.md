@@ -1,6 +1,7 @@
 # Claude Instructions for App Repository
 
 ## Commands
+
 - **Build**: `pnpm run build`
 - **Dev**: `pnpm run dev` (add `-- --open` to open in browser)
 - **Lint**: `pnpm run lint`
@@ -12,6 +13,7 @@
 - **E2E tests**: `pnpm run test:e2e`
 
 ## Code Style Guidelines
+
 - **TypeScript**: Strict mode enabled; use explicit types
 - **Imports**: Must be sorted (enforced by eslint-plugin-perfectionist)
 - **Framework**: SvelteKit with Svelte 5

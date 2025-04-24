@@ -1,15 +1,17 @@
 <script lang="ts">
+	import type { WithElementRef } from 'bits-ui';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	import { cn } from '$lib/utils.js';
 
-	type $$Props = HTMLAttributes<HTMLTableSectionElement>;
-
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	let {
+		ref = $bindable(null),
+		class: className,
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLTableSectionElement>> = $props();
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<thead class={cn('[&_tr]:border-b', className)} {...$$restProps} on:click on:keydown>
-	<slot />
+<thead bind:this={ref} class={cn('[&_tr]:border-b', className)} {...restProps}>
+	{@render children?.()}
 </thead>

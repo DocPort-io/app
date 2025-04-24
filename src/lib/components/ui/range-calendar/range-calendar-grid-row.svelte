@@ -2,12 +2,11 @@
 	import { cn } from '$lib/utils.js';
 	import { RangeCalendar as RangeCalendarPrimitive } from 'bits-ui';
 
-	type $$Props = RangeCalendarPrimitive.GridRowProps;
-
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	let {
+		ref = $bindable(null),
+		class: className,
+		...restProps
+	}: RangeCalendarPrimitive.GridRowProps = $props();
 </script>
 
-<RangeCalendarPrimitive.GridRow class={cn('flex', className)} {...$$restProps}>
-	<slot />
-</RangeCalendarPrimitive.GridRow>
+<RangeCalendarPrimitive.GridRow bind:ref class={cn('flex', className)} {...restProps} />

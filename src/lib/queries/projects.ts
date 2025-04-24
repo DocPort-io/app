@@ -28,7 +28,7 @@ export const createPaginatedProjectsQuery = ({
 
 	return queryOptions({
 		queryKey: [QUERY_BASE_KEY, perPage, page],
-		queryFn: () => projectService.getProjects({ team, page, perPage }),
+		queryFn: () => projectService.findAll({ team, page, perPage }),
 		placeholderData: keepPreviousData
 	});
 };
@@ -42,7 +42,7 @@ export const createAddProjectMutation = ({ projectService }: ProjectMutationOpti
 	const client = useQueryClient();
 
 	return createMutation({
-		mutationFn: (project: ProjectCreateSchema) => projectService.createProject(project),
+		mutationFn: (project: ProjectCreateSchema) => projectService.create(project),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
 			toast.success('Project created successfully!');
@@ -56,7 +56,7 @@ export const createUpdateProjectMutation = ({ projectService }: ProjectMutationO
 
 	return createMutation({
 		mutationFn: ({ id, project }: { id: string; project: ProjectUpdateSchema }) =>
-			projectService.updateProject(id, project),
+			projectService.update(id, project),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
 			toast.success('Project updated successfully!');
@@ -69,7 +69,7 @@ export const createDeleteProjectMutation = ({ projectService }: ProjectMutationO
 	const client = useQueryClient();
 
 	return createMutation({
-		mutationFn: (id: string) => projectService.deleteProject(id),
+		mutationFn: (id: string) => projectService.remove(id),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
 			toast.success('Project deleted successfully!');

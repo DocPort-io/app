@@ -56,7 +56,7 @@
 		</Dialog.Header>
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Dialog.Footer>
-				<Button variant="outline" on:click={() => dialogController.close()} disabled={$submitting}>
+				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
 					{m.red_same_flea_clip()}
 				</Button>
 				<Form.Button type="submit" variant="destructive" disabled={$submitting}>

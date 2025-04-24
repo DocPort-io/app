@@ -2,24 +2,29 @@
 	import type { ProjectUpdateSchema } from '$lib/schemas/project.schema';
 
 	import { CirclePlus } from '@lucide/svelte';
+	import { Ellipsis } from '@lucide/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import Pagination from '$lib/components/pagination.svelte';
 	import ResultsInfo from '$lib/components/results-info.svelte';
+	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Pagination from '$lib/components/ui/pagination';
+	import { Skeleton } from '$lib/components/ui/skeleton';
+	import * as Table from '$lib/components/ui/table';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import { createPaginatedProjectsQuery } from '$lib/queries/projects';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
-	import { createPaginationController } from '$lib/stores/pagination.svelte';
 	import { getTeamState } from '$lib/stores/team.svelte';
 
-	import CreateProjectDialog from './_components/_dialogs/create-project-dialog.svelte';
-	import DeleteProjectDialog from './_components/_dialogs/delete-project-dialog.svelte';
-	import EditProjectDialog from './_components/_dialogs/edit-project-dialog.svelte';
-	import ProjectsTable from './_components/projects-table.svelte';
+	import CreateProjectDialog from './(components)/create-project-dialog.svelte';
+	import DeleteProjectDialog from './(components)/delete-project-dialog.svelte';
+	import EditProjectDialog from './(components)/edit-project-dialog.svelte';
 
 	// Dialog handlers
 	const createDialog = createDialogController();
@@ -28,12 +33,12 @@
 
 	const teamState = getTeamState();
 
-	const pagination = createPaginationController({
+	const pagination = $state({
 		page: 1,
 		perPage: 2
 	});
 
-	const projectsQuery = $derived.by(() =>
+	const projects = $derived.by(() =>
 		createQuery(
 			createPaginatedProjectsQuery({
 				team: teamState.currentTeam ?? '',
@@ -42,6 +47,11 @@
 			})
 		)
 	);
+
+	const statusMap = {
+		active: 'Active',
+		completed: 'Completed'
+	};
 </script>
 
 <UserPageLayout title="Projects">
@@ -52,7 +62,7 @@
 				<Card.Description>{m.only_nimble_martin_strive()}</Card.Description>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
-				<Button size="sm" class="h-8 gap-1" on:click={() => createDialog.open()}>
+				<Button size="sm" class="h-8 gap-1" onclick={() => createDialog.open()}>
 					<CirclePlus class="h-3.5 w-3.5" />
 					<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
 						>{m.stout_elegant_jan_flip()}</span
@@ -61,33 +71,162 @@
 			</div>
 		</Card.Header>
 		<Card.Content>
-			<ProjectsTable
-				loading={$projectsQuery.isLoading}
-				error={$projectsQuery.error?.message ?? null}
-				projects={$projectsQuery.data?.items ?? []}
-				handleViewProject={(project) => {
-					goto(AppRoute.PROJECT_VIEW(project.id));
-				}}
-				handleEditProject={(id, project) => {
-					editDialog.data = { id, project };
-					editDialog.open();
-				}}
-				handleDeleteProject={(project) => {
-					deleteDialog.data = project;
-					deleteDialog.open();
-				}}
-			/>
+			{#if $projects.isError}
+				<p>{$projects.error.message}</p>
+			{/if}
+			<Table.Root data-testid="projects-table">
+				<Table.Header data-testid="projects-table-header">
+					<Table.Row>
+						<Table.Head>{m.weak_few_ant_link()}</Table.Head>
+						<Table.Head class="hidden md:table-cell">Status</Table.Head>
+						<Table.Head class="hidden md:table-cell">Created At</Table.Head>
+						<Table.Head>
+							<span class="sr-only">Actions</span>
+						</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body data-testid="projects-table-body">
+					{#if $projects.isLoading}
+						<Table.Row>
+							<Table.Cell class="font-medium">
+								<Skeleton class="h-4 w-[200px] md:w-[300px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell></Table.Cell>
+						</Table.Row>
+
+						<Table.Row>
+							<Table.Cell class="font-medium">
+								<Skeleton class="h-4 w-[200px] md:w-[300px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell></Table.Cell>
+						</Table.Row>
+
+						<Table.Row>
+							<Table.Cell class="font-medium">
+								<Skeleton class="h-4 w-[200px] md:w-[300px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell class="hidden md:table-cell">
+								<Skeleton class="h-4 w-[200px]" />
+							</Table.Cell>
+							<Table.Cell></Table.Cell>
+						</Table.Row>
+					{/if}
+					{#if $projects.isError}
+						<Table.Row>
+							<Table.Cell colspan={4}>
+								{$projects.error.message}
+							</Table.Cell>
+						</Table.Row>
+					{/if}
+					{#if $projects.isSuccess}
+						{#each $projects.data.items as project (project.id)}
+							<Table.Row data-testid="projects-table-row">
+								<Table.Cell class="font-medium">
+									{project.name}
+								</Table.Cell>
+								<Table.Cell class="hidden md:table-cell">
+									<Badge>{statusMap[project.status]}</Badge>
+								</Table.Cell>
+								<Table.Cell class="hidden md:table-cell"
+									>{new Date(project.created).toLocaleString(getLocale(), {
+										dateStyle: 'long',
+										timeStyle: 'short'
+									})}
+								</Table.Cell>
+								<Table.Cell>
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger
+											aria-haspopup="true"
+											class={buttonVariants({ size: 'icon', variant: 'ghost' })}
+										>
+											<Ellipsis class="h-4 w-4" />
+											<span class="sr-only">Toggle menu</span>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content align="end">
+											<DropdownMenu.Label>{m.trite_gaudy_marten_scold()}</DropdownMenu.Label>
+											<DropdownMenu.Item onclick={() => goto(AppRoute.PROJECT_VIEW(project.id))}>
+												{m.view()}
+											</DropdownMenu.Item>
+											<DropdownMenu.Item
+												onclick={() => {
+													editDialog.data = { id: project.id, project };
+													editDialog.open();
+												}}
+											>
+												{m.lucky_factual_marmot_scoop()}
+											</DropdownMenu.Item>
+											<DropdownMenu.Item
+												onclick={() => {
+													deleteDialog.data = project;
+													deleteDialog.open();
+												}}
+											>
+												{m.fuzzy_lofty_stork_jest()}
+											</DropdownMenu.Item>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								</Table.Cell>
+							</Table.Row>
+						{/each}
+					{/if}
+				</Table.Body>
+			</Table.Root>
 		</Card.Content>
-		{#if $projectsQuery.data?.totalItems && $projectsQuery.data.totalItems > 0}
+		{#if $projects.isSuccess && $projects.data.totalItems > 0}
 			<Card.Footer>
 				<div class="flex w-full flex-col items-center justify-between md:flex-row">
 					<ResultsInfo
-						results={$projectsQuery.data?.items.length ?? 0}
-						page={$projectsQuery.data?.page ?? 0}
-						perPage={$projectsQuery.data?.perPage ?? 0}
-						totalItems={$projectsQuery.data?.totalItems ?? 0}
+						results={$projects.data.items.length}
+						page={pagination.page}
+						perPage={pagination.perPage}
+						totalItems={$projects.data.totalItems}
 					/>
-					<Pagination {pagination} totalItems={$projectsQuery.data?.totalItems ?? 0} />
+					<div>
+						<Pagination.Root
+							count={$projects.data.totalItems}
+							perPage={pagination.perPage}
+							bind:page={pagination.page}
+						>
+							{#snippet children({ pages, currentPage })}
+								<Pagination.Content>
+									<Pagination.Item>
+										<Pagination.PrevButton />
+									</Pagination.Item>
+									{#each pages as page (page.key)}
+										{#if page.type === 'ellipsis'}
+											<Pagination.Item>
+												<Pagination.Ellipsis />
+											</Pagination.Item>
+										{:else}
+											<Pagination.Item>
+												<Pagination.Link {page} isActive={currentPage == page.value}>
+													{page.value}
+												</Pagination.Link>
+											</Pagination.Item>
+										{/if}
+									{/each}
+									<Pagination.Item>
+										<Pagination.NextButton />
+									</Pagination.Item>
+								</Pagination.Content>
+							{/snippet}
+						</Pagination.Root>
+					</div>
 				</div>
 			</Card.Footer>
 		{/if}

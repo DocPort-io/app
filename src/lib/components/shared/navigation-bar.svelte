@@ -49,8 +49,8 @@
 		>
 	</nav>
 	<Sheet.Root>
-		<Sheet.Trigger asChild let:builder>
-			<Button variant="outline" size="icon" class="shrink-0 md:hidden" builders={[builder]}>
+		<Sheet.Trigger>
+			<Button variant="outline" size="icon" class="shrink-0 md:hidden">
 				<Menu class="h-5 w-5" />
 				<span class="sr-only">{m.toggle_navigation_menu()}</span>
 			</Button>

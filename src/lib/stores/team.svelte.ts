@@ -47,7 +47,7 @@ export class TeamState implements ITeamState {
 		this.error = null;
 
 		return this.service
-			.getTeams()
+			.findAll()
 			.then((teams) => {
 				this.teams = teams;
 				this.loading = false;

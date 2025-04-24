@@ -19,8 +19,8 @@
 </script>
 
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" size="icon" class="rounded-full">
+	<DropdownMenu.Trigger>
+		<Button variant="secondary" size="icon" class="rounded-full">
 			<Avatar.Root>
 				<Avatar.Image src={userState.avatarUrl} alt={initials} />
 				<Avatar.Fallback>{initials}</Avatar.Fallback>
@@ -34,22 +34,22 @@
 		<DropdownMenu.Item>{m.settings()}</DropdownMenu.Item>
 		<DropdownMenu.Item>{m.support()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item on:click={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => userState.logout()}>{m.logout()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Label>{m.language()}</DropdownMenu.Label>
-		<DropdownMenu.Item on:click={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
-		<DropdownMenu.Item on:click={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => setLocale('nl')}>{m.dutch()}</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
-		<DropdownMenu.Item on:click={() => appState.activateLightTheme()}>
+		<DropdownMenu.Item onclick={() => appState.activateLightTheme()}>
 			<Sun class="mr-2 h-4 w-4" />
 			<span>{m.light()}</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item on:click={() => appState.activateDarkTheme()}>
+		<DropdownMenu.Item onclick={() => appState.activateDarkTheme()}>
 			<Moon class="mr-2 h-4 w-4" />
 			<span>{m.dark()}</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item on:click={() => appState.activateSystemTheme()}>
+		<DropdownMenu.Item onclick={() => appState.activateSystemTheme()}>
 			<Computer class="mr-2 h-4 w-4" />
 			<span>{m.system()}</span>
 		</DropdownMenu.Item>

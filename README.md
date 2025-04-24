@@ -20,17 +20,20 @@ DocPort is a modern team and project management application built with SvelteKit
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/DocPort-io/app.git
    cd app
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Start the development environment:
+
    ```bash
    docker compose -f compose.yml -f compose.dev.override.yml up backend
    ```
@@ -71,6 +74,7 @@ pnpm run test:e2e
 The application can be deployed using Docker:
 
 1. Build the Docker containers (if not already built):
+
    ```bash
    docker compose build
    ```
@@ -101,7 +105,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-- **Jonas Claes** - *Lead Engineer* - [GitHub](https://github.com/jonasclaes) - [Email](mailto:jonas@jonasclaes.be)
+- **Jonas Claes** - _Lead Engineer_ - [GitHub](https://github.com/jonasclaes) - [Email](mailto:jonas@jonasclaes.be)
 
 ## License
 

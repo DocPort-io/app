@@ -3,16 +3,16 @@ import type { TeamCreateSchema, TeamSchema, TeamUpdateSchema } from '$lib/schema
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 
 export interface ITeamService {
-	getTeams(): Promise<TeamSchema[]>;
-	createTeam(data: TeamCreateSchema): Promise<TeamSchema>;
-	updateTeam(id: string, data: TeamUpdateSchema): Promise<TeamSchema>;
-	deleteTeam(id: string): Promise<void>;
+	findAll(): Promise<TeamSchema[]>;
+	create(data: TeamCreateSchema): Promise<TeamSchema>;
+	update(id: string, data: TeamUpdateSchema): Promise<TeamSchema>;
+	remove(id: string): Promise<void>;
 }
 
 export class TeamService implements ITeamService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
-	async getTeams(): Promise<TeamSchema[]> {
+	async findAll(): Promise<TeamSchema[]> {
 		const records = await this.pocketbase.collection('teams').getList(1, 50, {
 			sort: '-created'
 		});
@@ -20,15 +20,15 @@ export class TeamService implements ITeamService {
 		return records.items;
 	}
 
-	async createTeam(data: TeamCreateSchema): Promise<TeamSchema> {
+	async create(data: TeamCreateSchema): Promise<TeamSchema> {
 		return await this.pocketbase.collection('teams').create(data);
 	}
 
-	async updateTeam(id: string, data: TeamUpdateSchema): Promise<TeamSchema> {
+	async update(id: string, data: TeamUpdateSchema): Promise<TeamSchema> {
 		return await this.pocketbase.collection('teams').update(id, data);
 	}
 
-	async deleteTeam(id: string): Promise<void> {
+	async remove(id: string): Promise<void> {
 		await this.pocketbase.collection('teams').delete(id);
 	}
 }

@@ -50,11 +50,13 @@ Follow these steps to submit a pull request:
 ## Development Setup
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Start the development environment:
+
    ```bash
    docker compose -f compose.yml -f compose.dev.override.yml up
    pnpm run dev

@@ -21,17 +21,17 @@ export type ProjectServiceGetProjectsResult = {
 };
 
 export interface IProjectService {
-	getProjects(options: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult>;
-	getProject(id: string): Promise<ProjectSchema>;
-	createProject(data: ProjectCreateSchema): Promise<ProjectSchema>;
-	updateProject(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
-	deleteProject(id: string): Promise<void>;
+	findAll(options: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult>;
+	findOne(id: string): Promise<ProjectSchema>;
+	create(data: ProjectCreateSchema): Promise<ProjectSchema>;
+	update(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
+	remove(id: string): Promise<void>;
 }
 
 export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
-	async getProjects({
+	async findAll({
 		page = 1,
 		perPage = 5,
 		team
@@ -42,20 +42,19 @@ export class ProjectService implements IProjectService {
 		});
 	}
 
-	async getProject(id: string): Promise<ProjectSchema> {
+	async findOne(id: string): Promise<ProjectSchema> {
 		return await this.pocketbase.collection('projects').getOne(id);
 	}
 
-	async createProject(data: ProjectCreateSchema): Promise<ProjectSchema> {
+	async create(data: ProjectCreateSchema): Promise<ProjectSchema> {
 		return await this.pocketbase.collection('projects').create(data);
 	}
 
-	async updateProject(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema> {
-		await new Promise((resolve) => setTimeout(resolve, 5000));
+	async update(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema> {
 		return await this.pocketbase.collection('projects').update(id, data);
 	}
 
-	async deleteProject(id: string): Promise<void> {
+	async remove(id: string): Promise<void> {
 		await this.pocketbase.collection('projects').delete(id);
 	}
 }

@@ -9,9 +9,9 @@ import Overlay from './drawer-overlay.svelte';
 import Title from './drawer-title.svelte';
 import Root from './drawer.svelte';
 
-const Trigger = DrawerPrimitive.Trigger;
-const Portal = DrawerPrimitive.Portal;
-const Close = DrawerPrimitive.Close;
+const Trigger: typeof DrawerPrimitive.Trigger = DrawerPrimitive.Trigger;
+const Portal: typeof DrawerPrimitive.Portal = DrawerPrimitive.Portal;
+const Close: typeof DrawerPrimitive.Close = DrawerPrimitive.Close;
 
 export {
 	Root,

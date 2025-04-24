@@ -13,7 +13,7 @@ export const createProjectQuery = ({ id, projectService }: ProjectOptions) => {
 
 	return queryOptions({
 		queryKey: [QUERY_BASE_KEY, id],
-		queryFn: () => projectService.getProject(id),
+		queryFn: () => projectService.findOne(id),
 		placeholderData: keepPreviousData
 	});
 };

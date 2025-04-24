@@ -1,35 +1,30 @@
 <script lang="ts">
+	import Circle from '@lucide/svelte/icons/circle';
 	import { cn } from '$lib/utils.js';
-	import { Menubar as MenubarPrimitive } from 'bits-ui';
-	import { Circle } from '@lucide/svelte';
+	import { Menubar as MenubarPrimitive, type WithoutChild } from 'bits-ui';
 
-	type $$Props = MenubarPrimitive.RadioItemProps;
-	type $$Events = MenubarPrimitive.RadioItemEvents;
-
-	let className: $$Props['class'] = undefined;
-	export let value: $$Props['value'];
-	export { className as class };
+	let {
+		ref = $bindable(null),
+		class: className,
+		children: childrenProp,
+		...restProps
+	}: WithoutChild<MenubarPrimitive.RadioItemProps> = $props();
 </script>
 
 <MenubarPrimitive.RadioItem
-	{value}
+	bind:ref
 	class={cn(
-		'data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+		'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
 		className
 	)}
-	{...$$restProps}
-	on:click
-	on:keydown
-	on:focusin
-	on:focusout
-	on:pointerleave
-	on:pointermove
-	on:pointerdown
+	{...restProps}
 >
-	<span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-		<MenubarPrimitive.RadioIndicator>
-			<Circle class="h-2 w-2 fill-current" />
-		</MenubarPrimitive.RadioIndicator>
-	</span>
-	<slot />
+	{#snippet children({ checked })}
+		<span class="absolute left-2 flex size-3.5 items-center justify-center">
+			{#if checked}
+				<Circle class="size-2 fill-current" />
+			{/if}
+		</span>
+		{@render childrenProp?.({ checked })}
+	{/snippet}
 </MenubarPrimitive.RadioItem>

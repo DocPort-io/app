@@ -67,7 +67,7 @@
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Form.Field {form} name="name">
 				<Form.Control>
-					{#snippet children({ props }: { props: object })}
+					{#snippet children({ props })}
 						<Form.Label>{m.royal_major_impala_charm()}</Form.Label>
 						<Input
 							{...props}
@@ -82,7 +82,7 @@
 				<Form.FieldErrors />
 			</Form.Field>
 			<Dialog.Footer>
-				<Button variant="outline" on:click={() => dialogController.close()} disabled={$submitting}>
+				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
 					{m.red_same_flea_clip()}
 				</Button>
 				<Form.Button type="submit" disabled={$submitting}>

@@ -2,9 +2,8 @@ import { ContextMenu as ContextMenuPrimitive } from 'bits-ui';
 
 import CheckboxItem from './context-menu-checkbox-item.svelte';
 import Content from './context-menu-content.svelte';
+import GroupHeading from './context-menu-group-heading.svelte';
 import Item from './context-menu-item.svelte';
-import Label from './context-menu-label.svelte';
-import RadioGroup from './context-menu-radio-group.svelte';
 import RadioItem from './context-menu-radio-item.svelte';
 import Separator from './context-menu-separator.svelte';
 import Shortcut from './context-menu-shortcut.svelte';
@@ -15,12 +14,13 @@ const Sub = ContextMenuPrimitive.Sub;
 const Root = ContextMenuPrimitive.Root;
 const Trigger = ContextMenuPrimitive.Trigger;
 const Group = ContextMenuPrimitive.Group;
+const RadioGroup = ContextMenuPrimitive.RadioGroup;
 
 export {
 	Sub,
 	Root,
 	Item,
-	Label,
+	GroupHeading,
 	Group,
 	Trigger,
 	Content,
@@ -35,7 +35,7 @@ export {
 	Root as ContextMenu,
 	Sub as ContextMenuSub,
 	Item as ContextMenuItem,
-	Label as ContextMenuLabel,
+	GroupHeading as ContextMenuGroupHeading,
 	Group as ContextMenuGroup,
 	Content as ContextMenuContent,
 	Trigger as ContextMenuTrigger,

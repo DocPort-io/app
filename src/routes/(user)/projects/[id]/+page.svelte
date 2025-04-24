@@ -44,8 +44,8 @@
 
 		<div class="ml-auto flex items-center gap-2">
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="outline" size="sm" class="h-8 gap-1">
+				<DropdownMenu.Trigger>
+					<Button variant="outline" size="sm" class="h-8 gap-1">
 						<ListFilter class="h-3.5 w-3.5" />
 						<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
 							>{m.that_weary_anteater_push()}</span
@@ -72,7 +72,7 @@
 					>{m.slow_great_gadfly_expand()}</span
 				>
 			</Button>
-			<Button size="sm" class="h-8 gap-1" on:click={() => {}}>
+			<Button size="sm" class="h-8 gap-1" onclick={() => {}}>
 				<CirclePlus class="h-3.5 w-3.5" />
 				<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.stout_elegant_jan_flip()}</span
 				>

@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - GOMEMLIMIT=128MiB
     volumes:
@@ -19,6 +19,6 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - PUBLIC_POCKETBASE_URL=http://localhost:8080
