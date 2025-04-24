@@ -23,7 +23,7 @@
 	setTeamState();
 
 	$effect(() => {
-		if (!appState.theme) appState.theme = $mode;
+		if (!appState.theme) appState.theme = mode.current;
 		if (appState.theme) setMode(appState.theme);
 	});
 

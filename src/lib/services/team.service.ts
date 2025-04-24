@@ -1,9 +1,15 @@
 import type { TeamCreateSchema, TeamSchema, TeamUpdateSchema } from '$lib/schemas/team.schema';
+import type { ListResult } from 'pocketbase';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 
+export type FindAllOptions = {
+	page?: number;
+	perPage?: number;
+};
+
 export interface ITeamService {
-	findAll(): Promise<TeamSchema[]>;
+	findAll(options?: FindAllOptions): Promise<ListResult<TeamSchema>>;
 	create(data: TeamCreateSchema): Promise<TeamSchema>;
 	update(id: string, data: TeamUpdateSchema): Promise<TeamSchema>;
 	remove(id: string): Promise<void>;
@@ -12,12 +18,13 @@ export interface ITeamService {
 export class TeamService implements ITeamService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
-	async findAll(): Promise<TeamSchema[]> {
-		const records = await this.pocketbase.collection('teams').getList(1, 50, {
+	async findAll({ page, perPage }: FindAllOptions = {}): Promise<ListResult<TeamSchema>> {
+		page = page ?? 1;
+		perPage = perPage ?? 50;
+
+		return await this.pocketbase.collection('teams').getList(page, perPage, {
 			sort: '-created'
 		});
-
-		return records.items;
 	}
 
 	async create(data: TeamCreateSchema): Promise<TeamSchema> {

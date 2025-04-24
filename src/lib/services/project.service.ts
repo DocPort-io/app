@@ -3,25 +3,18 @@ import type {
 	ProjectSchema,
 	ProjectUpdateSchema
 } from '$lib/schemas/project.schema';
+import type { ListResult } from 'pocketbase';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 
-export type ProjectServiceGetProjectsOptions = {
+export type FindAllOptions = {
 	page?: number;
 	perPage?: number;
 	team: string;
 };
 
-export type ProjectServiceGetProjectsResult = {
-	items: ProjectSchema[];
-	page: number;
-	perPage: number;
-	totalItems: number;
-	totalPages: number;
-};
-
 export interface IProjectService {
-	findAll(options: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult>;
+	findAll(options: { page?: number; perPage?: number }): Promise<ListResult<ProjectSchema>>;
 	findOne(id: string): Promise<ProjectSchema>;
 	create(data: ProjectCreateSchema): Promise<ProjectSchema>;
 	update(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
@@ -31,11 +24,10 @@ export interface IProjectService {
 export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
-	async findAll({
-		page = 1,
-		perPage = 5,
-		team
-	}: ProjectServiceGetProjectsOptions): Promise<ProjectServiceGetProjectsResult> {
+	async findAll({ page, perPage, team }: FindAllOptions): Promise<ListResult<ProjectSchema>> {
+		page = page ?? 1;
+		perPage = perPage ?? 50;
+
 		return await this.pocketbase.collection('projects').getList(page, perPage, {
 			sort: '-created',
 			filter: this.pocketbase.filter('team = {:team}', { team })
