@@ -46,7 +46,7 @@
 		"formsnap": "2.0.1",
 		"globals": "^15.15.0",
 		"jsdom": "^25.0.1",
-		"mode-watcher": "^0.5.1",
+		"mode-watcher": "^1.0.2",
 		"paneforge": "1.0.0-next.5",
 		"pocketbase": "^0.25.2",
 		"prettier": "^3.5.3",
