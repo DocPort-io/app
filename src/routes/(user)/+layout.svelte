@@ -10,22 +10,15 @@
 	import { page } from '$app/state';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { AppRoute } from '$lib/constants';
-	import { setAppState } from '$lib/stores/app.svelte';
 	import { setTeamState } from '$lib/stores/team.svelte';
 	import { setUserState } from '$lib/stores/user.svelte';
-	import { ModeWatcher, setMode, mode } from 'mode-watcher';
+	import { ModeWatcher } from 'mode-watcher';
 	import { RenderScan } from 'svelte-render-scan';
 
 	let { children } = $props();
 
-	const appState = setAppState();
 	const userState = setUserState();
 	setTeamState();
-
-	$effect(() => {
-		if (!appState.theme) appState.theme = mode.current;
-		if (appState.theme) setMode(appState.theme);
-	});
 
 	$effect(() => {
 		if (userState.isValid) return;

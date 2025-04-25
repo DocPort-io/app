@@ -5,10 +5,9 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { m } from '$lib/paraglide/messages';
 	import { setLocale } from '$lib/paraglide/runtime';
-	import { getAppState } from '$lib/stores/app.svelte';
 	import { getUserState } from '$lib/stores/user.svelte';
+	import { setMode } from 'mode-watcher';
 
-	const appState = getAppState();
 	const userState = getUserState();
 
 	let initials = $derived.by(() => {
@@ -41,15 +40,15 @@
 		<DropdownMenu.Item onclick={() => setLocale('en')}>{m.english()}</DropdownMenu.Item>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Label>{m.theme()}</DropdownMenu.Label>
-		<DropdownMenu.Item onclick={() => appState.activateLightTheme()}>
+		<DropdownMenu.Item onclick={() => setMode('light')}>
 			<Sun class="mr-2 h-4 w-4" />
 			<span>{m.light()}</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => appState.activateDarkTheme()}>
+		<DropdownMenu.Item onclick={() => setMode('dark')}>
 			<Moon class="mr-2 h-4 w-4" />
 			<span>{m.dark()}</span>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => appState.activateSystemTheme()}>
+		<DropdownMenu.Item onclick={() => setMode('system')}>
 			<Computer class="mr-2 h-4 w-4" />
 			<span>{m.system()}</span>
 		</DropdownMenu.Item>
