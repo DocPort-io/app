@@ -73,6 +73,6 @@
 <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
 	{@render children()}
 	{#if dev}
-		<SvelteQueryDevtools initialIsOpen={true} />
+		<SvelteQueryDevtools initialIsOpen={true} buttonPosition="bottom-left" />
 	{/if}
 </PersistQueryClientProvider>

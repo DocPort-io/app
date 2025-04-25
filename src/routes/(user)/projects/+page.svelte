@@ -6,13 +6,20 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { goto } from '$app/navigation';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import ResultsInfo from '$lib/components/results-info.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Pagination from '$lib/components/ui/pagination';
+	import {
+		Pagination,
+		PaginationContent,
+		PaginationEllipsis,
+		PaginationItem,
+		PaginationLink,
+		PaginationNextButton,
+		PaginationPrevButton
+	} from '$lib/components/ui/pagination';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import * as Table from '$lib/components/ui/table';
 	import { AppRoute } from '$lib/constants';
@@ -35,7 +42,7 @@
 
 	const pagination = $state({
 		page: 1,
-		perPage: 2
+		perPage: 1
 	});
 
 	const projects = $derived.by(() =>
@@ -189,45 +196,38 @@
 		</Card.Content>
 		{#if $projects.isSuccess && $projects.data.totalItems > 0}
 			<Card.Footer>
-				<div class="flex w-full flex-col items-center justify-between md:flex-row">
-					<ResultsInfo
-						results={$projects.data.items.length}
-						page={pagination.page}
-						perPage={pagination.perPage}
-						totalItems={$projects.data.totalItems}
-					/>
-					<div>
-						<Pagination.Root
-							count={$projects.data.totalItems}
-							perPage={pagination.perPage}
-							bind:page={pagination.page}
-						>
-							{#snippet children({ pages, currentPage })}
-								<Pagination.Content>
-									<Pagination.Item>
-										<Pagination.PrevButton />
-									</Pagination.Item>
-									{#each pages as page (page.key)}
-										{#if page.type === 'ellipsis'}
-											<Pagination.Item>
-												<Pagination.Ellipsis />
-											</Pagination.Item>
-										{:else}
-											<Pagination.Item>
-												<Pagination.Link {page} isActive={currentPage == page.value}>
-													{page.value}
-												</Pagination.Link>
-											</Pagination.Item>
-										{/if}
-									{/each}
-									<Pagination.Item>
-										<Pagination.NextButton />
-									</Pagination.Item>
-								</Pagination.Content>
-							{/snippet}
-						</Pagination.Root>
-					</div>
-				</div>
+				<Pagination
+					count={$projects.data.totalItems}
+					perPage={pagination.perPage}
+					bind:page={pagination.page}
+				>
+					{#snippet children({ pages, currentPage, range })}
+						<PaginationContent>
+							<PaginationItem class="hidden md:block">
+								<PaginationPrevButton />
+							</PaginationItem>
+							{#each pages as page (page.key)}
+								{#if page.type === 'ellipsis'}
+									<PaginationItem>
+										<PaginationEllipsis />
+									</PaginationItem>
+								{:else}
+									<PaginationItem>
+										<PaginationLink {page} isActive={currentPage == page.value}>
+											{page.value}
+										</PaginationLink>
+									</PaginationItem>
+								{/if}
+							{/each}
+							<PaginationItem class="hidden md:block">
+								<PaginationNextButton />
+							</PaginationItem>
+						</PaginationContent>
+						<p class="text-muted-foreground text-center text-[13px]">
+							Showing {range.start} - {range.end} of {$projects.data.totalItems} results
+						</p>
+					{/snippet}
+				</Pagination>
 			</Card.Footer>
 		{/if}
 	</Card.Root>
