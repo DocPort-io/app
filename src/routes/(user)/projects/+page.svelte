@@ -24,7 +24,6 @@
 	import * as Table from '$lib/components/ui/table';
 	import { AppRoute } from '$lib/constants';
 	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import { createPaginatedProjectsQuery } from '$lib/queries/projects';
 	import { createDialogController } from '$lib/stores/dialog.svelte';
 	import { getTeamState } from '$lib/stores/team.svelte';
@@ -42,7 +41,7 @@
 
 	const pagination = $state({
 		page: 1,
-		perPage: 1
+		perPage: 5
 	});
 
 	const projects = $derived.by(() =>
@@ -84,9 +83,8 @@
 			<Table.Root data-testid="projects-table">
 				<Table.Header data-testid="projects-table-header">
 					<Table.Row>
-						<Table.Head>{m.weak_few_ant_link()}</Table.Head>
-						<Table.Head class="hidden md:table-cell">Status</Table.Head>
-						<Table.Head class="hidden md:table-cell">Created At</Table.Head>
+						<Table.Head class="w-full md:w-2/3">{m.weak_few_ant_link()}</Table.Head>
+						<Table.Head class="hidden md:table-cell md:w-1/3">Status</Table.Head>
 						<Table.Head>
 							<span class="sr-only">Actions</span>
 						</Table.Head>
@@ -101,9 +99,6 @@
 							<Table.Cell class="hidden md:table-cell">
 								<Skeleton class="h-4 w-[200px]" />
 							</Table.Cell>
-							<Table.Cell class="hidden md:table-cell">
-								<Skeleton class="h-4 w-[200px]" />
-							</Table.Cell>
 							<Table.Cell></Table.Cell>
 						</Table.Row>
 
@@ -114,18 +109,12 @@
 							<Table.Cell class="hidden md:table-cell">
 								<Skeleton class="h-4 w-[200px]" />
 							</Table.Cell>
-							<Table.Cell class="hidden md:table-cell">
-								<Skeleton class="h-4 w-[200px]" />
-							</Table.Cell>
 							<Table.Cell></Table.Cell>
 						</Table.Row>
 
 						<Table.Row>
 							<Table.Cell class="font-medium">
 								<Skeleton class="h-4 w-[200px] md:w-[300px]" />
-							</Table.Cell>
-							<Table.Cell class="hidden md:table-cell">
-								<Skeleton class="h-4 w-[200px]" />
 							</Table.Cell>
 							<Table.Cell class="hidden md:table-cell">
 								<Skeleton class="h-4 w-[200px]" />
@@ -148,12 +137,6 @@
 								</Table.Cell>
 								<Table.Cell class="hidden md:table-cell">
 									<Badge>{statusMap[project.status]}</Badge>
-								</Table.Cell>
-								<Table.Cell class="hidden md:table-cell"
-									>{new Date(project.created).toLocaleString(getLocale(), {
-										dateStyle: 'long',
-										timeStyle: 'short'
-									})}
 								</Table.Cell>
 								<Table.Cell>
 									<DropdownMenu.Root>
