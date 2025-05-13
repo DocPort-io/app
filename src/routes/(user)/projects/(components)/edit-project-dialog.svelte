@@ -6,6 +6,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
+	import {
+		Select,
+		SelectContent,
+		SelectGroup,
+		SelectGroupHeading,
+		SelectItem,
+		SelectTrigger
+	} from '$lib/components/ui/select';
 	import { m } from '$lib/paraglide/messages';
 	import { createUpdateProjectMutation } from '$lib/queries/projects';
 	import { projectUpdateSchema, type ProjectUpdateSchema } from '$lib/schemas/project.schema';
@@ -56,6 +64,12 @@
 	$effect(() => {
 		validateForm({ update: true });
 	});
+
+	const validStatusses = [
+		{ value: 'planned', label: 'Planned' },
+		{ value: 'active', label: 'Active' },
+		{ value: 'completed', label: 'Completed' }
+	];
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -81,6 +95,39 @@
 				<Form.Description>{m.busy_tame_jackdaw_read()}</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
+
+			<Form.Field {form} name="status">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>{m.status()}</Form.Label>
+						<Select
+							name={props.name}
+							{...$constraints.status}
+							bind:value={$formData.status}
+							type="single"
+						>
+							<SelectTrigger {...props}>
+								{$formData.status
+									? validStatusses.find((vs) => vs.value === $formData.status)?.label
+									: 'Select a status for the project'}
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectGroupHeading>Statusses</SelectGroupHeading>
+									{#each validStatusses as status (status.value)}
+										<SelectItem value={status.value} label={status.label} />
+									{/each}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					{/snippet}
+				</Form.Control>
+				<Form.Description>
+					{m.large_front_opossum_walk()}
+				</Form.Description>
+				<Form.FieldErrors />
+			</Form.Field>
+
 			<Dialog.Footer>
 				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
 					{m.red_same_flea_clip()}

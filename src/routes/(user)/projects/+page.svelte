@@ -55,6 +55,7 @@
 	);
 
 	const statusMap = {
+		planned: 'Planned',
 		active: 'Active',
 		completed: 'Completed'
 	};
@@ -136,7 +137,7 @@
 									{project.name}
 								</Table.Cell>
 								<Table.Cell class="hidden md:table-cell">
-									<Badge>{statusMap[project.status]}</Badge>
+									<Badge variant="outline">{statusMap[project.status]}</Badge>
 								</Table.Cell>
 								<Table.Cell>
 									<DropdownMenu.Root>

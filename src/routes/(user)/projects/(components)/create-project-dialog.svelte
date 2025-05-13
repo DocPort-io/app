@@ -7,6 +7,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
+	import {
+		Select,
+		SelectContent,
+		SelectGroup,
+		SelectGroupHeading,
+		SelectItem,
+		SelectTrigger
+	} from '$lib/components/ui/select';
 	import { m } from '$lib/paraglide/messages';
 	import { createAddProjectMutation } from '$lib/queries/projects';
 	import { projectCreateSchema } from '$lib/schemas/project.schema';
@@ -35,7 +43,6 @@
 			await $addMutation.mutateAsync(
 				{
 					...form.data,
-					status: 'active',
 					team: teamState.currentTeam
 				},
 				{
@@ -55,6 +62,12 @@
 	let formErrors = $derived(
 		$allErrors.filter((error) => error.path === '_errors').flatMap((error) => error.messages)
 	);
+
+	const validStatusses = [
+		{ value: 'planned', label: 'Planned' },
+		{ value: 'active', label: 'Active' },
+		{ value: 'completed', label: 'Completed' }
+	];
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -87,6 +100,38 @@
 					{/snippet}
 				</Form.Control>
 				<Form.Description>{m.busy_tame_jackdaw_read()}</Form.Description>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<Form.Field {form} name="status">
+				<Form.Control>
+					{#snippet children({ props })}
+						<Form.Label>{m.status()}</Form.Label>
+						<Select
+							name={props.name}
+							{...$constraints.status}
+							bind:value={$formData.status}
+							type="single"
+						>
+							<SelectTrigger {...props}>
+								{$formData.status
+									? validStatusses.find((vs) => vs.value === $formData.status)?.label
+									: 'Select a status for the project'}
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectGroupHeading>Statusses</SelectGroupHeading>
+									{#each validStatusses as status (status.value)}
+										<SelectItem value={status.value} label={status.label} />
+									{/each}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					{/snippet}
+				</Form.Control>
+				<Form.Description>
+					{m.large_front_opossum_walk()}
+				</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 

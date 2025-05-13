@@ -66,5 +66,7 @@
 	"broad_giant_impala_trim": "That email address does not look right. Are you sure it is correct?",
 	"no_external_authentication_available": "No external authentication providers available.",
 	"external_authentication_not_possible": "External authentication not possible.",
-	"view": "View"
+	"view": "View",
+	"status": "Status",
+	"large_front_opossum_walk": "Select a status for the project. This will help you track the progress of your project."
 }
