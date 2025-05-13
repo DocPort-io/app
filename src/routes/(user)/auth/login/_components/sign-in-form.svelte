@@ -26,9 +26,9 @@
 				await userStore.signIn(email, password);
 			} catch (err) {
 				if (err instanceof ClientResponseError && err.message === 'Failed to authenticate.') {
-					setError(form, m.tasty_seemly_anaconda_kiss());
+					setError(form, m.invalid_email_or_password());
 				} else {
-					setError(form, m.key_white_crab_coax());
+					setError(form, m.an_unexpected_error_occurred());
 				}
 			}
 		}
@@ -55,18 +55,18 @@
 	<Form.Field {form} name="email">
 		<Form.Control>
 			{#snippet children({ props }: { props: object })}
-				<Form.Label>{m.spare_muddy_piranha_feast()}</Form.Label>
+				<Form.Label>{m.email()}</Form.Label>
 				<Input
 					{...props}
 					{...$constraints.email}
 					bind:value={$formData.email}
-					placeholder={m.heavy_honest_ladybug_gasp()}
+					placeholder={m.name_at_example_dot_com()}
 					type="email"
 					data-testid="login-email"
 				/>
 			{/snippet}
 		</Form.Control>
-		<Form.Description>{m.aloof_quaint_manatee_hurl()}</Form.Description>
+		<Form.Description>{m.enter_your_email_address()}</Form.Description>
 		<Form.FieldErrors />
 	</Form.Field>
 
@@ -74,9 +74,9 @@
 		<Form.Control>
 			{#snippet children({ props }: { props: object })}
 				<div class="flex items-center justify-between">
-					<Form.Label>{m.fine_frail_cobra_reside()}</Form.Label>
+					<Form.Label>{m.password()}</Form.Label>
 					<a href="/auth/reset-password" class="text-primary text-sm hover:underline">
-						{m.sea_sea_myna_quell()}
+						{m.forgot_password()}
 					</a>
 				</div>
 				<Input
@@ -88,17 +88,17 @@
 				/>
 			{/snippet}
 		</Form.Control>
-		<Form.Description>{m.pink_mean_hyena_express()}</Form.Description>
+		<Form.Description>{m.enter_your_password()}</Form.Description>
 		<Form.FieldErrors />
 	</Form.Field>
 
 	<Button type="submit" class="w-full" disabled={$submitting} data-testid="login-signin">
 		{#if $submitting}
 			<span class="mr-2 animate-spin"><LoaderCircle /></span>
-			{m.salty_best_zebra_race()}
+			{m.signing_in()}
 		{:else}
 			<Lock class="mr-2 h-4 w-4" />
-			{m.actual_zany_grebe_ascend()}
+			{m.sign_in()}
 		{/if}
 	</Button>
 </form>

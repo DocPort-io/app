@@ -19,7 +19,7 @@
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>{m.projects()}</Card.Title>
-			<Card.Description>{m.only_nimble_martin_strive()}</Card.Description>
+			<Card.Description>{m.manage_your_projects()}</Card.Description>
 		</Card.Header>
 		<Card.Content></Card.Content>
 		<Card.Footer></Card.Footer>

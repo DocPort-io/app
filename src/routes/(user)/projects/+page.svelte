@@ -66,14 +66,12 @@
 		<Card.Header class="flex flex-row items-center">
 			<div class="grid gap-2">
 				<Card.Title>{m.projects()}</Card.Title>
-				<Card.Description>{m.only_nimble_martin_strive()}</Card.Description>
+				<Card.Description>{m.manage_your_projects()}</Card.Description>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
 				<Button size="sm" class="h-8 gap-1" onclick={() => createDialog.open()}>
 					<CirclePlus class="h-3.5 w-3.5" />
-					<span class="sr-only sm:not-sr-only sm:whitespace-nowrap"
-						>{m.stout_elegant_jan_flip()}</span
-					>
+					<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.add_project()}</span>
 				</Button>
 			</div>
 		</Card.Header>
@@ -84,7 +82,7 @@
 			<Table.Root data-testid="projects-table">
 				<Table.Header data-testid="projects-table-header">
 					<Table.Row>
-						<Table.Head class="w-full md:w-2/3">{m.weak_few_ant_link()}</Table.Head>
+						<Table.Head class="w-full md:w-2/3">{m.name()}</Table.Head>
 						<Table.Head class="hidden md:table-cell md:w-1/3">Status</Table.Head>
 						<Table.Head>
 							<span class="sr-only">Actions</span>
@@ -149,7 +147,7 @@
 											<span class="sr-only">Toggle menu</span>
 										</DropdownMenu.Trigger>
 										<DropdownMenu.Content align="end">
-											<DropdownMenu.Label>{m.trite_gaudy_marten_scold()}</DropdownMenu.Label>
+											<DropdownMenu.Label>{m.actions()}</DropdownMenu.Label>
 											<DropdownMenu.Item onclick={() => goto(AppRoute.PROJECT_VIEW(project.id))}>
 												{m.view()}
 											</DropdownMenu.Item>
@@ -159,7 +157,7 @@
 													editDialog.open();
 												}}
 											>
-												{m.lucky_factual_marmot_scoop()}
+												{m.edit()}
 											</DropdownMenu.Item>
 											<DropdownMenu.Item
 												onclick={() => {
@@ -167,7 +165,7 @@
 													deleteDialog.open();
 												}}
 											>
-												{m.fuzzy_lofty_stork_jest()}
+												{m.delete()}
 											</DropdownMenu.Item>
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>

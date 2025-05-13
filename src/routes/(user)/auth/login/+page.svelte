@@ -9,9 +9,8 @@
 <div class="flex min-h-screen items-center justify-center bg-slate-50 p-4">
 	<Card.Root class="w-full max-w-md">
 		<Card.Header>
-			<Card.Title class="text-center text-2xl font-bold">{m.legal_acidic_newt_nurture()}</Card.Title
-			>
-			<Card.Description class="text-center">{m.left_bright_mayfly_propel()}</Card.Description>
+			<Card.Title class="text-center text-2xl font-bold">{m.welcome_back()}</Card.Title>
+			<Card.Description class="text-center">{m.sign_in_to_your_account()}</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			<SignInForm />
@@ -19,8 +18,8 @@
 		</Card.Content>
 		<Card.Footer class="flex justify-center">
 			<p class="text-muted-foreground text-sm">
-				{m.fit_fun_puma_stab()}
-				<a href="/register" class="text-primary hover:underline">{m.ok_tangy_shell_amaze()}</a>
+				{m.dont_have_an_account()}
+				<a href="/register" class="text-primary hover:underline">{m.create_an_account()}</a>
 			</p>
 		</Card.Footer>
 	</Card.Root>

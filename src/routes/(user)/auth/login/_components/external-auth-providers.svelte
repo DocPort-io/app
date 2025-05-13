@@ -17,7 +17,7 @@
 			<Separator />
 		</div>
 		<div class="relative flex justify-center text-xs uppercase">
-			<span class="bg-card text-muted-foreground px-2">{m.warm_bland_deer_bend()}</span>
+			<span class="bg-card text-muted-foreground px-2">{m.or_continue_with()}</span>
 		</div>
 	</div>
 

@@ -73,8 +73,8 @@
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{m.weak_weak_bulldog_assure()}</Dialog.Title>
-			<Dialog.Description>{m.proof_noisy_monkey_type()}</Dialog.Description>
+			<Dialog.Title>{m.create_project()}</Dialog.Title>
+			<Dialog.Description>{m.add_a_project_to_your_workspace()}</Dialog.Description>
 		</Dialog.Header>
 
 		{#if formErrors.length > 0}
@@ -89,17 +89,17 @@
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>{m.royal_major_impala_charm()}</Form.Label>
+						<Form.Label>{m.name()}</Form.Label>
 						<Input
 							{...props}
 							{...$constraints.name}
 							bind:value={$formData.name}
-							placeholder={m.alert_nimble_pug_play()}
+							placeholder={m.my_awesome_project()}
 							disabled={$submitting}
 						/>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>{m.busy_tame_jackdaw_read()}</Form.Description>
+				<Form.Description>{m.enter_a_meaningful_name_for_your_project()}</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
@@ -130,7 +130,7 @@
 					{/snippet}
 				</Form.Control>
 				<Form.Description>
-					{m.large_front_opossum_walk()}
+					{m.select_a_status_for_the_project()}
 				</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
@@ -142,7 +142,7 @@
 					onclick={() => dialogController.close()}
 					disabled={$submitting}
 				>
-					{m.red_same_flea_clip()}
+					{m.cancel()}
 				</Button>
 				<Form.Button type="submit" disabled={$submitting}>
 					{#if $delayed}
@@ -151,7 +151,7 @@
 					{#if $submitting}
 						Creating...
 					{:else}
-						{m.hour_swift_crab_breathe()}
+						{m.create()}
 					{/if}
 				</Form.Button>
 			</Dialog.Footer>

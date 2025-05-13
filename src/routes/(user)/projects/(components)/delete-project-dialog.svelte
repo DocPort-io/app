@@ -49,15 +49,15 @@
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{m.ornate_wise_lemur_dance()}</Dialog.Title>
+			<Dialog.Title>{m.delete_project()}</Dialog.Title>
 			<Dialog.Description>
-				{m.equal_crisp_crow_edit()}
+				{m.are_you_sure_you_want_to_delete_this_project()}
 			</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Dialog.Footer>
 				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
-					{m.red_same_flea_clip()}
+					{m.cancel()}
 				</Button>
 				<Form.Button type="submit" variant="destructive" disabled={$submitting}>
 					{#if $delayed}
@@ -66,7 +66,7 @@
 					{#if $submitting}
 						Deleting...
 					{:else}
-						{m.mellow_dark_puma_boil()}
+						{m.delete()}
 					{/if}
 				</Form.Button>
 			</Dialog.Footer>

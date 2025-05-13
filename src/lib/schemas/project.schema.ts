@@ -3,7 +3,10 @@ import { z } from 'zod';
 
 export const projectSchema = z.object({
 	id: z.string(),
-	name: z.string().min(1, m.tame_candid_platypus_care()).max(100, m.long_gross_stingray_snip()),
+	name: z
+		.string()
+		.min(1, m.project_name_is_required())
+		.max(100, m.project_name_cannot_be_longer_than_100_characters()),
 	status: z.enum(['planned', 'active', 'completed']).default('active'),
 	team: z.string(),
 	created: z.string(),

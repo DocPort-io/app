@@ -75,24 +75,24 @@
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{m.known_major_hawk_stop()}</Dialog.Title>
-			<Dialog.Description>{m.factual_cute_goose_snap()}</Dialog.Description>
+			<Dialog.Title>{m.edit_project()}</Dialog.Title>
+			<Dialog.Description>{m.update_the_project_details_below()}</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>{m.royal_major_impala_charm()}</Form.Label>
+						<Form.Label>{m.name()}</Form.Label>
 						<Input
 							{...props}
 							{...$constraints.name}
 							bind:value={$formData.name}
-							placeholder={m.alert_nimble_pug_play()}
+							placeholder={m.my_awesome_project()}
 							disabled={$submitting}
 						/>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>{m.busy_tame_jackdaw_read()}</Form.Description>
+				<Form.Description>{m.enter_a_meaningful_name_for_your_project()}</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
@@ -123,14 +123,14 @@
 					{/snippet}
 				</Form.Control>
 				<Form.Description>
-					{m.large_front_opossum_walk()}
+					{m.select_a_status_for_the_project()}
 				</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
 			<Dialog.Footer>
 				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
-					{m.red_same_flea_clip()}
+					{m.cancel()}
 				</Button>
 				<Form.Button type="submit" disabled={$submitting}>
 					{#if $delayed}
@@ -139,7 +139,7 @@
 					{#if $submitting}
 						Saving...
 					{:else}
-						{m.big_male_bear_peek()}
+						{m.save()}
 					{/if}
 				</Form.Button>
 			</Dialog.Footer>
