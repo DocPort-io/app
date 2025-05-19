@@ -66,13 +66,13 @@
 </script>
 
 {#if dev}
-	<RenderScan />
+	<RenderScan initialEnabled={false} />
 {/if}
 <ModeWatcher />
 <Toaster />
 <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
 	{@render children()}
 	{#if dev}
-		<SvelteQueryDevtools initialIsOpen={true} buttonPosition="bottom-left" />
+		<SvelteQueryDevtools buttonPosition="bottom-left" />
 	{/if}
 </PersistQueryClientProvider>
