@@ -20,12 +20,9 @@ export class TeamState implements ITeamState {
 	}
 
 	#saveTeamToLocalStorage() {
-		if (!this.currentTeam) {
-			localStorage.removeItem('team');
-			return;
-		}
-
-		localStorage.setItem('team', this.currentTeam);
+		return this.currentTeam
+			? localStorage.setItem('team', this.currentTeam)
+			: localStorage.removeItem('team');
 	}
 
 	#loadTeamFromLocalStorage() {
