@@ -1,8 +1,6 @@
 <script lang="ts">
-	import type { WithoutChild } from 'bits-ui';
-
-	import { cn } from '$lib/utils.js';
 	import * as FormPrimitive from 'formsnap';
+	import { cn, type WithoutChild } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
@@ -13,6 +11,7 @@
 
 <FormPrimitive.Description
 	bind:ref
+	data-slot="form-description"
 	class={cn('text-muted-foreground text-sm', className)}
 	{...restProps}
 />

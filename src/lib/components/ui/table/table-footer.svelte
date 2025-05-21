@@ -1,8 +1,6 @@
 <script lang="ts">
-	import type { WithElementRef } from 'bits-ui';
+	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLAttributes } from 'svelte/elements';
-
-	import { cn } from '$lib/utils.js';
 
 	let {
 		ref = $bindable(null),
@@ -12,6 +10,11 @@
 	}: WithElementRef<HTMLAttributes<HTMLTableSectionElement>> = $props();
 </script>
 
-<tfoot bind:this={ref} class={cn('bg-muted/50 font-medium', className)} {...restProps}>
+<tfoot
+	bind:this={ref}
+	data-slot="table-footer"
+	class={cn('bg-muted/50 border-t font-medium [&>tr]:last:border-b-0', className)}
+	{...restProps}
+>
 	{@render children?.()}
 </tfoot>

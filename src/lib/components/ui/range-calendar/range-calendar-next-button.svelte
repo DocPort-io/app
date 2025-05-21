@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import { RangeCalendar as RangeCalendarPrimitive } from 'bits-ui';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
-	import { RangeCalendar as RangeCalendarPrimitive } from 'bits-ui';
 
 	let {
 		ref = $bindable(null),
@@ -13,7 +13,7 @@
 </script>
 
 {#snippet Fallback()}
-	<ChevronRight class="size-4" />
+	<ChevronRightIcon class="size-4" />
 {/snippet}
 
 <RangeCalendarPrimitive.NextButton
