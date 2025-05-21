@@ -10,7 +10,6 @@
 		Select,
 		SelectContent,
 		SelectGroup,
-		SelectGroupHeading,
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select';
@@ -113,7 +112,6 @@
 							</SelectTrigger>
 							<SelectContent>
 								<SelectGroup>
-									<SelectGroupHeading>Statusses</SelectGroupHeading>
 									{#each validStatusses as status (status.value)}
 										<SelectItem value={status.value} label={status.label} />
 									{/each}
