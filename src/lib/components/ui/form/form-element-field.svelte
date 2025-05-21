@@ -5,9 +5,10 @@
 </script>
 
 <script lang="ts" generics="T extends Record<string, unknown>, U extends _FormPathLeaves<T>">
-	import * as FormPrimitive from 'formsnap';
 	import type { HTMLAttributes } from 'svelte/elements';
+
 	import { cn, type WithElementRef, type WithoutChildren } from '$lib/utils.js';
+	import * as FormPrimitive from 'formsnap';
 
 	let {
 		ref = $bindable(null),

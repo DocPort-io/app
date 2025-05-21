@@ -1,7 +1,8 @@
 <script lang="ts">
+	import type { HTMLAttributes } from 'svelte/elements';
+
 	import { cn } from '$lib/utils.js';
 	import { type WithElementRef } from 'bits-ui';
-	import type { HTMLAttributes } from 'svelte/elements';
 
 	let {
 		ref = $bindable(null),
