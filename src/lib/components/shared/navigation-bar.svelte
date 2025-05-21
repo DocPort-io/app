@@ -56,17 +56,10 @@
 			</Button>
 		</Sheet.Trigger>
 		<Sheet.Content side="left">
-			<nav class="grid gap-6 text-lg font-medium">
-				<a href={AppRoute.DASHBOARD()} class="flex items-center gap-2 text-lg font-semibold">
-					<img
-						src={DocPortLogo}
-						alt="DocPort Logo"
-						class="aspect-square rounded-md object-cover"
-						height="64"
-						width="64"
-					/>
-					<span class="sr-only">DocPort</span>
-				</a>
+			<Sheet.Header>
+				<Sheet.Title>DocPort</Sheet.Title>
+			</Sheet.Header>
+			<nav class="grid gap-6 overflow-y-auto px-4 text-sm font-medium">
 				<a
 					href={AppRoute.DASHBOARD()}
 					class={cn(
