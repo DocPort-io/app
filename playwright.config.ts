@@ -9,6 +9,7 @@ export default defineConfig({
 	},
 
 	testDir: 'e2e',
+	fullyParallel: true,
 
 	projects: [
 		{

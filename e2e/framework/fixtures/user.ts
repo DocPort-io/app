@@ -1,4 +1,5 @@
 import PocketBase from 'pocketbase';
+import * as uuid from 'uuid';
 
 export type TestUser = {
 	id: string;
@@ -7,7 +8,7 @@ export type TestUser = {
 };
 
 export const createUser = async (pocketBase: PocketBase): Promise<TestUser> => {
-	const email = `test-${Date.now()}@example.com`;
+	const email = `test-${uuid.v4()}@example.com`;
 	const password = 'password123';
 
 	const { id } = await pocketBase.collection('users').create({

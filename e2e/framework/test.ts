@@ -5,8 +5,9 @@ import { LoginPage } from '../pages/auth/login.page';
 import { DashboardPage } from '../pages/dashboard.page';
 import { ProjectsPage } from '../pages/projects.page';
 import { createPocketBase } from './fixtures/pocketbase';
-import { createTeam, deleteTeam, TestTeam } from './fixtures/team';
-import { createUser, deleteUser, TestUser } from './fixtures/user';
+import { TestTeam } from './fixtures/team';
+import { createTestData, TestData } from './fixtures/test-data';
+import { TestUser } from './fixtures/user';
 
 type TestFixtures = {
 	// Pages
@@ -18,6 +19,7 @@ type TestFixtures = {
 	pocketBase: PocketBase;
 	testUser: TestUser;
 	testTeam: TestTeam;
+	testData: TestData;
 };
 
 export const test = baseTest.extend<TestFixtures>({
@@ -37,14 +39,21 @@ export const test = baseTest.extend<TestFixtures>({
 		const pocketBase = await createPocketBase();
 		await use(pocketBase);
 	},
-	testUser: async ({ pocketBase }, use) => {
-		const user = await createUser(pocketBase);
+	testUser: async ({ testData }, use) => {
+		const user = await testData.user();
 		await use(user);
-		await deleteUser(pocketBase, user);
 	},
-	testTeam: async ({ pocketBase, testUser }, use) => {
-		const team = await createTeam(pocketBase, testUser);
+	testTeam: async ({ testUser, testData }, use) => {
+		const team = await testData.team(testUser);
 		await use(team);
-		await deleteTeam(pocketBase, team);
+	},
+	testData: async ({ pocketBase }, use) => {
+		const testData = createTestData(pocketBase);
+		await use(testData);
+
+		const { status, expectedStatus } = test.info();
+		if (status !== expectedStatus) return;
+
+		await testData.cleanup();
 	}
 });

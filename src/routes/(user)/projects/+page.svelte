@@ -69,7 +69,12 @@
 				<Card.Description>{m.manage_your_projects()}</Card.Description>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
-				<Button size="sm" class="h-8 gap-1" onclick={() => createDialog.open()}>
+				<Button
+					size="sm"
+					class="h-8 gap-1"
+					onclick={() => createDialog.open()}
+					data-testid="projects-create-button"
+				>
 					<CirclePlus class="h-3.5 w-3.5" />
 					<span class="sr-only sm:not-sr-only sm:whitespace-nowrap">{m.add_project()}</span>
 				</Button>

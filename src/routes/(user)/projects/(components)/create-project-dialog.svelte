@@ -70,7 +70,7 @@
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="sm:max-w-[425px]" data-testid="projects-create-dialog">
 		<Dialog.Header>
 			<Dialog.Title>{m.create_project()}</Dialog.Title>
 			<Dialog.Description>{m.add_a_project_to_your_workspace()}</Dialog.Description>
@@ -95,6 +95,7 @@
 							bind:value={$formData.name}
 							placeholder={m.my_awesome_project()}
 							disabled={$submitting}
+							data-testid="projects-create-dialog-input-name"
 						/>
 					{/snippet}
 				</Form.Control>
@@ -110,14 +111,15 @@
 							name={props.name}
 							{...$constraints.status}
 							bind:value={$formData.status}
+							disabled={$submitting}
 							type="single"
 						>
-							<SelectTrigger {...props}>
+							<SelectTrigger {...props} data-testid="projects-create-dialog-select-trigger-status">
 								{$formData.status
 									? validStatusses.find((vs) => vs.value === $formData.status)?.label
 									: 'Select a status for the project'}
 							</SelectTrigger>
-							<SelectContent>
+							<SelectContent data-testid="projects-create-dialog-select-content-status">
 								<SelectGroup>
 									{#each validStatusses as status (status.value)}
 										<SelectItem value={status.value} label={status.label} />
@@ -142,7 +144,11 @@
 				>
 					{m.cancel()}
 				</Button>
-				<Form.Button type="submit" disabled={$submitting}>
+				<Form.Button
+					type="submit"
+					disabled={$submitting}
+					data-testid="projects-create-dialog-button-submit"
+				>
 					{#if $delayed}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
