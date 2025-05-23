@@ -188,7 +188,7 @@
 					perPage={pagination.perPage}
 					bind:page={pagination.page}
 				>
-					{#snippet children({ pages, currentPage, range })}
+					{#snippet children({ pages, currentPage })}
 						<PaginationContent>
 							<PaginationItem class="hidden md:block">
 								<PaginationPrevButton />
@@ -210,9 +210,6 @@
 								<PaginationNextButton />
 							</PaginationItem>
 						</PaginationContent>
-						<p class="text-muted-foreground text-center text-[13px]">
-							Showing {range.start} - {range.end} of {$projects.data.totalItems} results
-						</p>
 					{/snippet}
 				</Pagination>
 			</Card.Footer>
