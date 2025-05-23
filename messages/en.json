@@ -65,5 +65,8 @@
 	"external_authentication_not_possible": "External authentication not possible.",
 	"view": "View",
 	"status": "Status",
-	"select_a_status_for_the_project": "Select a status for the project. This will help you track the progress of your project."
+	"select_a_status_for_the_project": "Select a status for the project. This will help you track the progress of your project.",
+	"version_name_is_required": "Version name is required",
+	"version_name_cannot_be_longer_than_100_characters": "Version name cannot be longer than 100 characters",
+	"description_cannot_be_longer_than_300_characters": "Description cannot be longer than 300 characters"
 }
