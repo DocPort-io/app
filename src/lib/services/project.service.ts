@@ -14,7 +14,7 @@ export type FindAllOptions = {
 };
 
 export interface IProjectService {
-	findAll(options: { page?: number; perPage?: number }): Promise<ListResult<ProjectSchema>>;
+	findAll(options: FindAllOptions): Promise<ListResult<ProjectSchema>>;
 	findOne(id: string): Promise<ProjectSchema>;
 	create(data: ProjectCreateSchema): Promise<ProjectSchema>;
 	update(id: string, data: ProjectUpdateSchema): Promise<ProjectSchema>;
@@ -25,6 +25,7 @@ export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
 
 	async findAll({ page, perPage, team }: FindAllOptions): Promise<ListResult<ProjectSchema>> {
+		if (!team) throw new Error('Team is required');
 		page = page ?? 1;
 		perPage = perPage ?? 50;
 
