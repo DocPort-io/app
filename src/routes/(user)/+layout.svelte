@@ -1,6 +1,4 @@
 <script lang="ts">
-	import '../../app.css';
-
 	import type { Snippet } from 'svelte';
 
 	import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
