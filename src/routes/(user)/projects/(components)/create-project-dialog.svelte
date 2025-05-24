@@ -56,7 +56,7 @@
 		}
 	});
 
-	const { form: formData, constraints, enhance, submitting, delayed, allErrors } = form;
+	const { form: formData, constraints, enhance, submitting, delayed, allErrors, reset } = form;
 
 	let formErrors = $derived(
 		$allErrors.filter((error) => error.path === '_errors').flatMap((error) => error.messages)
@@ -137,9 +137,11 @@
 
 			<Dialog.Footer>
 				<Button
-					type="reset"
 					variant="outline"
-					onclick={() => dialogController.close()}
+					onclick={() => {
+						reset();
+						dialogController.close();
+					}}
 					disabled={$submitting}
 				>
 					{m.cancel()}
