@@ -9,7 +9,6 @@ export const versionSchema = z.object({
 		.max(100, m.version_name_cannot_be_longer_than_100_characters()),
 	description: z.string().max(300, m.description_cannot_be_longer_than_300_characters()).optional(),
 	project: z.string(),
-	files: z.array(z.any()),
 	created: z.string(),
 	updated: z.string()
 });

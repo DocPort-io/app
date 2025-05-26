@@ -68,5 +68,8 @@
 	"select_a_status_for_the_project": "Select a status for the project. This will help you track the progress of your project.",
 	"version_name_is_required": "Version name is required",
 	"version_name_cannot_be_longer_than_100_characters": "Version name cannot be longer than 100 characters",
-	"description_cannot_be_longer_than_300_characters": "Description cannot be longer than 300 characters"
+	"description_cannot_be_longer_than_300_characters": "Description cannot be longer than 300 characters",
+	"file_name_is_required": "File name is required",
+	"file_size_must_be_positive": "File size must be a positive number",
+	"file_type_is_required": "File type is required"
 }
