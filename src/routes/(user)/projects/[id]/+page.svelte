@@ -28,6 +28,11 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import {
+		resolveTextMapping,
+		type MimeTypeIconMapping,
+		resolveIconMapping
+	} from '$lib/file-mappings';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { createPaginatedFilesQuery } from '$lib/queries/files';
 	import { createProjectQuery } from '$lib/queries/project';
@@ -122,12 +127,12 @@
 <!-- svelte-ignore a11y_missing_attribute -->
 <a bind:this={downloadElement} target="_blank"></a>
 
-{#snippet getFileIcon(type: string)}
-	{#if type === 'application/pdf'}
+{#snippet getFileIcon(type: MimeTypeIconMapping)}
+	{#if type === 'document'}
 		<FileText class="h-4 w-4" />
-	{:else if type === 'image/png' || type === 'image/jpeg' || type === 'image/gif'}
+	{:else if type === 'image'}
 		<Image class="h-4 w-4" />
-	{:else if type === 'application/zip' || type === 'application/x-zip-compressed'}
+	{:else if type === 'archive'}
 		<Archive class="h-4 w-4" />
 	{:else}
 		<File class="h-4 w-4" />
@@ -193,12 +198,14 @@
 										>
 											<div class="flex flex-col gap-3 md:flex-row md:items-center">
 												<div class="bg-muted w-min rounded-md p-2">
-													{@render getFileIcon(file.type ?? 'application/octet-stream')}
+													{@render getFileIcon(resolveIconMapping(file.type))}
 												</div>
 												<div>
 													<p class="text-sm font-medium break-all">{file.name}</p>
 													<p class="text-muted-foreground text-xs">
-														{prettyBytes(file.size, { locale: getLocale() })}
+														{prettyBytes(file.size, { locale: getLocale() })} - {resolveTextMapping(
+															file.type
+														)}
 													</p>
 												</div>
 											</div>
