@@ -15,7 +15,7 @@ export type MimeTypeIconMapping =
 	| 'unknown';
 export const mimeTypeIconMappings: Map<string, MimeTypeIconMapping> = new Map([
 	['application/pdf', 'document'],
-	['application/vnd.siemens.tiaportal.project.archive', 'unknown'],
+	['application/vnd.siemens.tiaportal.project.archive', 'archive'],
 	['application/zip', 'archive'],
 	['application/x-zip-compressed', 'archive']
 ]);
