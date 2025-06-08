@@ -62,7 +62,7 @@ export const resolveIconMapping = (mimeType: string): MimeTypeIconMapping => {
 	}
 
 	if (mimeType.startsWith('text/')) {
-		return 'code';
+		return 'document';
 	}
 
 	return 'unknown';
