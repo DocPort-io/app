@@ -22,7 +22,7 @@
 	>
 		<a
 			href={AppRoute.DASHBOARD()}
-			class="flex items-center gap-2 text-lg font-semibold md:text-base"
+			class="flex h-10 w-10 items-center gap-2 text-lg font-semibold md:text-base"
 		>
 			<img
 				src={DocPortLogo}
