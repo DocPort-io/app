@@ -41,7 +41,7 @@
 
 	const pagination = $state({
 		page: 1,
-		perPage: 5
+		perPage: 25
 	});
 
 	const projects = $derived.by(() =>

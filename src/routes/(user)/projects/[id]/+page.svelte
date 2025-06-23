@@ -50,7 +50,7 @@
 
 	const versionsPagination = $state({
 		page: 1,
-		perPage: 20
+		perPage: 25
 	});
 
 	const versionsQuery = $derived.by(() =>
@@ -97,7 +97,7 @@
 
 	const filesPagination = $state({
 		page: 1,
-		perPage: 20
+		perPage: 25
 	});
 
 	const filesQuery = $derived.by(() =>
