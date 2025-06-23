@@ -33,6 +33,23 @@ export const createPaginatedProjectsQuery = ({
 	});
 };
 
+export const createProjectsCountQuery = ({
+	team,
+	projectService
+}: {
+	team: string;
+	projectService?: IProjectService;
+}) => {
+	if (!projectService) projectService = new ProjectService();
+
+	return queryOptions({
+		queryKey: [QUERY_BASE_KEY, 'count', team],
+		queryFn: () => projectService.count({ team }),
+		placeholderData: 0,
+		enabled: !!team
+	});
+};
+
 export type ProjectMutationOptions = {
 	projectService?: IProjectService;
 };

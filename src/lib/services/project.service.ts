@@ -7,6 +7,10 @@ import type { ListResult } from 'pocketbase';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
 
+export type CountOptions = {
+	team: string;
+};
+
 export type FindAllOptions = {
 	page?: number;
 	perPage?: number;
@@ -14,6 +18,7 @@ export type FindAllOptions = {
 };
 
 export interface IProjectService {
+	count(options: CountOptions): Promise<number>;
 	findAll(options: FindAllOptions): Promise<ListResult<ProjectSchema>>;
 	findOne(id: string): Promise<ProjectSchema>;
 	create(data: ProjectCreateSchema): Promise<ProjectSchema>;
@@ -23,6 +28,16 @@ export interface IProjectService {
 
 export class ProjectService implements IProjectService {
 	constructor(protected readonly pocketbase: TypedPocketBase = getPocketBase()) {}
+
+	async count({ team }: CountOptions): Promise<number> {
+		if (!team) throw new Error('Team is required');
+
+		const result = await this.pocketbase.collection('projects').getList(1, 1, {
+			filter: this.pocketbase.filter('team = {:team}', { team })
+		});
+
+		return result.totalItems;
+	}
 
 	async findAll({ page, perPage, team }: FindAllOptions): Promise<ListResult<ProjectSchema>> {
 		if (!team) throw new Error('Team is required');
