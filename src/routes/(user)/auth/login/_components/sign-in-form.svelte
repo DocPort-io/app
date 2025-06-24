@@ -44,7 +44,7 @@
 {#if formErrors.length > 0}
 	<Alert.Root variant="destructive" class="mt-4">
 		<AlertTriangle class="mr-2 h-4 w-4" />
-		<Alert.Title data-testid="login-error-title">Oops!</Alert.Title>
+		<Alert.Title data-testid="login-error-title">{m.oops()}</Alert.Title>
 		{#each formErrors as formError}
 			<Alert.Description data-testid="login-error-description">{formError}</Alert.Description>
 		{/each}

@@ -63,9 +63,9 @@
 	);
 
 	const validStatusses = [
-		{ value: 'planned', label: 'Planned' },
-		{ value: 'active', label: 'Active' },
-		{ value: 'completed', label: 'Completed' }
+		{ value: 'planned', label: m.planned() },
+		{ value: 'active', label: m.active() },
+		{ value: 'completed', label: m.completed() }
 	];
 </script>
 
@@ -79,7 +79,7 @@
 		{#if formErrors.length > 0}
 			<Alert.Root variant="destructive" class="mt-4">
 				<AlertTriangle class="mr-2 h-4 w-4" />
-				<Alert.Title>Error</Alert.Title>
+				<Alert.Title>{m.error()}</Alert.Title>
 				<Alert.Description>{formErrors[0]}</Alert.Description>
 			</Alert.Root>
 		{/if}
@@ -117,7 +117,7 @@
 							<SelectTrigger {...props} data-testid="projects-create-dialog-select-trigger-status">
 								{$formData.status
 									? validStatusses.find((vs) => vs.value === $formData.status)?.label
-									: 'Select a status for the project'}
+									: m.select_a_status_for_the_project_placeholder()}
 							</SelectTrigger>
 							<SelectContent data-testid="projects-create-dialog-select-content-status">
 								<SelectGroup>
@@ -155,7 +155,7 @@
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
 					{#if $submitting}
-						Creating...
+						{m.creating()}
 					{:else}
 						{m.create()}
 					{/if}

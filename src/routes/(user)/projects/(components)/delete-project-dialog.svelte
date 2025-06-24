@@ -32,7 +32,7 @@
 						dialogController.close();
 					},
 					onError: () => {
-						setError(form, 'Failed to delete project. Please try again.');
+						setError(form, m.failed_to_delete_project());
 					}
 				});
 			}
@@ -64,7 +64,7 @@
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
 					{#if $submitting}
-						Deleting...
+						{m.deleting()}
 					{:else}
 						{m.delete()}
 					{/if}

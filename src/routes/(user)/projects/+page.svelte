@@ -55,13 +55,13 @@
 	);
 
 	const statusMap = {
-		planned: 'Planned',
-		active: 'Active',
-		completed: 'Completed'
+		planned: m.planned(),
+		active: m.active(),
+		completed: m.completed()
 	};
 </script>
 
-<UserPageLayout title="Projects">
+<UserPageLayout title={m.projects()}>
 	<Card.Root data-testid="projects-card">
 		<Card.Header class="flex flex-row items-center">
 			<div class="grid gap-2">
@@ -88,9 +88,9 @@
 				<Table.Header data-testid="projects-table-header">
 					<Table.Row>
 						<Table.Head class="w-full md:w-2/3">{m.name()}</Table.Head>
-						<Table.Head class="hidden md:table-cell md:w-1/3">Status</Table.Head>
+						<Table.Head class="hidden md:table-cell md:w-1/3">{m.status()}</Table.Head>
 						<Table.Head>
-							<span class="sr-only">Actions</span>
+							<span class="sr-only">{m.actions()}</span>
 						</Table.Head>
 					</Table.Row>
 				</Table.Header>
@@ -149,7 +149,7 @@
 											class={buttonVariants({ size: 'icon', variant: 'ghost' })}
 										>
 											<Ellipsis class="h-4 w-4" />
-											<span class="sr-only">Toggle menu</span>
+											<span class="sr-only">{m.toggle_menu()}</span>
 										</DropdownMenu.Trigger>
 										<DropdownMenu.Content align="end">
 											<DropdownMenu.Label>{m.actions()}</DropdownMenu.Label>

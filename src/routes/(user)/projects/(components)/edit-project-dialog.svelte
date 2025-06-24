@@ -43,7 +43,7 @@
 							dialogController.close();
 						},
 						onError: () => {
-							setError(form, 'Failed to update project. Please try again.');
+							setError(form, m.failed_to_update_project());
 						}
 					}
 				);
@@ -65,9 +65,9 @@
 	});
 
 	const validStatusses = [
-		{ value: 'planned', label: 'Planned' },
-		{ value: 'active', label: 'Active' },
-		{ value: 'completed', label: 'Completed' }
+		{ value: 'planned', label: m.planned() },
+		{ value: 'active', label: m.active() },
+		{ value: 'completed', label: m.completed() }
 	];
 </script>
 
@@ -108,7 +108,7 @@
 							<SelectTrigger {...props}>
 								{$formData.status
 									? validStatusses.find((vs) => vs.value === $formData.status)?.label
-									: 'Select a status for the project'}
+									: m.select_a_status_for_the_project_placeholder()}
 							</SelectTrigger>
 							<SelectContent>
 								<SelectGroup>
@@ -135,7 +135,7 @@
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
 					{#if $submitting}
-						Saving...
+						{m.saving()}
 					{:else}
 						{m.save()}
 					{/if}
