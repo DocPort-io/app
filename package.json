@@ -34,7 +34,7 @@
 		"@tanstack/table-core": "^8.21.3",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.8",
-		"@types/node": "^22.15.32",
+		"@types/node": "^22.15.33",
 		"bits-ui": "^2.8.8",
 		"clsx": "^2.1.1",
 		"dotenv": "^16.5.0",
