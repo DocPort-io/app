@@ -1,4 +1,9 @@
-import type { FileCreateSchema, FileSchema, FileUpdateSchema } from '$lib/schemas/file.schema';
+import type {
+	FileCreateSchema,
+	FileSchema,
+	FileUpdateSchema,
+	FileUploadSchema
+} from '$lib/schemas/file.schema';
 import type { ListResult } from 'pocketbase';
 
 import { getPocketBase, type TypedPocketBase } from './pocketbase';
@@ -15,6 +20,7 @@ export interface IFileService {
 	create(data: FileCreateSchema): Promise<FileSchema>;
 	update(id: string, data: FileUpdateSchema): Promise<FileSchema>;
 	remove(id: string): Promise<void>;
+	upload(data: FileUploadSchema): Promise<FileSchema>;
 }
 
 export class FileService implements IFileService {
@@ -45,5 +51,16 @@ export class FileService implements IFileService {
 
 	async remove(id: string): Promise<void> {
 		await this.pocketbase.collection('files').delete(id);
+	}
+
+	async upload(data: FileUploadSchema): Promise<FileSchema> {
+		const { name, size, type } = data.file;
+
+		return await this.pocketbase.collection('files').create({
+			...data,
+			name,
+			size,
+			type
+		});
 	}
 }

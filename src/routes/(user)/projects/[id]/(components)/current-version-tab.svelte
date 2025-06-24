@@ -2,7 +2,7 @@
 	import type { FileSchema } from '$lib/schemas/file.schema';
 	import type { VersionSchema } from '$lib/schemas/version.schema';
 
-	import { Archive, Clock, Download, File, FileText, Image } from '@lucide/svelte';
+	import { Archive, Clock, Download, File, FileText, Image, Upload } from '@lucide/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -32,7 +32,10 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { createPaginatedFilesQuery } from '$lib/queries/files';
 	import { getPocketBase } from '$lib/services/pocketbase';
+	import { createDialogController } from '$lib/stores/dialog.svelte';
 	import prettyBytes from 'pretty-bytes';
+
+	import UploadFileDialog from './upload-file-dialog.svelte';
 
 	type Props = {
 		currentVersion?: VersionSchema | null;
@@ -41,6 +44,8 @@
 	let { currentVersion }: Props = $props();
 
 	let downloadElement: HTMLAnchorElement;
+
+	const uploadDialogController = createDialogController<{ versionId: string }>();
 
 	const downloadFile = async (record: FileSchema) => {
 		const pb = getPocketBase();
@@ -108,7 +113,23 @@
 		</CardHeader>
 		<CardContent>
 			<div class="space-y-4">
-				<h3 class="mb-3 text-sm font-medium">{m.files()} ({$filesQuery.data?.items.length})</h3>
+				<div class="flex items-center justify-between">
+					<h3 class="text-sm font-medium">{m.files()} ({$filesQuery.data?.items.length})</h3>
+					{#if currentVersion}
+						<Button
+							variant="outline"
+							size="sm"
+							class="gap-2"
+							onclick={() => {
+								uploadDialogController.data = { versionId: currentVersion.id };
+								uploadDialogController.open();
+							}}
+						>
+							<Upload class="h-4 w-4" />
+							{m.upload()}
+						</Button>
+					{/if}
+				</div>
 				<div class="space-y-2">
 					{#each $filesQuery.data?.items ?? [] as file}
 						<div
@@ -167,3 +188,5 @@
 		</CardContent>
 	</Card>
 </TabsContent>
+
+<UploadFileDialog dialogController={uploadDialogController} />

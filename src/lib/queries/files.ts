@@ -1,4 +1,8 @@
-import type { FileCreateSchema, FileUpdateSchema } from '$lib/schemas/file.schema';
+import type {
+	FileCreateSchema,
+	FileUpdateSchema,
+	FileUploadSchema
+} from '$lib/schemas/file.schema';
 
 import {
 	createMutation,
@@ -6,6 +10,7 @@ import {
 	queryOptions,
 	useQueryClient
 } from '@tanstack/svelte-query';
+import { m } from '$lib/paraglide/messages';
 import { FileService, type IFileService } from '$lib/services/file.service';
 import { toast } from 'svelte-sonner';
 
@@ -46,7 +51,7 @@ export const createAddFileMutation = ({ fileService }: FileMutationOptions = {})
 		mutationFn: (file: FileCreateSchema) => fileService.create(file),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
-			toast.success('File created successfully!');
+			toast.success(m.file_created_successfully());
 		}
 	});
 };
@@ -60,7 +65,7 @@ export const createUpdateFileMutation = ({ fileService }: FileMutationOptions = 
 			fileService.update(id, file),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
-			toast.success('File updated successfully!');
+			toast.success(m.file_updated_successfully());
 		}
 	});
 };
@@ -73,7 +78,23 @@ export const createDeleteFileMutation = ({ fileService }: FileMutationOptions = 
 		mutationFn: (id: string) => fileService.remove(id),
 		onSuccess: () => {
 			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
-			toast.success('File deleted successfully!');
+			toast.success(m.file_deleted_successfully());
+		}
+	});
+};
+
+export const createUploadFileMutation = ({ fileService }: FileMutationOptions = {}) => {
+	if (!fileService) fileService = new FileService();
+	const client = useQueryClient();
+
+	return createMutation({
+		mutationFn: (file: FileUploadSchema) => fileService.upload(file),
+		onSuccess: () => {
+			client.invalidateQueries({ queryKey: [QUERY_BASE_KEY] });
+			toast.success(m.file_uploaded_successfully());
+		},
+		onError: () => {
+			toast.error(m.failed_to_upload_file());
 		}
 	});
 };
