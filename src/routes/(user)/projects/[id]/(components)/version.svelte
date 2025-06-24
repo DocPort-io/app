@@ -6,6 +6,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import { createUserQuery } from '$lib/queries/user';
 	import { cn } from '$lib/utils';
 
@@ -54,7 +55,9 @@
 				</span>
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
-					{version.created ? new Date(version.created).toLocaleDateString() : m.unknown_date()}
+					{version.created
+						? new Date(version.created).toLocaleDateString(getLocale())
+						: m.unknown_date()}
 				</span>
 			</div>
 		</div>

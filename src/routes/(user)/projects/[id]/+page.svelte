@@ -8,6 +8,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import { createProjectQuery } from '$lib/queries/project';
 	import { createPaginatedVersionsQuery } from '$lib/queries/versions';
 
@@ -71,7 +72,10 @@
 				<div class="flex items-center gap-2">
 					<Calendar class="h-4 w-4" />
 					{#if $projectQuery.data?.created}
-						<span>{m.created()} {new Date($projectQuery.data?.created).toLocaleDateString()}</span>
+						<span
+							>{m.created()}
+							{new Date($projectQuery.data?.created).toLocaleDateString(getLocale())}</span
+						>
 					{:else}
 						<span>{m.created_unknown()}</span>
 					{/if}
