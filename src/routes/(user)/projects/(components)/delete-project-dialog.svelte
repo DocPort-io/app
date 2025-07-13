@@ -7,9 +7,10 @@
 	import * as Form from '$lib/components/ui/form';
 	import { m } from '$lib/paraglide/messages';
 	import { createDeleteProjectMutation } from '$lib/queries/projects';
-	import { projectDeleteSchema, type ProjectDeleteSchema } from '$lib/schemas/project.schema';
+	import { type ProjectDeleteSchema } from '$lib/schemas/project.schema';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod, zodClient } from 'sveltekit-superforms/adapters';
+	import { zod4, zod4Client } from 'sveltekit-superforms/adapters';
+	import z from 'zod';
 
 	type Props = {
 		dialogController: DialogController<ProjectDeleteSchema>;
@@ -19,25 +20,26 @@
 
 	const deleteMutation = createDeleteProjectMutation();
 
-	const form = $derived(
-		superForm(defaults(dialogController.data, zod(projectDeleteSchema)), {
-			id: 'delete-project-form',
-			SPA: true,
-			validators: zodClient(projectDeleteSchema),
-			onUpdate: async ({ form }) => {
-				if (!form.valid) return;
+	const schema = z.object({});
 
-				await $deleteMutation.mutateAsync(form.data.id, {
-					onSuccess: () => {
-						dialogController.close();
-					},
-					onError: () => {
-						setError(form, m.failed_to_delete_project());
-					}
-				});
-			}
-		})
-	);
+	const form = superForm(defaults(zod4(schema)), {
+		id: 'delete-project-form',
+		SPA: true,
+		validators: zod4Client(schema),
+		onUpdate: async ({ form }) => {
+			if (!form.valid) return;
+			if (!dialogController.data?.id) return;
+
+			await $deleteMutation.mutateAsync(dialogController.data.id, {
+				onSuccess: () => {
+					dialogController.close();
+				},
+				onError: () => {
+					setError(form, m.failed_to_delete_project());
+				}
+			});
+		}
+	});
 
 	const { enhance, validateForm, submitting, delayed } = $derived(form);
 

@@ -9,14 +9,14 @@
 	import { getUserState } from '$lib/stores/user.svelte';
 	import { ClientResponseError } from 'pocketbase';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod } from 'sveltekit-superforms/adapters';
+	import { zod4, zod4Client } from 'sveltekit-superforms/adapters';
 
 	const userStore = getUserState();
 
-	const form = superForm(defaults(zod(signInSchema)), {
+	const form = superForm(defaults(zod4(signInSchema)), {
 		id: 'sign-in-form',
 		SPA: true,
-		validators: zod(signInSchema),
+		validators: zod4Client(signInSchema),
 		onUpdate: async ({ form }) => {
 			if (!form.valid) return;
 
@@ -45,7 +45,7 @@
 	<Alert.Root variant="destructive" class="mt-4">
 		<AlertTriangle class="mr-2 h-4 w-4" />
 		<Alert.Title data-testid="login-error-title">{m.oops()}</Alert.Title>
-		{#each formErrors as formError}
+		{#each formErrors as formError, index (index)}
 			<Alert.Description data-testid="login-error-description">{formError}</Alert.Description>
 		{/each}
 	</Alert.Root>

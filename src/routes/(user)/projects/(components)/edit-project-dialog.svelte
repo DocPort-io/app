@@ -4,20 +4,20 @@
 	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import {
 		Select,
 		SelectContent,
-		SelectGroup,
+		// SelectGroup,
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select';
+	import Field from '$lib/form/field.svelte';
+	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createUpdateProjectMutation } from '$lib/queries/projects';
 	import { projectUpdateSchema, type ProjectUpdateSchema } from '$lib/schemas/project.schema';
-	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<{ id: string; project: ProjectUpdateSchema }>;
@@ -27,23 +27,66 @@
 
 	const updateMutation = createUpdateProjectMutation();
 
+	// const form = superForm(defaults($project, zod(schema)), {
+	// 	id: 'edit-project-form',
+	// 	SPA: true,
+	// 	validators: zodClient(schema),
+	// 	invalidateAll: false,
+	// 	resetForm: false,
+	// 	onUpdate: async ({ form }) => {
+	// 		if (!form.valid) return;
+	// 		if (!dialogController.data?.id) return;
+
+	// 		await $updateMutation.mutateAsync(
+	// 			{
+	// 				id: dialogController.data.id,
+	// 				project: {
+	// 					...form.data,
+	// 					team: dialogController.data.project.team
+	// 				}
+	// 			},
+	// 			{
+	// 				onSuccess: () => {
+	// 					dialogController.close();
+	// 				},
+	// 				onError: () => {
+	// 					setError(form, m.failed_to_update_project());
+	// 				}
+	// 			}
+	// 		);
+	// 	}
+	// });
+
+	const validStatusses = [
+		{ value: 'planned', label: m.planned() },
+		{ value: 'active', label: m.active() },
+		{ value: 'completed', label: m.completed() }
+	];
+
 	const form = $derived(
-		superForm(defaults(dialogController.data?.project, zod(projectUpdateSchema)), {
-			id: 'edit-project-form',
-			SPA: true,
-			validators: zodClient(projectUpdateSchema),
-			onUpdate: async ({ form }) => {
-				if (!form.valid) return;
-				if (!dialogController.data?.id) return;
+		createForm({
+			schema: projectUpdateSchema,
+			defaultValues: {
+				...dialogController.data?.project
+			},
+			onSubmit: async ({ data }) => {
+				console.log('going to submit');
+				console.log(data);
+				console.log('submitted');
+
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 
 				await $updateMutation.mutateAsync(
-					{ id: dialogController.data.id, project: form.data },
+					{
+						id: dialogController.data!.id,
+						project: data
+					},
 					{
 						onSuccess: () => {
 							dialogController.close();
 						},
 						onError: () => {
-							setError(form, m.failed_to_update_project());
+							// setError(form, m.failed_to_update_project());
 						}
 					}
 				);
@@ -51,24 +94,8 @@
 		})
 	);
 
-	const {
-		form: formData,
-		constraints,
-		enhance,
-		validateForm,
-		submitting,
-		delayed
-	} = $derived(form);
-
-	$effect(() => {
-		validateForm({ update: true });
-	});
-
-	const validStatusses = [
-		{ value: 'planned', label: m.planned() },
-		{ value: 'active', label: m.active() },
-		{ value: 'completed', label: m.completed() }
-	];
+	// $inspect(dialogController.data?.project);
+	$inspect(form.fields.name.state);
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -77,7 +104,82 @@
 			<Dialog.Title>{m.edit_project()}</Dialog.Title>
 			<Dialog.Description>{m.update_the_project_details_below()}</Dialog.Description>
 		</Dialog.Header>
-		<form method="POST" class="grid gap-4 py-4" use:enhance>
+		<form
+			class="grid gap-4 py-4"
+			onsubmit={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				form.handleSubmit();
+			}}
+		>
+			<Field {form} name="name">
+				{#snippet children(field)}
+					<Label for={field.name}>{m.name()}</Label>
+					<Input
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onblur={field.handleBlur}
+						placeholder={m.my_awesome_project()}
+						oninput={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+						disabled={form.state.isSubmitting}
+					/>
+					<!-- <p class="text-destructive text-sm font-medium">{field.state.meta.errors[0]}</p> -->
+				{/snippet}
+			</Field>
+			<Field {form} name="status">
+				{#snippet children(field)}
+					<Label for={field.name}>{m.status()}</Label>
+					<!-- <Input
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onblur={field.handleBlur}
+						placeholder={m.my_awesome_project()}
+						oninput={(e) => field.handleChange((e.target as HTMLSelectElement).value)}
+						disabled={tForm.state.isSubmitting}
+					/> -->
+					<Select
+						name={field.name}
+						type="single"
+						value={field.state.value}
+						onValueChange={(value) =>
+							field.handleChange(value as 'active' | 'completed' | 'planned')}
+						disabled={form.state.isSubmitting}
+					>
+						<SelectTrigger>
+							{field.state.value
+								? validStatusses.find((vs) => vs.value === field.state.value)?.label
+								: m.select_a_status_for_the_project_placeholder()}
+						</SelectTrigger>
+						<SelectContent>
+							{#each validStatusses as status (status.value)}
+								<SelectItem value={status.value} label={status.label} />
+							{/each}
+						</SelectContent>
+					</Select>
+					<!-- <p class="text-destructive text-sm font-medium">{field.state.meta.errors[0]}</p> -->
+				{/snippet}
+			</Field>
+
+			<Dialog.Footer>
+				<Button
+					variant="outline"
+					onclick={() => dialogController.close()}
+					disabled={form.state.isSubmitting}
+				>
+					{m.cancel()}
+				</Button>
+				<Button type="submit" disabled={form.state.isSubmitting}>
+					{#if form.state.isSubmitting}
+						<LoaderCircle class="h-4 w-4 animate-spin" />{m.saving()}
+					{:else}
+						{m.save()}
+					{/if}
+				</Button>
+			</Dialog.Footer>
+		</form>
+		<!-- <form method="POST" class="grid gap-4 py-4" use:enhance>
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}
@@ -141,6 +243,6 @@
 					{/if}
 				</Form.Button>
 			</Dialog.Footer>
-		</form>
+		</form> -->
 	</Dialog.Content>
 </Dialog.Root>

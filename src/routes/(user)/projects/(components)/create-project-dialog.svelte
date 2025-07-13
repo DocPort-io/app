@@ -16,10 +16,10 @@
 	} from '$lib/components/ui/select';
 	import { m } from '$lib/paraglide/messages';
 	import { createAddProjectMutation } from '$lib/queries/projects';
-	import { projectCreateSchema } from '$lib/schemas/project.schema';
+	import { projectSchema } from '$lib/schemas/project.schema';
 	import { getTeamState } from '$lib/stores/team.svelte';
 	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod, zodClient } from 'sveltekit-superforms/adapters';
+	import { zod4, zod4Client } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<unknown>;
@@ -31,10 +31,15 @@
 
 	const addMutation = createAddProjectMutation();
 
-	const form = superForm(defaults(zod(projectCreateSchema)), {
+	const schema = projectSchema.pick({
+		name: true,
+		status: true
+	});
+
+	const form = superForm(defaults(zod4(schema)), {
 		id: 'create-project-form',
 		SPA: true,
-		validators: zodClient(projectCreateSchema),
+		validators: zod4Client(schema),
 		onUpdate: async ({ form }) => {
 			if (!form.valid) return;
 			if (!teamState.currentTeam) return setError(form, 'Please select a team first.');
