@@ -8,7 +8,7 @@ export type OnSubmitOptions<Schema extends ZodObject<ZodRawShape>> = {
 export type CreateFormOptions<Schema extends ZodObject<ZodRawShape>> = {
 	schema: Schema;
 	defaultValues?: Partial<z.infer<Schema>>;
-	onSubmit: (options: OnSubmitOptions<Schema>) => Promise<void> | void;
+	onSubmit?: (options: OnSubmitOptions<Schema>) => Promise<void> | void;
 };
 
 export type FormState = {
@@ -20,7 +20,9 @@ export type FormState = {
 export type Form<Schema extends ZodObject<ZodRawShape>> = {
 	handleSubmit: () => void;
 	state: FormState;
-	fields: Record<keyof z.infer<Schema>, FormField>;
+	fields: {
+		[FieldName in keyof z.infer<Schema>]: FormField<z.infer<Schema>[FieldName]>;
+	};
 };
 
 export const createForm = <Schema extends ZodObject<ZodRawShape>>(
@@ -29,7 +31,6 @@ export const createForm = <Schema extends ZodObject<ZodRawShape>>(
 	const { schema, defaultValues, onSubmit } = options;
 
 	type SchemaType = z.infer<Schema>;
-	type FieldName = keyof SchemaType;
 
 	const state = $state<FormState>({
 		isSubmittable: false,
@@ -39,14 +40,18 @@ export const createForm = <Schema extends ZodObject<ZodRawShape>>(
 
 	// Initialize fields based on schema shape
 	const schemaShape = schema.shape;
-	const initialFields: Record<string, FormField> = {};
 
-	for (const key in schemaShape) {
-		const defaultValue = defaultValues?.[key];
-		initialFields[key] = createFormField({ defaultValue });
-	}
+	const fieldsEntries = Object.keys(schemaShape).map((key) => {
+		const typedKey = key as keyof SchemaType;
+		const defaultValue = defaultValues?.[typedKey];
+		return [key, createFormField({ defaultValue })];
+	});
 
-	const fields = $state(initialFields as Record<FieldName, FormField>);
+	const initialFields = Object.fromEntries(fieldsEntries) as {
+		[FieldName in keyof SchemaType]: FormField<SchemaType[FieldName]>;
+	};
+
+	const fields = $state(initialFields);
 
 	const handleSubmit = async () => {
 		state.isSubmitting = true;
@@ -58,7 +63,7 @@ export const createForm = <Schema extends ZodObject<ZodRawShape>>(
 			})
 		);
 
-		await onSubmit({
+		await onSubmit?.({
 			data: schema.parse(fieldValues)
 		});
 
@@ -73,33 +78,35 @@ export const createForm = <Schema extends ZodObject<ZodRawShape>>(
 	};
 };
 
-type CreateFormFieldOptions = {
-	defaultValue?: string;
+type CreateFormFieldOptions<FieldType> = {
+	defaultValue?: FieldType;
 };
 
-type FormFieldState = {
-	value: string;
+type FormFieldState<FieldType> = {
+	value: FieldType | undefined;
 };
 
-export type FormField = {
-	state: FormFieldState;
-	handleChange: (value: string) => void;
+export type FormField<FieldType> = {
+	state: FormFieldState<FieldType>;
+	handleChange: (value: FieldType) => void;
 	handleBlur: () => void;
 };
 
-const createFormField = (options: CreateFormFieldOptions): FormField => {
-	const { defaultValue = '' } = options;
+const createFormField = <FieldType>(
+	options: CreateFormFieldOptions<FieldType>
+): FormField<FieldType> => {
+	const { defaultValue } = options;
 
-	const state = $state({
+	const state = $state<FormFieldState<FieldType>>({
 		value: defaultValue
 	});
 
-	const handleChange = (_value: string) => {
+	const handleChange = (_value: FieldType) => {
 		state.value = _value;
 	};
 
 	const handleBlur = () => {
-		// Handle blur logic if needed
+		// Handle blur logic
 	};
 
 	return {

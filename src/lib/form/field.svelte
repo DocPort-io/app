@@ -1,17 +1,21 @@
-<script lang="ts" generics="T extends ZodObject<ZodRawShape>">
+<script
+	lang="ts"
+	generics="Schema extends ZodObject<ZodRawShape>, FieldName extends keyof z.infer<Schema>"
+>
 	import type { Snippet } from 'svelte';
+	import type z from 'zod';
 
 	import { ZodObject, type ZodRawShape } from 'zod';
 
 	import type { Form, FormField } from './form.svelte';
 
-	type FieldProps = FormField & {
+	type FieldProps = FormField<z.infer<Schema>[FieldName]> & {
 		name: string;
 	};
 
 	type Props = {
-		form: Form<T>;
-		name: keyof Form<T>['fields'];
+		form: Form<Schema>;
+		name: FieldName;
 		children?: Snippet<[FieldProps]>;
 	};
 
