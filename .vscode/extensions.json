@@ -1,3 +1,12 @@
 {
-	"recommendations": ["inlang.vs-code-extension"]
+	"recommendations": [
+		"inlang.vs-code-extension",
+		"svelte.svelte-vscode",
+		"esbenp.prettier-vscode",
+		"dbaeumer.vscode-eslint",
+		"ms-playwright.playwright",
+		"github.vscode-github-actions",
+		"bradlc.vscode-tailwindcss",
+		"vitest.explorer"
+	]
 }
