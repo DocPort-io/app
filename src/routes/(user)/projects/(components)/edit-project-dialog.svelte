@@ -5,14 +5,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import {
-		Select,
-		SelectContent,
-		// SelectGroup,
-		SelectItem,
-		SelectTrigger
-	} from '$lib/components/ui/select';
+	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+	import FieldLabel from '$lib/form/field-label.svelte';
 	import Field from '$lib/form/field.svelte';
 	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -27,36 +21,6 @@
 
 	const updateMutation = createUpdateProjectMutation();
 
-	// const form = superForm(defaults($project, zod(schema)), {
-	// 	id: 'edit-project-form',
-	// 	SPA: true,
-	// 	validators: zodClient(schema),
-	// 	invalidateAll: false,
-	// 	resetForm: false,
-	// 	onUpdate: async ({ form }) => {
-	// 		if (!form.valid) return;
-	// 		if (!dialogController.data?.id) return;
-
-	// 		await $updateMutation.mutateAsync(
-	// 			{
-	// 				id: dialogController.data.id,
-	// 				project: {
-	// 					...form.data,
-	// 					team: dialogController.data.project.team
-	// 				}
-	// 			},
-	// 			{
-	// 				onSuccess: () => {
-	// 					dialogController.close();
-	// 				},
-	// 				onError: () => {
-	// 					setError(form, m.failed_to_update_project());
-	// 				}
-	// 			}
-	// 		);
-	// 	}
-	// });
-
 	const validStatusses = [
 		{ value: 'planned', label: m.planned() },
 		{ value: 'active', label: m.active() },
@@ -69,10 +33,14 @@
 			defaultValues: {
 				...dialogController.data?.project
 			},
-			onSubmit: async ({ data }) => {
+			onSubmit: async ({ data, state }) => {
+				if (!state.isValid) {
+					console.error('Form is not valid');
+					return;
+				}
+
 				console.log('going to submit');
 				console.log(data);
-				console.log('submitted');
 
 				await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -83,6 +51,7 @@
 					},
 					{
 						onSuccess: () => {
+							console.log('submitted');
 							dialogController.close();
 						},
 						onError: () => {
@@ -94,8 +63,7 @@
 		})
 	);
 
-	// $inspect(dialogController.data?.project);
-	$inspect(form.fields.name.state);
+	$inspect(form.state);
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -104,52 +72,31 @@
 			<Dialog.Title>{m.edit_project()}</Dialog.Title>
 			<Dialog.Description>{m.update_the_project_details_below()}</Dialog.Description>
 		</Dialog.Header>
-		<form
-			class="grid gap-4 py-4"
-			onsubmit={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				form.handleSubmit();
-			}}
-		>
+		<form class="grid gap-4 py-4" {...form.props}>
 			<Field {form} name="name">
-				{#snippet children(field)}
-					<Label for={field.name}>{m.name()}</Label>
+				{#snippet children({ props, state })}
+					<FieldLabel>{m.name()}</FieldLabel>
 					<Input
-						id={field.name}
-						name={field.name}
-						value={field.state.value}
-						onblur={field.handleBlur}
+						{...props}
+						bind:value={state.value}
 						placeholder={m.my_awesome_project()}
-						oninput={(e) => field.handleChange((e.target as HTMLInputElement).value)}
 						disabled={form.state.isSubmitting}
 					/>
 					<!-- <p class="text-destructive text-sm font-medium">{field.state.meta.errors[0]}</p> -->
 				{/snippet}
 			</Field>
 			<Field {form} name="status">
-				{#snippet children(field)}
-					<Label for={field.name}>{m.status()}</Label>
-					<!-- <Input
-						id={field.name}
-						name={field.name}
-						value={field.state.value}
-						onblur={field.handleBlur}
-						placeholder={m.my_awesome_project()}
-						oninput={(e) => field.handleChange((e.target as HTMLSelectElement).value)}
-						disabled={tForm.state.isSubmitting}
-					/> -->
+				{#snippet children({ props, state })}
+					<FieldLabel>{m.status()}</FieldLabel>
 					<Select
-						name={field.name}
+						{...props}
 						type="single"
-						value={field.state.value}
-						onValueChange={(value) =>
-							field.handleChange(value as 'active' | 'completed' | 'planned')}
+						bind:value={state.value}
 						disabled={form.state.isSubmitting}
 					>
 						<SelectTrigger>
-							{field.state.value
-								? validStatusses.find((vs) => vs.value === field.state.value)?.label
+							{state.value
+								? validStatusses.find((vs) => vs.value === state.value)?.label
 								: m.select_a_status_for_the_project_placeholder()}
 						</SelectTrigger>
 						<SelectContent>
@@ -170,7 +117,7 @@
 				>
 					{m.cancel()}
 				</Button>
-				<Button type="submit" disabled={form.state.isSubmitting}>
+				<Button type="submit" disabled={!form.state.isSubmittable}>
 					{#if form.state.isSubmitting}
 						<LoaderCircle class="h-4 w-4 animate-spin" />{m.saving()}
 					{:else}

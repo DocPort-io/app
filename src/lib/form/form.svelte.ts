@@ -1,8 +1,11 @@
-import type { ZodObject, ZodRawShape } from 'zod';
 import type z from 'zod';
+
+import * as uuid from 'uuid';
+import { ZodError, type ZodObject, type ZodRawShape } from 'zod';
 
 export type OnSubmitOptions<Schema extends ZodObject<ZodRawShape>> = {
 	data: z.infer<Schema>;
+	state: FormState;
 };
 
 export type CreateFormOptions<Schema extends ZodObject<ZodRawShape>> = {
@@ -14,14 +17,17 @@ export type CreateFormOptions<Schema extends ZodObject<ZodRawShape>> = {
 export type FormState = {
 	isSubmittable: boolean;
 	isSubmitting: boolean;
-	isSubmitted: boolean;
+	isValidating: boolean;
+	isValid: boolean;
 };
 
 export type Form<Schema extends ZodObject<ZodRawShape>> = {
-	handleSubmit: () => void;
 	state: FormState;
 	fields: {
 		[FieldName in keyof z.infer<Schema>]: FormField<z.infer<Schema>[FieldName]>;
+	};
+	props: {
+		onsubmit: (event: SubmitEvent) => void;
 	};
 };
 
@@ -32,54 +38,108 @@ export const createForm = <Schema extends ZodObject<ZodRawShape>>(
 
 	type SchemaType = z.infer<Schema>;
 
-	const state = $state<FormState>({
-		isSubmittable: false,
-		isSubmitting: false,
-		isSubmitted: false
+	let isSubmitting = $state(false);
+	let isValidating = $state(false);
+	let isValid = $state(true);
+	const isSubmittable = $derived(isValid && !isValidating && !isSubmitting);
+
+	const state = () => ({
+		isSubmittable,
+		isSubmitting,
+		isValidating,
+		isValid
 	});
 
 	// Initialize fields based on schema shape
 	const schemaShape = schema.shape;
 
-	const fieldsEntries = Object.keys(schemaShape).map((key) => {
-		const typedKey = key as keyof SchemaType;
-		const defaultValue = defaultValues?.[typedKey];
-		return [key, createFormField({ defaultValue })];
-	});
+	const fields = $state(
+		Object.fromEntries(
+			Object.keys(schemaShape).map((key) => {
+				const typedKey = key as keyof SchemaType;
+				const defaultValue = defaultValues?.[typedKey];
+				return [key, createFormField({ defaultValue, name: key })];
+			})
+		) as { [FieldName in keyof SchemaType]: FormField<SchemaType[FieldName]> }
+	);
 
-	const initialFields = Object.fromEntries(fieldsEntries) as {
-		[FieldName in keyof SchemaType]: FormField<SchemaType[FieldName]>;
-	};
-
-	const fields = $state(initialFields);
-
-	const handleSubmit = async () => {
-		state.isSubmitting = true;
-		state.isSubmitted = false;
-
-		const fieldValues = Object.fromEntries(
+	const getFieldValues = () =>
+		Object.fromEntries(
 			Object.entries(fields).map(([key, field]) => {
 				return [key, field.state.value];
 			})
 		);
 
-		await onSubmit?.({
-			data: schema.parse(fieldValues)
-		});
+	const handleSubmit = async (event: SubmitEvent) => {
+		event.preventDefault();
+		event.stopPropagation();
 
-		state.isSubmitting = false;
-		state.isSubmitted = true;
+		if (!isSubmittable) return;
+
+		isSubmitting = true;
+
+		const getData = (): SchemaType => {
+			const fieldValues = getFieldValues();
+
+			try {
+				return schema.parse(fieldValues);
+			} catch {
+				return {} as SchemaType;
+			}
+		};
+
+		try {
+			await onSubmit?.({
+				data: getData(),
+				state: state()
+			});
+		} catch (error) {
+			console.error('Error during form submission:', error);
+		}
+
+		isSubmitting = false;
 	};
 
+	const validateFields = () => {
+		console.log('Validating fields...');
+
+		isValidating = true;
+
+		try {
+			const fieldValues = getFieldValues();
+			schema.parse(fieldValues);
+
+			isValid = true;
+		} catch (error) {
+			isValid = false;
+			console.error('Validation failed:', error);
+
+			if (error instanceof ZodError) {
+				console.log(error.issues);
+			}
+		}
+
+		isValidating = false;
+	};
+
+	$effect(() => {
+		validateFields();
+	});
+
 	return {
-		handleSubmit,
-		state,
-		fields
+		get state() {
+			return state();
+		},
+		fields,
+		props: {
+			onsubmit: handleSubmit
+		}
 	};
 };
 
 type CreateFormFieldOptions<FieldType> = {
 	defaultValue?: FieldType;
+	name: string;
 };
 
 type FormFieldState<FieldType> = {
@@ -88,30 +148,40 @@ type FormFieldState<FieldType> = {
 
 export type FormField<FieldType> = {
 	state: FormFieldState<FieldType>;
-	handleChange: (value: FieldType) => void;
-	handleBlur: () => void;
+	props: {
+		id: string;
+		name: string;
+		onchange: () => void;
+		onblur: () => void;
+	};
 };
 
-const createFormField = <FieldType>(
+export const createFormField = <FieldType>(
 	options: CreateFormFieldOptions<FieldType>
 ): FormField<FieldType> => {
-	const { defaultValue } = options;
+	const { defaultValue, name } = options;
 
 	const state = $state<FormFieldState<FieldType>>({
 		value: defaultValue
 	});
 
-	const handleChange = (_value: FieldType) => {
-		state.value = _value;
+	const handleChange = () => {
+		// Handle change logic
 	};
 
 	const handleBlur = () => {
 		// Handle blur logic
 	};
 
+	const id = `form-field-${name}-${uuid.v4()}`;
+
 	return {
 		state,
-		handleChange,
-		handleBlur
+		props: {
+			id,
+			name,
+			onchange: handleChange,
+			onblur: handleBlur
+		}
 	};
 };
