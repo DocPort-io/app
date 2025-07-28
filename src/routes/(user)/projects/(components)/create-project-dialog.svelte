@@ -19,7 +19,7 @@
 	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createAddProjectMutation } from '$lib/queries/projects';
-	import { projectSchema } from '$lib/schemas/project.schema';
+	import { projectCreateSchema } from '$lib/schemas/project.schema';
 	import { getTeamState } from '$lib/stores/team.svelte';
 
 	type Props = {
@@ -32,30 +32,21 @@
 
 	const addMutation = createAddProjectMutation();
 
-	const schema = projectSchema.pick({
-		name: true,
-		status: true
-	});
-
 	const form = $derived(
 		createForm({
-			schema,
+			schema: projectCreateSchema,
 			defaultValues: {
-				status: 'planned'
+				status: 'active',
+				team: teamState.currentTeam!
 			},
 			onSubmit: async ({ data, setError }) => {
-				if (!teamState.currentTeam) {
-					setError('Please select a team first.');
-					return;
-				}
-
 				try {
 					await $addMutation.mutateAsync({
-						...data,
-						team: teamState.currentTeam
+						...data
 					});
 
 					dialogController.close();
+					form.reset();
 				} catch {
 					setError('Failed to create project. Please try again.');
 				}

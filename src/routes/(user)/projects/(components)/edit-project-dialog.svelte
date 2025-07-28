@@ -23,18 +23,12 @@
 
 	const updateMutation = createUpdateProjectMutation();
 
-	/**
-	 * Available project status options for the select dropdown
-	 */
 	const PROJECT_STATUSES = [
 		{ value: 'planned', label: m.planned() },
 		{ value: 'active', label: m.active() },
 		{ value: 'completed', label: m.completed() }
 	] as const;
 
-	/**
-	 * Create form instance with validation schema and submission handler
-	 */
 	const form = $derived(
 		createForm({
 			schema: projectUpdateSchema,
@@ -47,8 +41,9 @@
 						id: dialogController.data!.id,
 						project: data
 					});
-					
+
 					dialogController.close();
+					form.reset();
 				} catch {
 					setError('Failed to update project. Please try again.');
 				}

@@ -8,8 +8,7 @@
 	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createDeleteProjectMutation } from '$lib/queries/projects';
-	import { type ProjectDeleteSchema } from '$lib/schemas/project.schema';
-	import z from 'zod';
+	import { projectDeleteSchema, type ProjectDeleteSchema } from '$lib/schemas/project.schema';
 
 	type Props = {
 		dialogController: DialogController<ProjectDeleteSchema>;
@@ -19,20 +18,17 @@
 
 	const deleteMutation = createDeleteProjectMutation();
 
-	const schema = z.object({});
-
 	const form = $derived(
 		createForm({
-			schema,
-			onSubmit: async ({ setError }) => {
-				if (!dialogController.data?.id) {
-					setError('No project selected for deletion.');
-					return;
-				}
-
+			schema: projectDeleteSchema,
+			defaultValues: {
+				id: dialogController.data!.id
+			},
+			onSubmit: async ({ data, setError }) => {
 				try {
-					await $deleteMutation.mutateAsync(dialogController.data.id);
+					await $deleteMutation.mutateAsync(data.id);
 					dialogController.close();
+					form.reset();
 				} catch {
 					setError('Failed to delete project. Please try again.');
 				}
@@ -52,7 +48,11 @@
 		<form class="grid gap-4 py-4" {...form.props}>
 			<FormErrors {form} />
 			<Dialog.Footer>
-				<Button variant="outline" onclick={() => dialogController.close()} disabled={form.state.isSubmitting}>
+				<Button
+					variant="outline"
+					onclick={() => dialogController.close()}
+					disabled={form.state.isSubmitting}
+				>
 					{m.cancel()}
 				</Button>
 				<Button type="submit" variant="destructive" disabled={!form.state.isSubmittable}>
