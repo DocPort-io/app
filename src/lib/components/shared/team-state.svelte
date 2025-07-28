@@ -13,12 +13,12 @@
 
 	const teamState = setTeamState();
 
-	const teams = $derived(createQuery(createPaginatedTeamsQuery()));
+	const teams = createQuery(createPaginatedTeamsQuery());
 
 	$effect(() => {
 		if (teamState.currentTeam !== null) return;
 		if ($teams.data === undefined) return;
-		if ($teams.data?.items.length === 0) return;
+		if ($teams.data.items.length === 0) return;
 
 		teamState.selectTeam($teams.data.items[0]);
 	});

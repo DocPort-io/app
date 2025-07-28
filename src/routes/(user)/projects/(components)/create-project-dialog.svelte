@@ -1,11 +1,9 @@
 <script lang="ts">
 	import type { DialogController } from '$lib/stores/dialog.svelte';
 
-	import { AlertTriangle, LoaderCircle } from '@lucide/svelte';
-	import * as Alert from '$lib/components/ui/alert';
+	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Form from '$lib/components/ui/form';
 	import { Input } from '$lib/components/ui/input';
 	import {
 		Select,
@@ -14,12 +12,15 @@
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select';
+	import FieldErrors from '$lib/form/field-errors.svelte';
+	import FieldLabel from '$lib/form/field-label.svelte';
+	import Field from '$lib/form/field.svelte';
+	import FormErrors from '$lib/form/form-errors.svelte';
+	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createAddProjectMutation } from '$lib/queries/projects';
 	import { projectCreateSchema } from '$lib/schemas/project.schema';
 	import { getTeamState } from '$lib/stores/team.svelte';
-	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod, zodClient } from 'sveltekit-superforms/adapters';
 
 	type Props = {
 		dialogController: DialogController<unknown>;
@@ -31,42 +32,33 @@
 
 	const addMutation = createAddProjectMutation();
 
-	const form = superForm(defaults(zod(projectCreateSchema)), {
-		id: 'create-project-form',
-		SPA: true,
-		validators: zodClient(projectCreateSchema),
-		onUpdate: async ({ form }) => {
-			if (!form.valid) return;
-			if (!teamState.currentTeam) return setError(form, 'Please select a team first.');
+	const form = $derived(
+		createForm({
+			schema: projectCreateSchema,
+			defaultValues: {
+				status: 'active',
+				team: teamState.currentTeam!
+			},
+			onSubmit: async ({ data, setError }) => {
+				try {
+					await $addMutation.mutateAsync({
+						...data
+					});
 
-			await $addMutation.mutateAsync(
-				{
-					...form.data,
-					team: teamState.currentTeam
-				},
-				{
-					onSuccess: () => {
-						dialogController.close();
-					},
-					onError: () => {
-						setError(form, 'Failed to create project. Please try again.');
-					}
+					dialogController.close();
+					form.reset();
+				} catch {
+					setError('Failed to create project. Please try again.');
 				}
-			);
-		}
-	});
-
-	const { form: formData, constraints, enhance, submitting, delayed, allErrors, reset } = form;
-
-	let formErrors = $derived(
-		$allErrors.filter((error) => error.path === '_errors').flatMap((error) => error.messages)
+			}
+		})
 	);
 
-	const validStatusses = [
+	const PROJECT_STATUSES = [
 		{ value: 'planned', label: m.planned() },
 		{ value: 'active', label: m.active() },
 		{ value: 'completed', label: m.completed() }
-	];
+	] as const;
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -76,90 +68,71 @@
 			<Dialog.Description>{m.add_a_project_to_your_workspace()}</Dialog.Description>
 		</Dialog.Header>
 
-		{#if formErrors.length > 0}
-			<Alert.Root variant="destructive" class="mt-4">
-				<AlertTriangle class="mr-2 h-4 w-4" />
-				<Alert.Title>{m.error()}</Alert.Title>
-				<Alert.Description>{formErrors[0]}</Alert.Description>
-			</Alert.Root>
-		{/if}
+		<form class="grid gap-4 py-4" {...form.props}>
+			<FormErrors {form} />
+			<Field {form} name="name">
+				{#snippet children({ props, state })}
+					<FieldLabel>{m.name()}</FieldLabel>
+					<Input
+						{...props}
+						bind:value={state.value}
+						placeholder={m.my_awesome_project()}
+						disabled={form.state.isSubmitting}
+						data-testid="projects-create-dialog-input-name"
+					/>
+					<FieldErrors />
+				{/snippet}
+			</Field>
 
-		<form method="POST" class="grid gap-4 py-4" use:enhance>
-			<Form.Field {form} name="name">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>{m.name()}</Form.Label>
-						<Input
-							{...props}
-							{...$constraints.name}
-							bind:value={$formData.name}
-							placeholder={m.my_awesome_project()}
-							disabled={$submitting}
-							data-testid="projects-create-dialog-input-name"
-						/>
-					{/snippet}
-				</Form.Control>
-				<Form.Description>{m.enter_a_meaningful_name_for_your_project()}</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
-
-			<Form.Field {form} name="status">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>{m.status()}</Form.Label>
-						<Select
-							name={props.name}
-							{...$constraints.status}
-							bind:value={$formData.status}
-							disabled={$submitting}
-							type="single"
-						>
-							<SelectTrigger {...props} data-testid="projects-create-dialog-select-trigger-status">
-								{$formData.status
-									? validStatusses.find((vs) => vs.value === $formData.status)?.label
-									: m.select_a_status_for_the_project_placeholder()}
-							</SelectTrigger>
-							<SelectContent data-testid="projects-create-dialog-select-content-status">
-								<SelectGroup>
-									{#each validStatusses as status (status.value)}
-										<SelectItem value={status.value} label={status.label} />
-									{/each}
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					{/snippet}
-				</Form.Control>
-				<Form.Description>
-					{m.select_a_status_for_the_project()}
-				</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+			<Field {form} name="status">
+				{#snippet children({ props, state })}
+					<FieldLabel>{m.status()}</FieldLabel>
+					<Select
+						{...props}
+						type="single"
+						bind:value={state.value}
+						disabled={form.state.isSubmitting}
+					>
+						<SelectTrigger data-testid="projects-create-dialog-select-trigger-status">
+							{state.value
+								? PROJECT_STATUSES.find((status) => status.value === state.value)?.label
+								: m.select_a_status_for_the_project_placeholder()}
+						</SelectTrigger>
+						<SelectContent data-testid="projects-create-dialog-select-content-status">
+							<SelectGroup>
+								{#each PROJECT_STATUSES as status (status.value)}
+									<SelectItem value={status.value} label={status.label} />
+								{/each}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+					<FieldErrors />
+				{/snippet}
+			</Field>
 
 			<Dialog.Footer>
 				<Button
 					variant="outline"
 					onclick={() => {
-						reset();
+						form.reset();
 						dialogController.close();
 					}}
-					disabled={$submitting}
+					disabled={form.state.isSubmitting}
 				>
 					{m.cancel()}
 				</Button>
-				<Form.Button
+				<Button
 					type="submit"
-					disabled={$submitting}
+					disabled={!form.state.isSubmittable}
 					data-testid="projects-create-dialog-button-submit"
 				>
-					{#if $delayed}
+					{#if form.state.isSubmitting}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-					{/if}
-					{#if $submitting}
 						{m.creating()}
 					{:else}
 						{m.create()}
 					{/if}
-				</Form.Button>
+				</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
