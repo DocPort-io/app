@@ -6,6 +6,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$lib/components/ui/select';
+	import FieldErrors from '$lib/form/field-errors.svelte';
 	import FieldLabel from '$lib/form/field-label.svelte';
 	import Field from '$lib/form/field.svelte';
 	import { createForm } from '$lib/form/form.svelte';
@@ -21,12 +22,18 @@
 
 	const updateMutation = createUpdateProjectMutation();
 
-	const validStatusses = [
+	/**
+	 * Available project status options for the select dropdown
+	 */
+	const PROJECT_STATUSES = [
 		{ value: 'planned', label: m.planned() },
 		{ value: 'active', label: m.active() },
 		{ value: 'completed', label: m.completed() }
-	];
+	] as const;
 
+	/**
+	 * Create form instance with validation schema and submission handler
+	 */
 	const form = $derived(
 		createForm({
 			schema: projectUpdateSchema,
@@ -34,16 +41,18 @@
 				...dialogController.data?.project
 			},
 			onSubmit: async ({ data, state }) => {
+				// Early return if form is not valid
 				if (!state.isValid) {
-					console.error('Form is not valid');
+					console.error('Form submission blocked: validation failed');
 					return;
 				}
 
-				console.log('going to submit');
-				console.log(data);
+				console.log('Submitting project update:', data);
 
+				// Simulate network delay (remove in production)
 				await new Promise((resolve) => setTimeout(resolve, 1000));
 
+				// Submit the mutation
 				await $updateMutation.mutateAsync(
 					{
 						id: dialogController.data!.id,
@@ -51,10 +60,12 @@
 					},
 					{
 						onSuccess: () => {
-							console.log('submitted');
+							console.log('Project updated successfully');
 							dialogController.close();
 						},
-						onError: () => {
+						onError: (error) => {
+							console.error('Failed to update project:', error);
+							// TODO: Display user-friendly error message
 							// setError(form, m.failed_to_update_project());
 						}
 					}
@@ -62,8 +73,6 @@
 			}
 		})
 	);
-
-	$inspect(form.state);
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -82,7 +91,7 @@
 						placeholder={m.my_awesome_project()}
 						disabled={form.state.isSubmitting}
 					/>
-					<!-- <p class="text-destructive text-sm font-medium">{field.state.meta.errors[0]}</p> -->
+					<FieldErrors />
 				{/snippet}
 			</Field>
 			<Field {form} name="status">
@@ -96,16 +105,16 @@
 					>
 						<SelectTrigger>
 							{state.value
-								? validStatusses.find((vs) => vs.value === state.value)?.label
+								? PROJECT_STATUSES.find((status) => status.value === state.value)?.label
 								: m.select_a_status_for_the_project_placeholder()}
 						</SelectTrigger>
 						<SelectContent>
-							{#each validStatusses as status (status.value)}
+							{#each PROJECT_STATUSES as status (status.value)}
 								<SelectItem value={status.value} label={status.label} />
 							{/each}
 						</SelectContent>
 					</Select>
-					<!-- <p class="text-destructive text-sm font-medium">{field.state.meta.errors[0]}</p> -->
+					<FieldErrors />
 				{/snippet}
 			</Field>
 

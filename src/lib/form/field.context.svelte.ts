@@ -7,19 +7,17 @@ import type { FormField } from './form.svelte';
 const FORM_FIELD_KEY = Symbol('FORM_FIELD_PROPS');
 
 export const setFormField = <
-	Schema extends ZodObject<ZodRawShape>,
-	FieldName extends keyof z.infer<Schema>
+	TSchema extends ZodObject<ZodRawShape>,
+	TFieldName extends keyof z.infer<TSchema>
 >(
-	formField: {
-		[FieldName in keyof z.infer<Schema>]: FormField<z.infer<Schema>[FieldName]>;
-	}[FieldName]
+	formField: FormField<z.infer<TSchema>[TFieldName]>
 ) => {
 	return setContext(FORM_FIELD_KEY, formField);
 };
 
 export const getFormField = <
-	Schema extends ZodObject<ZodRawShape>,
-	FieldName extends keyof z.infer<Schema>
+	TSchema extends ZodObject<ZodRawShape>,
+	TFieldName extends keyof z.infer<TSchema>
 >() => {
-	return getContext<ReturnType<typeof setFormField<Schema, FieldName>>>(FORM_FIELD_KEY);
+	return getContext<FormField<z.infer<TSchema>[TFieldName]>>(FORM_FIELD_KEY);
 };

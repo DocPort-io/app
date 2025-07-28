@@ -1,8 +1,8 @@
 <script
 	lang="ts"
-	generics="Schema extends ZodObject<ZodRawShape>, FieldName extends keyof z.infer<Schema>"
+	generics="TSchema extends ZodObject<ZodRawShape>, TFieldName extends keyof z.infer<TSchema>"
 >
-	import type z from 'zod';
+	import type { z } from 'zod';
 
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
@@ -11,6 +11,9 @@
 
 	import { getFormField } from './field.context.svelte';
 
+	/**
+	 * Props for the FieldLabel component, extending the base Label props
+	 */
 	let {
 		ref = $bindable(null),
 		children,
@@ -18,14 +21,25 @@
 		...restProps
 	}: LabelPrimitive.RootProps = $props();
 
-	const fieldProps = getFormField<Schema, FieldName>();
+	// Get the field context to access field state and ID
+	const field = getFormField<TSchema, TFieldName>();
 </script>
 
+<!--
+	Accessible label component that automatically:
+	- Associates with the field input via ID
+	- Changes color when field has errors
+	- Maintains consistent styling and accessibility
+-->
 <Label
 	bind:ref
-	class={cn('data-[fs-error]:text-destructive', className)}
+	class={cn(
+		'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+		field.state.errors.length > 0 && 'text-destructive',
+		className
+	)}
 	data-slot="form-label"
-	for={fieldProps.props.id}
+	for={field.props.id}
 	{...restProps}
 >
 	{@render children?.()}
