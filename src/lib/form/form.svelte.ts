@@ -105,7 +105,7 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 
 	// Derived state
 	const hasErrors = $derived(Object.keys(errors).length > 0);
-	const isSubmittable = $derived(isValid && !isValidating && !isSubmitting);
+	const isSubmittable = $derived(isValid && !isValidating && !isSubmitting && !hasErrors);
 
 	// Create form state getter
 	const getFormState = (): FormState => ({
