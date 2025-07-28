@@ -3,27 +3,12 @@ import type { z } from 'zod';
 import * as uuid from 'uuid';
 import { ZodError, type ZodObject, type ZodRawShape } from 'zod';
 
-// ============================================================================
-// Custom Form System - Svelte 5 + Zod
-// ============================================================================
-//
-// A type-safe, reactive form system with the following improvements:
-// - ✅ Eliminated reactive loops that caused effect_update_depth_exceeded
-// - ✅ Enhanced type safety with readonly properties and better generics
-// - ✅ Comprehensive JSDoc documentation for better DX
-// - ✅ Modular validation functions with clear separation of concerns
-// - ✅ Improved error handling with detailed logging and validation
-// - ✅ Better accessibility with proper label association
-// - ✅ Consistent naming conventions (e.g., FormSubmitOptions vs OnSubmitOptions)
-// - ✅ Performance optimizations to avoid unnecessary re-renders
-//
-// Key architectural decisions:
-// - Manual validation triggers instead of automatic effects
-// - Conditional validation (only re-validate fields with existing errors)
-// - Clear separation between form-level and field-level error state
-// - Functional approach aligned with Svelte 5 best practices
-//
-// ============================================================================
+/**
+ * Custom Form System - Svelte 5 + Zod 4
+ *
+ * A type-safe, reactive form system with manual validation triggers,
+ * performance optimizations, and comprehensive error handling.
+ */
 
 // ============================================================================
 // Core Types
@@ -163,7 +148,6 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 		const fieldSchema = schema.shape[fieldName];
 
 		if (!field || !fieldSchema) {
-			console.warn(`Field "${fieldName}" not found in form or schema during field validation`);
 			return true;
 		}
 
@@ -305,8 +289,6 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 		const field = fields[fieldName];
 		if (field) {
 			field.state.value = value;
-		} else {
-			console.warn(`Attempted to set value for non-existent field: ${String(fieldName)}`);
 		}
 	};
 
@@ -377,7 +359,6 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 			const isFormValid = validateAllFields();
 
 			if (!isFormValid) {
-				console.warn('Form submission blocked: validation failed');
 				return;
 			}
 
@@ -388,7 +369,6 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 				setError: setSubmissionError
 			});
 		} catch (error) {
-			console.error('Form submission error:', error);
 			// Handle thrown errors by setting submission error
 			if (error instanceof Error) {
 				setSubmissionError(error.message);

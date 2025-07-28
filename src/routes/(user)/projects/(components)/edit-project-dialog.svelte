@@ -41,37 +41,17 @@
 			defaultValues: {
 				...dialogController.data?.project
 			},
-			onSubmit: async ({ data, state, setError }) => {
-				// Early return if form is not valid
-				if (!state.isValid) {
-					console.error('Form submission blocked: validation failed');
-					return;
-				}
-
-				console.log('Submitting project update:', data);
-
-				// Simulate network delay (remove in production)
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-
-				// Submit the mutation
-				await $updateMutation.mutateAsync(
-					{
+			onSubmit: async ({ data, setError }) => {
+				try {
+					await $updateMutation.mutateAsync({
 						id: dialogController.data!.id,
 						project: data
-					},
-					{
-						onSuccess: () => {
-							console.log('Project updated successfully');
-							setError('This is a test');
-							// dialogController.close();
-						},
-						onError: (error) => {
-							console.error('Failed to update project:', error);
-							// TODO: Display user-friendly error message
-							// setError(form, m.failed_to_update_project());
-						}
-					}
-				);
+					});
+					
+					dialogController.close();
+				} catch {
+					setError('Failed to update project. Please try again.');
+				}
 			}
 		})
 	);
@@ -138,70 +118,5 @@
 				</Button>
 			</Dialog.Footer>
 		</form>
-		<!-- <form method="POST" class="grid gap-4 py-4" use:enhance>
-			<Form.Field {form} name="name">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>{m.name()}</Form.Label>
-						<Input
-							{...props}
-							{...$constraints.name}
-							bind:value={$formData.name}
-							placeholder={m.my_awesome_project()}
-							disabled={$submitting}
-						/>
-					{/snippet}
-				</Form.Control>
-				<Form.Description>{m.enter_a_meaningful_name_for_your_project()}</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
-
-			<Form.Field {form} name="status">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>{m.status()}</Form.Label>
-						<Select
-							name={props.name}
-							{...$constraints.status}
-							bind:value={$formData.status}
-							type="single"
-						>
-							<SelectTrigger {...props}>
-								{$formData.status
-									? validStatusses.find((vs) => vs.value === $formData.status)?.label
-									: m.select_a_status_for_the_project_placeholder()}
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									{#each validStatusses as status (status.value)}
-										<SelectItem value={status.value} label={status.label} />
-									{/each}
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					{/snippet}
-				</Form.Control>
-				<Form.Description>
-					{m.select_a_status_for_the_project()}
-				</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
-
-			<Dialog.Footer>
-				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
-					{m.cancel()}
-				</Button>
-				<Form.Button type="submit" disabled={$submitting}>
-					{#if $delayed}
-						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-					{/if}
-					{#if $submitting}
-						{m.saving()}
-					{:else}
-						{m.save()}
-					{/if}
-				</Form.Button>
-			</Dialog.Footer>
-		</form> -->
 	</Dialog.Content>
 </Dialog.Root>
