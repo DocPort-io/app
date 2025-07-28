@@ -52,6 +52,7 @@ export type FormState = {
 export type FormSubmitOptions<TSchema extends ZodObject<ZodRawShape>> = {
 	readonly data: z.infer<TSchema>;
 	readonly state: FormState;
+	readonly setError: (error: string) => void;
 };
 
 /**
@@ -338,6 +339,27 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 	// ========================================================================
 
 	/**
+	 * Sets a submission error message
+	 */
+	const setSubmissionError = (error: string): void => {
+		errors = {
+			...errors,
+			_submit: [error]
+		};
+	};
+
+	/**
+	 * Clears the submission error
+	 */
+	const clearSubmissionError = (): void => {
+		if (errors._submit) {
+			const newErrors = { ...errors };
+			delete newErrors._submit;
+			errors = newErrors;
+		}
+	};
+
+	/**
 	 * Handles form submission with validation and error handling
 	 */
 	const handleSubmit = async (event: SubmitEvent): Promise<void> => {
@@ -346,6 +368,8 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 
 		if (!isSubmittable) return;
 
+		// Clear any previous submission errors
+		clearSubmissionError();
 		isSubmitting = true;
 
 		try {
@@ -360,11 +384,19 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 			const formData = getFieldValues();
 			await onSubmit?.({
 				data: formData,
-				state: getFormState()
+				state: getFormState(),
+				setError: setSubmissionError
 			});
 		} catch (error) {
 			console.error('Form submission error:', error);
-			// Consider adding form-level error handling here in the future
+			// Handle thrown errors by setting submission error
+			if (error instanceof Error) {
+				setSubmissionError(error.message);
+			} else if (typeof error === 'string') {
+				setSubmissionError(error);
+			} else {
+				setSubmissionError('An unexpected error occurred during form submission');
+			}
 		} finally {
 			isSubmitting = false;
 		}

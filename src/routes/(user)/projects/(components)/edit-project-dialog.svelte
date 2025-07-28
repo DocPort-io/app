@@ -9,6 +9,7 @@
 	import FieldErrors from '$lib/form/field-errors.svelte';
 	import FieldLabel from '$lib/form/field-label.svelte';
 	import Field from '$lib/form/field.svelte';
+	import FormErrors from '$lib/form/form-errors.svelte';
 	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createUpdateProjectMutation } from '$lib/queries/projects';
@@ -40,7 +41,7 @@
 			defaultValues: {
 				...dialogController.data?.project
 			},
-			onSubmit: async ({ data, state }) => {
+			onSubmit: async ({ data, state, setError }) => {
 				// Early return if form is not valid
 				if (!state.isValid) {
 					console.error('Form submission blocked: validation failed');
@@ -61,7 +62,8 @@
 					{
 						onSuccess: () => {
 							console.log('Project updated successfully');
-							dialogController.close();
+							setError('This is a test');
+							// dialogController.close();
 						},
 						onError: (error) => {
 							console.error('Failed to update project:', error);
@@ -82,6 +84,7 @@
 			<Dialog.Description>{m.update_the_project_details_below()}</Dialog.Description>
 		</Dialog.Header>
 		<form class="grid gap-4 py-4" {...form.props}>
+			<FormErrors {form} />
 			<Field {form} name="name">
 				{#snippet children({ props, state })}
 					<FieldLabel>{m.name()}</FieldLabel>
