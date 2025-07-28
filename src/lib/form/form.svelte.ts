@@ -141,6 +141,13 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 	// ========================================================================
 
 	/**
+	 * Updates the form's valid state based on current errors
+	 */
+	const updateFormValidState = (): void => {
+		isValid = Object.keys(errors).length === 0;
+	};
+
+	/**
 	 * Validates a single field and updates both form-level and field-level errors
 	 */
 	const validateField = (fieldName: string): boolean => {
@@ -156,12 +163,17 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 
 			// Clear errors if validation passes
 			clearFieldErrors(fieldName);
+			
+			// Check if the entire form is now valid after clearing this field's errors
+			updateFormValidState();
 			return true;
 		} catch (error) {
 			if (error instanceof ZodError) {
 				const fieldErrors = error.issues.map((issue) => issue.message);
 				setFieldErrors(fieldName, fieldErrors);
 			}
+			// Form is invalid when any field has errors
+			isValid = false;
 			return false;
 		}
 	};
@@ -233,6 +245,7 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 		Object.values(fields).forEach((field) => {
 			field.state.errors = [];
 		});
+		isValid = true;
 	};
 
 	/**

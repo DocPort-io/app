@@ -4,12 +4,11 @@
 	import { LoaderCircle } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Form from '$lib/components/ui/form';
+	import FormErrors from '$lib/form/form-errors.svelte';
+	import { createForm } from '$lib/form/form.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { createDeleteProjectMutation } from '$lib/queries/projects';
 	import { type ProjectDeleteSchema } from '$lib/schemas/project.schema';
-	import { defaults, setError, superForm } from 'sveltekit-superforms';
-	import { zod4, zod4Client } from 'sveltekit-superforms/adapters';
 	import z from 'zod';
 
 	type Props = {
@@ -22,30 +21,24 @@
 
 	const schema = z.object({});
 
-	const form = superForm(defaults(zod4(schema)), {
-		id: 'delete-project-form',
-		SPA: true,
-		validators: zod4Client(schema),
-		onUpdate: async ({ form }) => {
-			if (!form.valid) return;
-			if (!dialogController.data?.id) return;
-
-			await $deleteMutation.mutateAsync(dialogController.data.id, {
-				onSuccess: () => {
-					dialogController.close();
-				},
-				onError: () => {
-					setError(form, m.failed_to_delete_project());
+	const form = $derived(
+		createForm({
+			schema,
+			onSubmit: async ({ setError }) => {
+				if (!dialogController.data?.id) {
+					setError('No project selected for deletion.');
+					return;
 				}
-			});
-		}
-	});
 
-	const { enhance, validateForm, submitting, delayed } = $derived(form);
-
-	$effect(() => {
-		validateForm({ update: true });
-	});
+				try {
+					await $deleteMutation.mutateAsync(dialogController.data.id);
+					dialogController.close();
+				} catch {
+					setError('Failed to delete project. Please try again.');
+				}
+			}
+		})
+	);
 </script>
 
 <Dialog.Root bind:open={dialogController.isOpen} {...restProps}>
@@ -56,21 +49,20 @@
 				{m.are_you_sure_you_want_to_delete_this_project()}
 			</Dialog.Description>
 		</Dialog.Header>
-		<form method="POST" class="grid gap-4 py-4" use:enhance>
+		<form class="grid gap-4 py-4" {...form.props}>
+			<FormErrors {form} />
 			<Dialog.Footer>
-				<Button variant="outline" onclick={() => dialogController.close()} disabled={$submitting}>
+				<Button variant="outline" onclick={() => dialogController.close()} disabled={form.state.isSubmitting}>
 					{m.cancel()}
 				</Button>
-				<Form.Button type="submit" variant="destructive" disabled={$submitting}>
-					{#if $delayed}
+				<Button type="submit" variant="destructive" disabled={!form.state.isSubmittable}>
+					{#if form.state.isSubmitting}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-					{/if}
-					{#if $submitting}
 						{m.deleting()}
 					{:else}
 						{m.delete()}
 					{/if}
-				</Form.Button>
+				</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
