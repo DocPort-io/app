@@ -42,11 +42,7 @@
 					{
 						onSuccess: () => {
 							dialogController.close();
-							form.reset();
-							selectedFiles = null;
-							if (fileInput) {
-								fileInput.value = '';
-							}
+							resetForm();
 						},
 						onError: () => {
 							setError(m.failed_to_upload_file());
@@ -58,13 +54,28 @@
 	);
 
 	let fileInput: HTMLInputElement;
-	let selectedFiles: FileList | null = $state(null);
 	let isDragOver = $state(false);
+
+	// Derived state for selected file info
+	const selectedFile = $derived(form.fields.file.state.value);
+
+	// Centralized file setting function
+	const setFile = (file: File | null) => {
+		form.setFieldValue('file', file);
+	};
+
+	// Centralized reset function
+	const resetForm = () => {
+		form.reset();
+		if (fileInput) {
+			fileInput.value = '';
+		}
+	};
 
 	const handleFileChange = (event: Event) => {
 		const target = event.target as HTMLInputElement;
-		selectedFiles = target.files;
-		form.setFieldValue('file', selectedFiles ? selectedFiles[0] : null);
+		const files = target.files;
+		setFile(files && files.length > 0 ? files[0] : null);
 	};
 
 	const handleDragOver = (event: DragEvent) => {
@@ -86,9 +97,8 @@
 
 		const files = event.dataTransfer?.files;
 		if (files && files.length > 0) {
-			selectedFiles = files;
-			form.setFieldValue('file', files[0]);
-			// Update the file input
+			setFile(files[0]);
+			// Update the file input to stay in sync
 			if (fileInput) {
 				fileInput.files = files;
 			}
@@ -126,14 +136,14 @@
 							{m.drag_and_drop_files_here()}
 						</p>
 						<p class="text-xs text-gray-500">{m.maximum_file_size()}</p>
-						{#if selectedFiles && selectedFiles.length > 0}
+						{#if selectedFile}
 							<div class="mt-4 rounded-md border border-green-200 bg-green-50 p-3">
 								<p class="text-sm font-medium text-green-700">
-									{selectedFiles[0].name}
+									{selectedFile.name}
 								</p>
 								<p class="text-xs text-green-600">
-									{prettyBytes(selectedFiles[0].size, { locale: getLocale() })} • {selectedFiles[0]
-										.type || m.unknown_type()}
+									{prettyBytes(selectedFile.size, { locale: getLocale() })} • {selectedFile.type ||
+										m.unknown_type()}
 								</p>
 							</div>
 						{/if}
@@ -154,18 +164,14 @@
 				<Button
 					variant="outline"
 					onclick={() => {
-						form.reset();
-						selectedFiles = null;
-						if (fileInput) {
-							fileInput.value = '';
-						}
+						resetForm();
 						dialogController.close();
 					}}
 					disabled={form.state.isSubmitting}
 				>
 					{m.cancel()}
 				</Button>
-				<Button type="submit" disabled={form.state.isSubmitting}>
+				<Button type="submit" disabled={!form.state.isSubmittable}>
 					{#if form.state.isSubmitting}
 						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 					{/if}
