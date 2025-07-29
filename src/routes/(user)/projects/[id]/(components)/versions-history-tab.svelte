@@ -29,6 +29,7 @@
 	import { createDialogController } from '$lib/stores/dialog.svelte';
 
 	import CreateVersionDialog from './create-version-dialog.svelte';
+	import EditVersionDialog from './edit-version-dialog.svelte';
 	import Version from './version.svelte';
 
 	type Props = {
@@ -39,6 +40,7 @@
 	let { currentVersion, selectVersion }: Props = $props();
 
 	const createVersionDialogController = createDialogController<{ projectId: string }>();
+	const editVersionDialogController = createDialogController<{ version: VersionSchema }>();
 
 	const projectQuery = $derived.by(() =>
 		createQuery(
@@ -107,7 +109,15 @@
 		<CardContent>
 			<div class="space-y-4">
 				{#if currentVersion}
-					<Version version={currentVersion} selected={true} {selectVersion} />
+					<Version 
+						version={currentVersion} 
+						selected={true} 
+						{selectVersion}
+						onEdit={(version) => {
+							editVersionDialogController.data = { version };
+							editVersionDialogController.open();
+						}}
+					/>
 				{:else}
 					<p>{m.no_versions_available()}</p>
 				{/if}
@@ -115,7 +125,15 @@
 				{#if $versionsQuery.data?.totalItems ?? 0 > 0}
 					<Separator />
 					{#each otherVersions as version (version.id)}
-						<Version {version} {selectVersion} latest={version.id === latestVersion?.id} />
+						<Version 
+							{version} 
+							{selectVersion} 
+							latest={version.id === latestVersion?.id}
+							onEdit={(version) => {
+								editVersionDialogController.data = { version };
+								editVersionDialogController.open();
+							}}
+						/>
 					{/each}
 
 					<Pagination
@@ -154,3 +172,4 @@
 </TabsContent>
 
 <CreateVersionDialog dialogController={createVersionDialogController} />
+<EditVersionDialog dialogController={editVersionDialogController} />

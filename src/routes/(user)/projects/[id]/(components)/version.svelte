@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { VersionSchema } from '$lib/schemas/version.schema';
 
-	import { Calendar, FolderOpen, User } from '@lucide/svelte';
+	import { Calendar, Edit, FolderOpen, User } from '@lucide/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -15,9 +15,10 @@
 		latest?: boolean;
 		selected?: boolean;
 		selectVersion: (version: VersionSchema) => void;
+		onEdit?: (version: VersionSchema) => void;
 	};
 
-	let { version, latest, selected, selectVersion }: Props = $props();
+	let { version, latest, selected, selectVersion, onEdit }: Props = $props();
 
 	const createdByQuery = $derived.by(() =>
 		createQuery(
@@ -61,9 +62,17 @@
 				</span>
 			</div>
 		</div>
-		<Button variant="outline" size="sm" class="gap-2" onclick={() => selectVersion(version)}>
-			<FolderOpen class="h-4 w-4" />
-			{m.open_version()}
-		</Button>
+		<div class="flex gap-2">
+			{#if onEdit}
+				<Button variant="outline" size="sm" class="gap-2" onclick={() => onEdit(version)}>
+					<Edit class="h-4 w-4" />
+					{m.edit()}
+				</Button>
+			{/if}
+			<Button variant="outline" size="sm" class="gap-2" onclick={() => selectVersion(version)}>
+				<FolderOpen class="h-4 w-4" />
+				{m.open_version()}
+			</Button>
+		</div>
 	</div>
 </div>

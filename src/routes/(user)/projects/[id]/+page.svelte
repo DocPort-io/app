@@ -11,8 +11,10 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { createProjectQuery } from '$lib/queries/project';
 	import { createPaginatedVersionsQuery } from '$lib/queries/versions';
+	import { createDialogController } from '$lib/stores/dialog.svelte';
 
 	import CurrentVersionTab from './(components)/current-version-tab.svelte';
+	import EditVersionDialog from './(components)/edit-version-dialog.svelte';
 	import VersionsHistoryTab from './(components)/versions-history-tab.svelte';
 
 	const projectQuery = $derived.by(() =>
@@ -51,9 +53,16 @@
 
 	let selectedTab: 'current' | 'history' = $state('current');
 
+	const editVersionDialogController = createDialogController<{ version: VersionSchema }>();
+
 	const selectVersion = (version: VersionSchema) => {
 		selectedVersion = version;
 		selectedTab = 'current';
+	};
+
+	const handleEditVersion = (version: VersionSchema) => {
+		editVersionDialogController.data = { version };
+		editVersionDialogController.open();
 	};
 </script>
 
@@ -92,8 +101,10 @@
 				<TabsTrigger value="history">{m.versions_history()}</TabsTrigger>
 			</TabsList>
 
-			<CurrentVersionTab {currentVersion} />
+			<CurrentVersionTab {currentVersion} onEditVersion={handleEditVersion} />
 			<VersionsHistoryTab {selectVersion} {currentVersion} />
 		</Tabs>
 	</div>
 </UserPageLayout>
+
+<EditVersionDialog dialogController={editVersionDialogController} />

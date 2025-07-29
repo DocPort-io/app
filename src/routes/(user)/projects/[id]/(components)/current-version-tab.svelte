@@ -2,7 +2,7 @@
 	import type { FileSchema } from '$lib/schemas/file.schema';
 	import type { VersionSchema } from '$lib/schemas/version.schema';
 
-	import { Archive, Clock, Download, File, FileText, Image, Upload } from '@lucide/svelte';
+	import { Archive, Clock, Download, Edit, File, FileText, Image, Upload } from '@lucide/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
@@ -35,17 +35,20 @@
 	import { createDialogController } from '$lib/stores/dialog.svelte';
 	import prettyBytes from 'pretty-bytes';
 
+	import EditVersionDialog from './edit-version-dialog.svelte';
 	import UploadFileDialog from './upload-file-dialog.svelte';
 
 	type Props = {
 		currentVersion?: VersionSchema | null;
+		onEditVersion?: (version: VersionSchema) => void;
 	};
 
-	let { currentVersion }: Props = $props();
+	let { currentVersion, onEditVersion }: Props = $props();
 
 	let downloadElement: HTMLAnchorElement;
 
 	const uploadDialogController = createDialogController<{ versionId: string }>();
+	const editVersionDialogController = createDialogController<{ version: VersionSchema }>();
 
 	const downloadFile = async (record: FileSchema) => {
 		const pb = getPocketBase();
@@ -103,12 +106,28 @@
 					<CardTitle>{currentVersion?.name}</CardTitle>
 					<CardDescription class="mt-2">{currentVersion?.description}</CardDescription>
 				</div>
-				<Badge variant="outline" class="flex items-center gap-1">
-					<Clock class="h-3 w-3" />
-					{currentVersion
-						? new Date(currentVersion?.created).toLocaleDateString(getLocale())
-						: null}
-				</Badge>
+				<div class="flex items-center gap-2">
+					{#if currentVersion && onEditVersion}
+						<Button
+							variant="outline"
+							size="sm"
+							class="gap-2"
+							onclick={() => {
+								editVersionDialogController.data = { version: currentVersion };
+								editVersionDialogController.open();
+							}}
+						>
+							<Edit class="h-4 w-4" />
+							{m.edit()}
+						</Button>
+					{/if}
+					<Badge variant="outline" class="flex items-center gap-1">
+						<Clock class="h-3 w-3" />
+						{currentVersion
+							? new Date(currentVersion?.created).toLocaleDateString(getLocale())
+							: null}
+					</Badge>
+				</div>
 			</div>
 		</CardHeader>
 		<CardContent>
@@ -190,3 +209,4 @@
 </TabsContent>
 
 <UploadFileDialog dialogController={uploadDialogController} />
+<EditVersionDialog dialogController={editVersionDialogController} />
