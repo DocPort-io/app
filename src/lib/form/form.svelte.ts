@@ -62,7 +62,7 @@ export type Form<TSchema extends ZodObject<ZodRawShape>> = {
 	reset: () => void;
 	setFieldValue: <TField extends keyof z.infer<TSchema>>(
 		field: TField,
-		value: z.infer<TSchema>[TField]
+		value: z.infer<TSchema>[TField] | null | undefined
 	) => void;
 	getFieldValue: <TField extends keyof z.infer<TSchema>>(
 		field: TField
@@ -163,7 +163,7 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 
 			// Clear errors if validation passes
 			clearFieldErrors(fieldName);
-			
+
 			// Check if the entire form is now valid after clearing this field's errors
 			updateFormValidState();
 			return true;
@@ -297,11 +297,23 @@ export const createForm = <TSchema extends ZodObject<ZodRawShape>>(
 	 */
 	const setFieldValue = <TField extends keyof SchemaType>(
 		fieldName: TField,
-		value: SchemaType[TField]
+		value: SchemaType[TField] | null | undefined
 	): void => {
 		const field = fields[fieldName];
-		if (field) {
+		if (!field) return;
+
+		if (value === null || value === undefined) {
+			// If value is null or undefined, reset to default value
+			const defaultValue = (defaultValues as Partial<SchemaType>)[fieldName];
+			field.state.value = defaultValue;
+		} else {
+			// Otherwise, set the provided value
 			field.state.value = value;
+		}
+
+		// Trigger validation if configured
+		if (validateOnChange) {
+			validateField(fieldName as string);
 		}
 	};
 

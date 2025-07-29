@@ -92,7 +92,7 @@
 
 				{#if $versionsQuery.data?.totalItems ?? 0 > 0}
 					<Separator />
-					{#each otherVersions as version}
+					{#each otherVersions as version (version.id)}
 						<Version {version} {selectVersion} latest={version.id === latestVersion?.id} />
 					{/each}
 

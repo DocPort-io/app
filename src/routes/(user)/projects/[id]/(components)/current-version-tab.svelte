@@ -131,7 +131,7 @@
 					{/if}
 				</div>
 				<div class="space-y-2">
-					{#each $filesQuery.data?.items ?? [] as file}
+					{#each $filesQuery.data?.items ?? [] as file (file.id)}
 						<div
 							class="bg-card hover:bg-accent flex flex-col gap-3 rounded-lg border p-3 transition-colors md:flex-row md:items-center md:justify-between"
 						>
