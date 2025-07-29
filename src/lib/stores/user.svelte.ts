@@ -7,6 +7,7 @@ import { getContext, setContext } from 'svelte';
 export interface IUserState {
 	isValid: boolean;
 	token: string;
+	userId: string | null;
 	name: string;
 	avatarUrl: string | null;
 	signIn: (email: string, password: string) => Promise<void>;
@@ -18,6 +19,7 @@ export interface IUserState {
 export class UserState implements IUserState {
 	isValid = $state<boolean>(false);
 	token = $state<string>('');
+	userId = $state<string | null>(null);
 	name = $state<string>('');
 	avatarUrl = $state<string | null>(null);
 
@@ -37,6 +39,7 @@ export class UserState implements IUserState {
 		if (!record) return;
 
 		const authRecord = record as unknown as UserSchema;
+		this.userId = authRecord.id;
 		this.name = authRecord.name;
 		this.avatarUrl = this.pocketbase.files.getURL(authRecord, authRecord.avatar) || null;
 	}

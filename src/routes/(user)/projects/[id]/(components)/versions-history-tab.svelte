@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { VersionSchema } from '$lib/schemas/version.schema';
 
+	import { Plus } from '@lucide/svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button';
 	import {
 		Card,
 		CardTitle,
@@ -24,7 +26,9 @@
 	import { m } from '$lib/paraglide/messages';
 	import { createProjectQuery } from '$lib/queries/project';
 	import { createPaginatedVersionsQuery } from '$lib/queries/versions';
+	import { createDialogController } from '$lib/stores/dialog.svelte';
 
+	import CreateVersionDialog from './create-version-dialog.svelte';
 	import Version from './version.svelte';
 
 	type Props = {
@@ -33,6 +37,8 @@
 	};
 
 	let { currentVersion, selectVersion }: Props = $props();
+
+	const createVersionDialogController = createDialogController<{ projectId: string }>();
 
 	const projectQuery = $derived.by(() =>
 		createQuery(
@@ -79,8 +85,24 @@
 <TabsContent value="history" class="space-y-4">
 	<Card>
 		<CardHeader>
-			<CardTitle>{m.version_history()}</CardTitle>
-			<CardDescription>{m.browse_through_previous_versions()}</CardDescription>
+			<div class="flex items-center justify-between">
+				<div>
+					<CardTitle>{m.version_history()}</CardTitle>
+					<CardDescription>{m.browse_through_previous_versions()}</CardDescription>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					class="gap-2"
+					onclick={() => {
+						createVersionDialogController.data = { projectId: page.params.id };
+						createVersionDialogController.open();
+					}}
+				>
+					<Plus class="h-4 w-4" />
+					{m.create_version()}
+				</Button>
+			</div>
 		</CardHeader>
 		<CardContent>
 			<div class="space-y-4">
@@ -130,3 +152,5 @@
 		</CardContent>
 	</Card>
 </TabsContent>
+
+<CreateVersionDialog dialogController={createVersionDialogController} />
