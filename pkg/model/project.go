@@ -1,9 +1,7 @@
 package model
 
-import "gorm.io/gorm"
-
 type Project struct {
-	gorm.Model
+	BaseModel
 	Slug     string    `json:"slug"`
 	Name     string    `json:"name"`
 	Versions []Version `json:"versions"`

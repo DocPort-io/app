@@ -1,14 +1,9 @@
 package model
 
-import (
-	"app/pkg/model/primitives"
-
-	"gorm.io/gorm"
-)
-
 type Location struct {
-	gorm.Model
-	Nickname string              `json:"nickname"`
-	Address  string              `json:"address"`
-	Location primitives.Location `json:"location"`
+	BaseModel
+	Nickname string  `json:"nickname"`
+	Address  string  `json:"address"`
+	Lat      float64 `json:"lat"`
+	Lon      float64 `json:"lon"`
 }

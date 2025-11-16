@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"app/pkg/dto"
 	"app/pkg/model"
 	"net/http"
 
@@ -16,6 +17,14 @@ func NewProjectController(db *gorm.DB) *ProjectController {
 	return &ProjectController{db: db}
 }
 
+// FindAllProjects godoc
+//
+//	@summary	Find all projects
+//	@tags		projects
+//	@accept		json
+//	@produce	json
+//	@success	200	{object}	dto.ListProjectsResponseDto
+//	@router		/projects [get]
 func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 	ctx := ginCtx.Request.Context()
 
@@ -27,19 +36,21 @@ func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, gin.H{
-		"projects": projects,
-	})
+	ginCtx.JSON(http.StatusOK, dto.ToListProjectsResponse(projects, int64(len(projects))))
 }
 
-type ProjectCreate struct {
-	Slug string `json:"slug" binding:"required"`
-	Name string `json:"name" binding:"required"`
-}
-
+// CreateProject godoc
+//
+//	@summary	Create a project
+//	@tags		projects
+//	@accept		json
+//	@produce	json
+//	@param		request	body		dto.CreateProjectDto	true	"Create a project"
+//	@success	201		{object}	dto.ProjectResponseDto
+//	@router		/projects [post]
 func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
-	var project ProjectCreate
-	if err := ginCtx.ShouldBindJSON(&project); err != nil {
+	var projectDto dto.CreateProjectDto
+	if err := ginCtx.ShouldBindJSON(&projectDto); err != nil {
 		ginCtx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -48,10 +59,9 @@ func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
 
 	ctx := ginCtx.Request.Context()
 
-	err := gorm.G[model.Project](c.db).Create(ctx, &model.Project{
-		Slug: project.Slug,
-		Name: project.Name,
-	})
+	project := projectDto.ToModel()
+
+	err := gorm.G[model.Project](c.db).Create(ctx, project)
 	if err != nil {
 		ginCtx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -59,7 +69,5 @@ func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, gin.H{
-		"message": "project created",
-	})
+	ginCtx.JSON(http.StatusCreated, dto.ToProjectResponse(project))
 }
