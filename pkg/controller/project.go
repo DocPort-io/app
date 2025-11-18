@@ -28,7 +28,7 @@ func NewProjectController(db *gorm.DB) *ProjectController {
 func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 	ctx := ginCtx.Request.Context()
 
-	projects, err := gorm.G[model.Project](c.db).Preload("Versions", nil).Find(ctx)
+	projects, err := gorm.G[model.Project](c.db).Find(ctx)
 	if err != nil {
 		ginCtx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -37,6 +37,31 @@ func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 	}
 
 	ginCtx.JSON(http.StatusOK, dto.ToListProjectsResponse(projects, int64(len(projects))))
+}
+
+// GetProject godoc
+//
+//	@summary	Get a project
+//	@tags		projects
+//	@accept		json
+//	@produce	json
+//	@param		id	path		uint	true	"Project ID"
+//	@success	200	{object}	dto.ProjectResponseDto
+//	@router		/projects/{id} [get]
+func (c *ProjectController) GetProject(ginCtx *gin.Context) {
+	ctx := ginCtx.Request.Context()
+
+	id := ginCtx.Param("id")
+
+	project, err := gorm.G[model.Project](c.db).Preload("Versions", nil).Where("id = ?", id).First(ctx)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusOK, dto.ToProjectResponse(&project))
 }
 
 // CreateProject godoc
