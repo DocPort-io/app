@@ -14,10 +14,15 @@ import (
 
 // @host		localhost:8080
 // @basepath	/api/v1
-func registerRoutes(router *gin.Engine, projectController *controller.ProjectController) {
+func registerRoutes(router *gin.Engine, projectController *controller.ProjectController, versionController *controller.VersionController) {
 	router.GET("/api/v1/projects", projectController.FindAllProjects)
 	router.GET("/api/v1/projects/:id", projectController.GetProject)
+	router.GET("/api/v1/projects/:id/versions", versionController.FindAllProjectVersions)
 	router.POST("/api/v1/projects", projectController.CreateProject)
+
+	router.GET("/api/v1/versions", versionController.FindAllVersions)
+	router.GET("/api/v1/versions/:id", versionController.GetVersion)
+	router.POST("/api/v1/versions", versionController.CreateVersion)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
