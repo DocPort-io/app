@@ -17,7 +17,6 @@ import (
 func registerRoutes(router *gin.Engine, projectController *controller.ProjectController, versionController *controller.VersionController) {
 	router.GET("/api/v1/projects", projectController.FindAllProjects)
 	router.GET("/api/v1/projects/:id", projectController.GetProject)
-	router.GET("/api/v1/projects/:id/versions", versionController.FindAllProjectVersions)
 	router.POST("/api/v1/projects", projectController.CreateProject)
 
 	router.GET("/api/v1/versions", versionController.FindAllVersions)
