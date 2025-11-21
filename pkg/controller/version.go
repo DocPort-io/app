@@ -56,7 +56,7 @@ func (c *VersionController) FindAllVersions(ginCtx *gin.Context) {
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		id	path		uint	true	"Version ID"
+//	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [get]
 func (c *VersionController) GetVersion(ginCtx *gin.Context) {
@@ -106,4 +106,85 @@ func (c *VersionController) CreateVersion(ginCtx *gin.Context) {
 	}
 
 	ginCtx.JSON(http.StatusCreated, dto.ToVersionResponse(version))
+}
+
+// UpdateVersion godoc
+//
+//	@summary	Update a version
+//	@tags		versions
+//	@accept		json
+//	@produce	json
+//	@param		id		path		uint					true	"Version identifier"
+//	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
+//	@success	200		{object}	dto.VersionResponseDto
+//	@router		/versions/{id} [put]
+func (c *VersionController) UpdateVersion(ginCtx *gin.Context) {
+	var updateVersionDto dto.UpdateVersionDto
+	if err := ginCtx.ShouldBindJSON(&updateVersionDto); err != nil {
+		ginCtx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx := ginCtx.Request.Context()
+
+	id := ginCtx.Param("id")
+	updateVersion := updateVersionDto.ToModel()
+
+	rowsAffected, err := gorm.G[model.Version](c.db).Where("id = ?", id).Updates(ctx, *updateVersion)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if rowsAffected == 0 {
+		ginCtx.JSON(http.StatusNotFound, gin.H{
+			"error": "version not found",
+		})
+		return
+	}
+
+	updatedVersion, err := gorm.G[model.Version](c.db).Where("id = ?", id).First(ctx)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusOK, dto.ToVersionResponse(&updatedVersion))
+}
+
+// DeleteVersion godoc
+//
+//	@summary	Delete a version
+//	@tags		versions
+//	@accept		json
+//	@param		id	path	uint	true	"Version identifier"
+//	@success	204
+//	@router		/versions/{id} [delete]
+func (c *VersionController) DeleteVersion(ginCtx *gin.Context) {
+	ctx := ginCtx.Request.Context()
+
+	id := ginCtx.Param("id")
+
+	rowsAffected, err := gorm.G[model.Version](c.db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if rowsAffected == 0 {
+		ginCtx.JSON(http.StatusNotFound, gin.H{
+			"error": "version not found",
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusNoContent, nil)
 }

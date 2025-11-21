@@ -19,6 +19,18 @@ func (dto *CreateVersionDto) ToModel() *model.Version {
 	}
 }
 
+type UpdateVersionDto struct {
+	Name        string `json:"name" example:"v0.0.1"`
+	Description string `json:"description" example:"First version of the project"`
+}
+
+func (dto *UpdateVersionDto) ToModel() *model.Version {
+	return &model.Version{
+		Name:        dto.Name,
+		Description: dto.Description,
+	}
+}
+
 type VersionResponseDto struct {
 	ID          uint   `json:"id" example:"1"`
 	CreatedAt   string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`

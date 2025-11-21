@@ -45,7 +45,7 @@ func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		id	path		uint	true	"Project ID"
+//	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [get]
 func (c *ProjectController) GetProject(ginCtx *gin.Context) {
@@ -95,4 +95,86 @@ func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
 	}
 
 	ginCtx.JSON(http.StatusCreated, dto.ToProjectResponse(project))
+}
+
+// UpdateProject godoc
+//
+//	@summary	Update a project
+//	@tags		projects
+//	@accept		json
+//	@produce	json
+//	@param		id		path		uint					true	"Project identifier"
+//	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
+//	@success	200		{object}	dto.ProjectResponseDto
+//	@router		/projects/{id} [put]
+func (c *ProjectController) UpdateProject(ginCtx *gin.Context) {
+	var updateProjectDto dto.UpdateProjectDto
+	if err := ginCtx.ShouldBindJSON(&updateProjectDto); err != nil {
+		ginCtx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx := ginCtx.Request.Context()
+
+	id := ginCtx.Param("id")
+	updateProject := updateProjectDto.ToModel()
+
+	rowsAffected, err := gorm.G[model.Project](c.db).Where("id = ?", id).Updates(ctx, *updateProject)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if rowsAffected == 0 {
+		ginCtx.JSON(http.StatusNotFound, gin.H{
+			"error": "project not found",
+		})
+		return
+	}
+
+	updatedProject, err := gorm.G[model.Project](c.db).Where("id = ?", id).First(ctx)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusOK, dto.ToProjectResponse(&updatedProject))
+}
+
+// DeleteProject godoc
+//
+//	@summary	Delete a project
+//	@tags		projects
+//	@accept		json
+//	@produce	json
+//	@param		id	path	uint	true	"Project identifier"
+//	@success	204
+//	@router		/projects/{id} [delete]
+func (c *ProjectController) DeleteProject(ginCtx *gin.Context) {
+	ctx := ginCtx.Request.Context()
+
+	id := ginCtx.Param("id")
+
+	rowsAffected, err := gorm.G[model.Project](c.db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if rowsAffected == 0 {
+		ginCtx.JSON(http.StatusNotFound, gin.H{
+			"error": "project not found",
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusNoContent, nil)
 }

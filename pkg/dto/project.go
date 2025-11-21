@@ -17,6 +17,18 @@ func (dto CreateProjectDto) ToModel() *model.Project {
 	}
 }
 
+type UpdateProjectDto struct {
+	Slug string `json:"slug" example:"project-x"`
+	Name string `json:"name" example:"Project X"`
+}
+
+func (dto UpdateProjectDto) ToModel() *model.Project {
+	return &model.Project{
+		Slug: dto.Slug,
+		Name: dto.Name,
+	}
+}
+
 type ProjectResponseDto struct {
 	ID        uint                 `json:"id" example:"1"`
 	CreatedAt string               `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`

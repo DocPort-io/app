@@ -18,10 +18,14 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 	router.GET("/api/v1/projects", projectController.FindAllProjects)
 	router.GET("/api/v1/projects/:id", projectController.GetProject)
 	router.POST("/api/v1/projects", projectController.CreateProject)
+	router.PUT("/api/v1/projects/:id", projectController.UpdateProject)
+	router.DELETE("/api/v1/projects/:id", projectController.DeleteProject)
 
 	router.GET("/api/v1/versions", versionController.FindAllVersions)
 	router.GET("/api/v1/versions/:id", versionController.GetVersion)
 	router.POST("/api/v1/versions", versionController.CreateVersion)
+	router.PUT("/api/v1/versions/:id", versionController.UpdateVersion)
+	router.DELETE("/api/v1/versions/:id", versionController.DeleteVersion)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
