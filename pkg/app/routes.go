@@ -26,6 +26,7 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 	router.POST("/api/v1/versions", versionController.CreateVersion)
 	router.PUT("/api/v1/versions/:id", versionController.UpdateVersion)
 	router.DELETE("/api/v1/versions/:id", versionController.DeleteVersion)
+	router.PUT("/api/v1/versions/:id/upload", versionController.UploadFileToVersion)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

@@ -2,19 +2,18 @@ package controller
 
 import (
 	"app/pkg/dto"
-	"app/pkg/model"
+	"app/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type VersionController struct {
-	db *gorm.DB
+	versionService *service.VersionService
 }
 
-func NewVersionController(db *gorm.DB) *VersionController {
-	return &VersionController{db: db}
+func NewVersionController(versionService *service.VersionService) *VersionController {
+	return &VersionController{versionService: versionService}
 }
 
 // FindAllVersions godoc
@@ -26,28 +25,18 @@ func NewVersionController(db *gorm.DB) *VersionController {
 //	@param		projectId	query		uint	false	"Project identifier"
 //	@success	200			{object}	dto.ListVersionsResponseDto
 //	@router		/versions [get]
-func (c *VersionController) FindAllVersions(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
+func (c *VersionController) FindAllVersions(ctx *gin.Context) {
+	projectId := ctx.Query("projectId")
 
-	projectId := ginCtx.Query("projectId")
-
-	var versions []model.Version
-	var err error
-
-	if projectId != "" {
-		versions, err = gorm.G[model.Version](c.db).Where("project_id = ?", projectId).Find(ctx)
-	} else {
-		versions, err = gorm.G[model.Version](c.db).Find(ctx)
-	}
-
+	versions, err := c.versionService.FindAllVersions(ctx.Request.Context(), projectId)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, dto.ToListVersionsResponse(versions, int64(len(versions))))
+	ctx.JSON(http.StatusOK, dto.ToListVersionsResponse(versions, int64(len(versions))))
 }
 
 // GetVersion godoc
@@ -59,20 +48,18 @@ func (c *VersionController) FindAllVersions(ginCtx *gin.Context) {
 //	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [get]
-func (c *VersionController) GetVersion(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
+func (c *VersionController) GetVersion(ctx *gin.Context) {
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-
-	version, err := gorm.G[model.Version](c.db).Where("id = ?", id).First(ctx)
+	version, err := c.versionService.FindVersionById(ctx.Request.Context(), id)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, dto.ToVersionResponse(&version))
+	ctx.JSON(http.StatusOK, dto.ToVersionResponse(version))
 }
 
 // CreateVersion godoc
@@ -85,19 +72,15 @@ func (c *VersionController) GetVersion(ginCtx *gin.Context) {
 //	@success	201		{object}	dto.VersionResponseDto
 //	@router		/versions [post]
 func (c *VersionController) CreateVersion(ginCtx *gin.Context) {
-	var versionDto dto.CreateVersionDto
-	if err := ginCtx.ShouldBindJSON(&versionDto); err != nil {
+	var input dto.CreateVersionDto
+	if err := ginCtx.ShouldBindJSON(&input); err != nil {
 		ginCtx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ctx := ginCtx.Request.Context()
-
-	version := versionDto.ToModel()
-
-	err := gorm.G[model.Version](c.db).Create(ctx, version)
+	version, err := c.versionService.CreateVersion(ginCtx.Request.Context(), input)
 	if err != nil {
 		ginCtx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -118,44 +101,26 @@ func (c *VersionController) CreateVersion(ginCtx *gin.Context) {
 //	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
 //	@success	200		{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [put]
-func (c *VersionController) UpdateVersion(ginCtx *gin.Context) {
-	var updateVersionDto dto.UpdateVersionDto
-	if err := ginCtx.ShouldBindJSON(&updateVersionDto); err != nil {
-		ginCtx.JSON(http.StatusBadRequest, gin.H{
+func (c *VersionController) UpdateVersion(ctx *gin.Context) {
+	var input dto.UpdateVersionDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ctx := ginCtx.Request.Context()
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-	updateVersion := updateVersionDto.ToModel()
-
-	rowsAffected, err := gorm.G[model.Version](c.db).Where("id = ?", id).Updates(ctx, *updateVersion)
+	version, err := c.versionService.UpdateVersion(ctx.Request.Context(), id, input)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if rowsAffected == 0 {
-		ginCtx.JSON(http.StatusNotFound, gin.H{
-			"error": "version not found",
-		})
-		return
-	}
-
-	updatedVersion, err := gorm.G[model.Version](c.db).Where("id = ?", id).First(ctx)
-	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	ginCtx.JSON(http.StatusOK, dto.ToVersionResponse(&updatedVersion))
+	ctx.JSON(http.StatusOK, dto.ToVersionResponse(version))
 }
 
 // DeleteVersion godoc
@@ -166,25 +131,47 @@ func (c *VersionController) UpdateVersion(ginCtx *gin.Context) {
 //	@param		id	path	uint	true	"Version identifier"
 //	@success	204
 //	@router		/versions/{id} [delete]
-func (c *VersionController) DeleteVersion(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
+func (c *VersionController) DeleteVersion(ctx *gin.Context) {
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-
-	rowsAffected, err := gorm.G[model.Version](c.db).Where("id = ?", id).Delete(ctx)
+	err := c.versionService.DeleteVersion(ctx.Request.Context(), id)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if rowsAffected == 0 {
-		ginCtx.JSON(http.StatusNotFound, gin.H{
-			"error": "version not found",
+	ctx.JSON(http.StatusNoContent, nil)
+}
+
+func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusNoContent, nil)
+	file, err := fileHeader.Open()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	defer file.Close()
+
+	err = c.versionService.UploadFileToVersion(ctx.Request.Context(), id, file)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
 }

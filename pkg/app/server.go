@@ -2,6 +2,7 @@ package app
 
 import (
 	"app/pkg/controller"
+	"app/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +15,10 @@ func NewServer(db *gorm.DB) http.Handler {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	versionService := service.NewVersionService(db)
+
 	projectController := controller.NewProjectController(db)
-	versionController := controller.NewVersionController(db)
+	versionController := controller.NewVersionController(versionService)
 
 	registerRoutes(router, projectController, versionController)
 
