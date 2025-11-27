@@ -15,9 +15,10 @@ func NewServer(db *gorm.DB) http.Handler {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	projectService := service.NewProjectService(db)
 	versionService := service.NewVersionService(db)
 
-	projectController := controller.NewProjectController(db)
+	projectController := controller.NewProjectController(projectService)
 	versionController := controller.NewVersionController(versionService)
 
 	registerRoutes(router, projectController, versionController)

@@ -2,19 +2,18 @@ package controller
 
 import (
 	"app/pkg/dto"
-	"app/pkg/model"
+	"app/pkg/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type ProjectController struct {
-	db *gorm.DB
+	projectService *service.ProjectService
 }
 
-func NewProjectController(db *gorm.DB) *ProjectController {
-	return &ProjectController{db: db}
+func NewProjectController(projectService *service.ProjectService) *ProjectController {
+	return &ProjectController{projectService: projectService}
 }
 
 // FindAllProjects godoc
@@ -25,18 +24,16 @@ func NewProjectController(db *gorm.DB) *ProjectController {
 //	@produce	json
 //	@success	200	{object}	dto.ListProjectsResponseDto
 //	@router		/projects [get]
-func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
-
-	projects, err := gorm.G[model.Project](c.db).Find(ctx)
+func (c *ProjectController) FindAllProjects(ctx *gin.Context) {
+	projects, err := c.projectService.FindAllProjects(ctx.Request.Context())
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, dto.ToListProjectsResponse(projects, int64(len(projects))))
+	ctx.JSON(http.StatusOK, dto.ToListProjectsResponse(projects, int64(len(projects))))
 }
 
 // GetProject godoc
@@ -48,20 +45,18 @@ func (c *ProjectController) FindAllProjects(ginCtx *gin.Context) {
 //	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [get]
-func (c *ProjectController) GetProject(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
+func (c *ProjectController) GetProject(ctx *gin.Context) {
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-
-	project, err := gorm.G[model.Project](c.db).Preload("Versions", nil).Where("id = ?", id).First(ctx)
+	project, err := c.projectService.FindProjectById(ctx.Request.Context(), id)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, dto.ToProjectResponse(&project))
+	ctx.JSON(http.StatusOK, dto.ToProjectResponse(project))
 }
 
 // CreateProject godoc
@@ -73,28 +68,24 @@ func (c *ProjectController) GetProject(ginCtx *gin.Context) {
 //	@param		request	body		dto.CreateProjectDto	true	"Create a project"
 //	@success	201		{object}	dto.ProjectResponseDto
 //	@router		/projects [post]
-func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
-	var projectDto dto.CreateProjectDto
-	if err := ginCtx.ShouldBindJSON(&projectDto); err != nil {
-		ginCtx.JSON(http.StatusBadRequest, gin.H{
+func (c *ProjectController) CreateProject(ctx *gin.Context) {
+	var input dto.CreateProjectDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ctx := ginCtx.Request.Context()
-
-	project := projectDto.ToModel()
-
-	err := gorm.G[model.Project](c.db).Create(ctx, project)
+	project, err := c.projectService.CreateProject(ctx.Request.Context(), input)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusCreated, dto.ToProjectResponse(project))
+	ctx.JSON(http.StatusCreated, dto.ToProjectResponse(project))
 }
 
 // UpdateProject godoc
@@ -107,44 +98,26 @@ func (c *ProjectController) CreateProject(ginCtx *gin.Context) {
 //	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
 //	@success	200		{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [put]
-func (c *ProjectController) UpdateProject(ginCtx *gin.Context) {
-	var updateProjectDto dto.UpdateProjectDto
-	if err := ginCtx.ShouldBindJSON(&updateProjectDto); err != nil {
-		ginCtx.JSON(http.StatusBadRequest, gin.H{
+func (c *ProjectController) UpdateProject(ctx *gin.Context) {
+	var input dto.UpdateProjectDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ctx := ginCtx.Request.Context()
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-	updateProject := updateProjectDto.ToModel()
-
-	rowsAffected, err := gorm.G[model.Project](c.db).Where("id = ?", id).Updates(ctx, *updateProject)
+	project, err := c.projectService.UpdateProject(ctx.Request.Context(), id, input)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if rowsAffected == 0 {
-		ginCtx.JSON(http.StatusNotFound, gin.H{
-			"error": "project not found",
-		})
-		return
-	}
-
-	updatedProject, err := gorm.G[model.Project](c.db).Where("id = ?", id).First(ctx)
-	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	ginCtx.JSON(http.StatusOK, dto.ToProjectResponse(&updatedProject))
+	ctx.JSON(http.StatusOK, dto.ToProjectResponse(project))
 }
 
 // DeleteProject godoc
@@ -156,25 +129,16 @@ func (c *ProjectController) UpdateProject(ginCtx *gin.Context) {
 //	@param		id	path	uint	true	"Project identifier"
 //	@success	204
 //	@router		/projects/{id} [delete]
-func (c *ProjectController) DeleteProject(ginCtx *gin.Context) {
-	ctx := ginCtx.Request.Context()
+func (c *ProjectController) DeleteProject(ctx *gin.Context) {
+	id := ctx.Param("id")
 
-	id := ginCtx.Param("id")
-
-	rowsAffected, err := gorm.G[model.Project](c.db).Where("id = ?", id).Delete(ctx)
+	err := c.projectService.DeleteProject(ctx.Request.Context(), id)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if rowsAffected == 0 {
-		ginCtx.JSON(http.StatusNotFound, gin.H{
-			"error": "project not found",
-		})
-		return
-	}
-
-	ginCtx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusNoContent, nil)
 }
