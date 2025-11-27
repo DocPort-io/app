@@ -3,20 +3,21 @@ package app
 import (
 	"app/pkg/controller"
 	"app/pkg/service"
+	"app/pkg/storage"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func NewServer(db *gorm.DB) http.Handler {
+func NewServer(db *gorm.DB, fileStorage storage.FileStorage) http.Handler {
 	router := gin.New()
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	projectService := service.NewProjectService(db)
-	versionService := service.NewVersionService(db)
+	versionService := service.NewVersionService(db, fileStorage)
 
 	projectController := controller.NewProjectController(projectService)
 	versionController := controller.NewVersionController(versionService)

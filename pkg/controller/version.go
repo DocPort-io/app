@@ -145,6 +145,16 @@ func (c *VersionController) DeleteVersion(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
+// UploadFileToVersion godoc
+//
+//	@summary	Upload a file to a version
+//	@tags		versions
+//	@accept		multipart/form-data
+//	@produce	json
+//	@param		id		path		uint	true	"Version identifier"
+//	@param		file	formData	file	true	"File to upload"
+//	@success	201		{object}	dto.FileResponseDto
+//	@router		/versions/{id}/upload [post]
 func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
 	id := ctx.Param("id")
 
@@ -156,16 +166,16 @@ func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
 		return
 	}
 
-	file, err := fileHeader.Open()
+	fileStream, err := fileHeader.Open()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	defer file.Close()
+	defer fileStream.Close()
 
-	err = c.versionService.UploadFileToVersion(ctx.Request.Context(), id, file)
+	file, err := c.versionService.UploadFileToVersion(ctx.Request.Context(), id, fileStream, fileHeader.Filename, fileHeader.Size)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -173,5 +183,5 @@ func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	ctx.JSON(http.StatusCreated, dto.ToFileResponse(file))
 }

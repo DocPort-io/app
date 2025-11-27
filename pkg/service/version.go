@@ -3,18 +3,23 @@ package service
 import (
 	"app/pkg/dto"
 	"app/pkg/model"
+	"app/pkg/storage"
 	"context"
+	"fmt"
 	"io"
+	"path"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type VersionService struct {
-	db *gorm.DB
+	db          *gorm.DB
+	fileStorage storage.FileStorage
 }
 
-func NewVersionService(db *gorm.DB) *VersionService {
-	return &VersionService{db: db}
+func NewVersionService(db *gorm.DB, fileStorage storage.FileStorage) *VersionService {
+	return &VersionService{db: db, fileStorage: fileStorage}
 }
 
 func (s *VersionService) FindAllVersions(ctx context.Context, projectId string) ([]model.Version, error) {
@@ -37,7 +42,7 @@ func (s *VersionService) FindAllVersions(ctx context.Context, projectId string) 
 }
 
 func (s *VersionService) FindVersionById(ctx context.Context, id string) (*model.Version, error) {
-	version, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
+	version, err := gorm.G[model.Version](s.db).Preload("Files", nil).Where("id = ?", id).First(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +92,35 @@ func (s *VersionService) DeleteVersion(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, file io.ReadSeeker) error {
-	return nil
+func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, fileStream io.ReadSeeker, fileName string, size int64) (*model.File, error) {
+	fileUuid := uuid.NewString()
+	assetPath := path.Join("files", fmt.Sprintf("%s", fileUuid))
+
+	err := s.fileStorage.Save(ctx, assetPath, fileStream)
+	if err != nil {
+		return nil, err
+	}
+
+	var file = &model.File{
+		Name: fileName,
+		Size: size,
+		Path: assetPath,
+	}
+
+	err = gorm.G[model.File](s.db).Create(ctx, file)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.Model(&version).Association("Files").Append(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
