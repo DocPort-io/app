@@ -8,7 +8,7 @@ import (
 
 func NewFileStorage(backend string) storage.FileStorage {
 	if backend == storage.TypeFileSystem {
-		fileStorage, err := storage.NewFilesystemStorage("./files")
+		fileStorage, err := storage.NewFilesystemStorage("./storage")
 		if err != nil {
 			log.Fatalf("failed to initialize file storage backend %s: %s\n", backend, err)
 		}
