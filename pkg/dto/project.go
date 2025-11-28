@@ -30,27 +30,20 @@ func (dto UpdateProjectDto) ToModel() *model.Project {
 }
 
 type ProjectResponseDto struct {
-	ID        uint                 `json:"id" example:"1"`
-	CreatedAt string               `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
-	UpdatedAt string               `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
-	Slug      string               `json:"slug" example:"project-x"`
-	Name      string               `json:"name" example:"Project X"`
-	Versions  []VersionResponseDto `json:"versions"`
+	ID        uint   `json:"id" example:"1"`
+	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
+	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
+	Slug      string `json:"slug" example:"project-x"`
+	Name      string `json:"name" example:"Project X"`
 }
 
 func ToProjectResponse(project *model.Project) *ProjectResponseDto {
-	versionResponseDtos := make([]VersionResponseDto, len(project.Versions))
-	for i, version := range project.Versions {
-		versionResponseDtos[i] = *ToVersionResponse(&version)
-	}
-
 	return &ProjectResponseDto{
 		ID:        project.ID,
 		CreatedAt: project.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
 		Slug:      project.Slug,
 		Name:      project.Name,
-		Versions:  versionResponseDtos,
 	}
 }
 

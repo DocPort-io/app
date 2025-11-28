@@ -42,7 +42,7 @@ func (s *VersionService) FindAllVersions(ctx context.Context, projectId string) 
 }
 
 func (s *VersionService) FindVersionById(ctx context.Context, id string) (*model.Version, error) {
-	version, err := gorm.G[model.Version](s.db).Preload("Files", nil).Where("id = ?", id).First(ctx)
+	version, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
 	if err != nil {
 		return nil, err
 	}
