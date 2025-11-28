@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func NewFileStorage(backend string) storage.FileStorage {
+func NewFileStorage(backend storage.Type) storage.FileStorage {
 	if backend == storage.TypeFileSystem {
 		fileStorage, err := storage.NewFilesystemStorage("./storage")
 		if err != nil {

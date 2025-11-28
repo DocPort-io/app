@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type CreateFileDto struct {
+	Name string `json:"name" binding:"required" example:"example.pdf"`
+	Size int64  `json:"size" binding:"required" example:"1024"`
+	Path string `json:"-" binding:"required" example:"/tmp/example.pdf"`
+}
+
 type FileResponseDto struct {
 	ID        uint   `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`

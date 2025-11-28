@@ -3,23 +3,18 @@ package service
 import (
 	"app/pkg/dto"
 	"app/pkg/model"
-	"app/pkg/storage"
 	"context"
-	"fmt"
-	"io"
-	"path"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type VersionService struct {
 	db          *gorm.DB
-	fileStorage storage.FileStorage
+	fileService *FileService
 }
 
-func NewVersionService(db *gorm.DB, fileStorage storage.FileStorage) *VersionService {
-	return &VersionService{db: db, fileStorage: fileStorage}
+func NewVersionService(db *gorm.DB, fileService *FileService) *VersionService {
+	return &VersionService{db: db, fileService: fileService}
 }
 
 func (s *VersionService) FindAllVersions(ctx context.Context, projectId string) ([]model.Version, error) {
@@ -92,22 +87,8 @@ func (s *VersionService) DeleteVersion(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, fileStream io.ReadSeeker, fileName string, size int64) (*model.File, error) {
-	fileUuid := uuid.NewString()
-	assetPath := path.Join("files", fmt.Sprintf("%s", fileUuid))
-
-	err := s.fileStorage.Save(ctx, assetPath, fileStream)
-	if err != nil {
-		return nil, err
-	}
-
-	var file = &model.File{
-		Name: fileName,
-		Size: size,
-		Path: assetPath,
-	}
-
-	err = gorm.G[model.File](s.db).Create(ctx, file)
+func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, createFileDto dto.CreateFileDto) (*model.File, error) {
+	file, err := s.fileService.CreateFile(ctx, createFileDto)
 	if err != nil {
 		return nil, err
 	}

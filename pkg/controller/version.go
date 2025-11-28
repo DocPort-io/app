@@ -4,8 +4,11 @@ import (
 	"app/pkg/dto"
 	"app/pkg/service"
 	"net/http"
+	"os"
+	"path"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type VersionController struct {
@@ -166,16 +169,31 @@ func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
 		return
 	}
 
-	fileStream, err := fileHeader.Open()
+	tempDir, err := os.MkdirTemp("", "upload")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	defer fileStream.Close()
 
-	file, err := c.versionService.UploadFileToVersion(ctx.Request.Context(), id, fileStream, fileHeader.Filename, fileHeader.Size)
+	var filePath = path.Join(tempDir, uuid.NewString())
+
+	err = ctx.SaveUploadedFile(fileHeader, filePath, 0700)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	createFileDto := dto.CreateFileDto{
+		Name: fileHeader.Filename,
+		Size: fileHeader.Size,
+		Path: filePath,
+	}
+
+	file, err := c.versionService.UploadFileToVersion(ctx.Request.Context(), id, createFileDto)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

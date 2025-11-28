@@ -5,9 +5,11 @@ import (
 	"io"
 )
 
-var (
-	TypeFileSystem = "fs"
-	TypeS3         = "s3"
+type Type string
+
+const (
+	TypeFileSystem Type = "fs"
+	TypeS3         Type = "s3"
 )
 
 type ObjectInfo struct {

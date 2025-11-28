@@ -16,8 +16,9 @@ func NewServer(db *gorm.DB, fileStorage storage.FileStorage) http.Handler {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	fileService := service.NewFileService(db, fileStorage)
 	projectService := service.NewProjectService(db)
-	versionService := service.NewVersionService(db, fileStorage)
+	versionService := service.NewVersionService(db, fileService)
 
 	projectController := controller.NewProjectController(projectService)
 	versionController := controller.NewVersionController(versionService)
