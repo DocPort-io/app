@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/model"
+	"app/pkg/util"
 	"time"
 )
 
@@ -28,6 +29,20 @@ func (dto *UpdateVersionDto) ToModel() *model.Version {
 	return &model.Version{
 		Name:        dto.Name,
 		Description: dto.Description,
+	}
+}
+
+type UploadFileToVersionDto struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+	Path string `json:"path"`
+}
+
+func ToUploadFileToVersionDto(file *util.MultipartFile) *UploadFileToVersionDto {
+	return &UploadFileToVersionDto{
+		Name: file.Name,
+		Size: file.Size,
+		Path: file.Path,
 	}
 }
 

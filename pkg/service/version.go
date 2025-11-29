@@ -87,8 +87,12 @@ func (s *VersionService) DeleteVersion(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, createFileDto dto.CreateFileDto) (*model.File, error) {
-	file, err := s.fileService.CreateFile(ctx, createFileDto)
+func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, uploadFileToVersionDto dto.UploadFileToVersionDto) (*model.File, error) {
+	file, err := s.fileService.CreateFile(ctx, dto.CreateFileDto{
+		Name: uploadFileToVersionDto.Name,
+		Size: uploadFileToVersionDto.Size,
+		Path: uploadFileToVersionDto.Path,
+	})
 	if err != nil {
 		return nil, err
 	}
