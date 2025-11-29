@@ -1,4 +1,3 @@
-//go:generate swag fmt --dir ../../ -g ./pkg/app/routes.go
 //go:generate swag init --dir ../../ -g ./pkg/app/routes.go -o ../docs --parseDependency --parseInternal --useStructName
 package app
 
@@ -16,7 +15,7 @@ import (
 
 // @host		localhost:8080
 // @basepath	/api/v1
-func registerRoutes(router *gin.Engine, projectController *controller.ProjectController, versionController *controller.VersionController) {
+func registerRoutes(router *gin.Engine, projectController *controller.ProjectController, versionController *controller.VersionController, fileController *controller.FileController) {
 	router.GET("/api/v1/projects", projectController.FindAllProjects)
 	router.GET("/api/v1/projects/:id", projectController.GetProject)
 	router.POST("/api/v1/projects", projectController.CreateProject)
@@ -29,6 +28,8 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 	router.PUT("/api/v1/versions/:id", versionController.UpdateVersion)
 	router.DELETE("/api/v1/versions/:id", versionController.DeleteVersion)
 	router.POST("/api/v1/versions/:id/upload", versionController.UploadFileToVersion)
+
+	router.GET("/api/v1/files", fileController.FindAllFiles)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

@@ -48,3 +48,25 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFi
 
 	return file, nil
 }
+
+func (s *FileService) FindAllFiles(ctx context.Context, versionId string) ([]model.File, error) {
+	var files []model.File
+	var err error
+
+	if versionId != "" {
+		version, err := gorm.G[model.Version](s.db).Preload("Files", nil).Where("id = ?", versionId).First(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		files = version.Files
+
+		return files, err
+	}
+
+	files, err = gorm.G[model.File](s.db).Find(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
