@@ -5,6 +5,8 @@ import (
 	"app/pkg/model"
 	"app/pkg/storage"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -155,5 +157,51 @@ func TestFileService_CreateFile(t *testing.T) {
 		t.Errorf("expected at least one call to fileStorage.Save, got none")
 	} else if fileStorage.Calls[0] != "Save" {
 		t.Errorf("expected call to fileStorage.Save, got %s", fileStorage.Calls[0])
+	}
+}
+
+func TestFileService_FindFileById(t *testing.T) {
+	// Arrange
+	service, db, _ := setupFileService(t)
+
+	testFile := &model.File{
+		Name: "find-me.pdf",
+		Size: 2048,
+		Path: "files/find-me.pdf",
+	}
+
+	if err := gorm.G[model.File](db).Create(t.Context(), testFile); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
+
+	// Act
+	idStr := fmt.Sprintf("%d", testFile.ID)
+	got, err := service.FindFileById(t.Context(), idStr)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("FindFileById returned error: %v", err)
+	}
+	if got == nil {
+		t.Fatalf("expected a file, got nil")
+	}
+	if got.ID != testFile.ID || got.Name != testFile.Name || got.Size != testFile.Size {
+		t.Errorf("returned file does not match: got %+v, want %+v", got, testFile)
+	}
+}
+
+func TestFileService_FindFileById_NotFound(t *testing.T) {
+	// Arrange
+	service, _, _ := setupFileService(t)
+
+	// Act
+	_, err := service.FindFileById(t.Context(), "999999")
+
+	// Assert
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Fatalf("expected ErrRecordNotFound, got %v", err)
 	}
 }

@@ -70,3 +70,12 @@ func (s *FileService) FindAllFiles(ctx context.Context, versionId string) ([]mod
 	}
 	return files, nil
 }
+
+func (s *FileService) FindFileById(ctx context.Context, id string) (*model.File, error) {
+	file, err := gorm.G[model.File](s.db).Where("id = ?", id).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &file, nil
+}

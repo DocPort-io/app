@@ -36,3 +36,24 @@ func (c *FileController) FindAllFiles(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, dto.ToListFilesResponse(files, int64(len(files))))
 }
+
+// GetFile godoc
+//
+//	@summary	Get a file
+//	@tags		files
+//	@accept		json
+//	@produce	json
+//	@param		id	path	uint	true	"File identifier"
+//	@success	200	{object}	dto.FileResponseDto
+//	@router		/files/{id} [get]
+func (c *FileController) GetFile(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	file, err := c.fileService.FindFileById(ctx.Request.Context(), id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.ToFileResponse(file))
+}

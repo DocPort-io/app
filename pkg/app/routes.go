@@ -30,6 +30,7 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 	router.POST("/api/v1/versions/:id/upload", versionController.UploadFileToVersion)
 
 	router.GET("/api/v1/files", fileController.FindAllFiles)
+	router.GET("/api/v1/files/:id", fileController.GetFile)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
