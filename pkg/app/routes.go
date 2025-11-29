@@ -1,5 +1,5 @@
 //go:generate swag fmt --dir ../../ -g ./pkg/app/routes.go
-//go:generate swag init --dir ../../ -g ./pkg/app/routes.go -o ./pkg/docs --parseDependency --parseInternal --useStructName
+//go:generate swag init --dir ../../ -g ./pkg/app/routes.go -o ../docs --parseDependency --parseInternal --useStructName
 package app
 
 import (
