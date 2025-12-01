@@ -17,7 +17,7 @@ func NewProjectService(db *gorm.DB) *ProjectService {
 }
 
 func (s *ProjectService) FindAllProjects(ctx context.Context) ([]model.Project, error) {
-	projects, err := gorm.G[model.Project](s.db).Find(ctx)
+	projects, err := gorm.G[model.Project](s.db).Preload("Location", nil).Find(ctx)
 	if err != nil {
 		return nil, err
 	}

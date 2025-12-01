@@ -47,12 +47,19 @@ func ToProjectResponse(project *model.Project) *ProjectResponseDto {
 	}
 }
 
+type ListProjectsResponseProjectLocationDto struct {
+	Name string  `json:"name"`
+	Lat  float64 `json:"lat" example:"52.520008"`
+	Lon  float64 `json:"lon" example:"13.404954"`
+}
+
 type ListProjectsResponseProjectDto struct {
-	ID        uint   `json:"id" example:"1"`
-	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
-	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
-	Slug      string `json:"slug" example:"project-x"`
-	Name      string `json:"name" example:"Project X"`
+	ID        uint                                    `json:"id" example:"1"`
+	CreatedAt string                                  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
+	UpdatedAt string                                  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
+	Slug      string                                  `json:"slug" example:"project-x"`
+	Name      string                                  `json:"name" example:"Project X"`
+	Location  *ListProjectsResponseProjectLocationDto `json:"location"`
 }
 
 func ToListProjectsResponseProject(project *model.Project) *ListProjectsResponseProjectDto {
@@ -62,6 +69,11 @@ func ToListProjectsResponseProject(project *model.Project) *ListProjectsResponse
 		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
 		Slug:      project.Slug,
 		Name:      project.Name,
+		Location: &ListProjectsResponseProjectLocationDto{
+			Name: project.Location.Name,
+			Lat:  project.Location.Lat,
+			Lon:  project.Location.Lon,
+		},
 	}
 }
 
