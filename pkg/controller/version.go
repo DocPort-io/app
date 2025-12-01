@@ -72,24 +72,24 @@ func (c *VersionController) GetVersion(ctx *gin.Context) {
 //	@param		request	body		dto.CreateVersionDto	true	"Create a version"
 //	@success	201		{object}	dto.VersionResponseDto
 //	@router		/versions [post]
-func (c *VersionController) CreateVersion(ginCtx *gin.Context) {
+func (c *VersionController) CreateVersion(ctx *gin.Context) {
 	var input dto.CreateVersionDto
-	if err := ginCtx.ShouldBindJSON(&input); err != nil {
-		ginCtx.JSON(http.StatusBadRequest, gin.H{
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	version, err := c.versionService.CreateVersion(ginCtx.Request.Context(), input)
+	version, err := c.versionService.CreateVersion(ctx.Request.Context(), input)
 	if err != nil {
-		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ginCtx.JSON(http.StatusCreated, dto.ToVersionResponse(version))
+	ctx.JSON(http.StatusCreated, dto.ToVersionResponse(version))
 }
 
 // UpdateVersion godoc
