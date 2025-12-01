@@ -2,8 +2,8 @@ package model
 
 type Location struct {
 	BaseModel
-	Nickname string  `json:"nickname"`
-	Address  string  `json:"address"`
-	Lat      float64 `json:"lat"`
-	Lon      float64 `json:"lon"`
+	Nickname string
+	Address  string
+	Lat      float64
+	Lon      float64
 }
