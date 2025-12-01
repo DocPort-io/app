@@ -97,7 +97,7 @@ func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, upl
 		return nil, err
 	}
 
-	version, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
+	version, err := s.FindVersionById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
