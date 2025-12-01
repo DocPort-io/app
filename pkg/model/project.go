@@ -2,8 +2,9 @@ package model
 
 type Project struct {
 	BaseModel
-	Slug     string
-	Name     string
-	Location Location
-	Versions []Version
+	Slug       string
+	Name       string
+	LocationId uint
+	Location   Location
+	Versions   []Version
 }
