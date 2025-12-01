@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/model"
+	"app/pkg/util"
 	"time"
 )
 
@@ -9,6 +10,14 @@ type CreateFileDto struct {
 	Name string `json:"name" binding:"required" example:"example.pdf"`
 	Size int64  `json:"size" binding:"required" example:"1024"`
 	Path string `json:"-" binding:"required" example:"/tmp/example.pdf"`
+}
+
+func ToCreateFileDto(file *util.MultipartFile) *CreateFileDto {
+	return &CreateFileDto{
+		Name: file.Name,
+		Size: file.Size,
+		Path: file.Path,
+	}
 }
 
 type FileResponseDto struct {

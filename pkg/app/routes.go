@@ -31,6 +31,8 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 
 	router.GET("/api/v1/files", fileController.FindAllFiles)
 	router.GET("/api/v1/files/:id", fileController.GetFile)
+	router.POST("/api/v1/files", fileController.CreateFile)
+	router.DELETE("/api/v1/files/:id", fileController.DeleteFile)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

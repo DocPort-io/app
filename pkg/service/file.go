@@ -5,6 +5,7 @@ import (
 	"app/pkg/model"
 	"app/pkg/storage"
 	"context"
+	"fmt"
 	"os"
 	"path"
 
@@ -19,34 +20,6 @@ type FileService struct {
 
 func NewFileService(db *gorm.DB, fileStorage storage.FileStorage) *FileService {
 	return &FileService{db: db, fileStorage: fileStorage}
-}
-
-func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*model.File, error) {
-	assetPath := path.Join("files", uuid.NewString())
-
-	src, err := os.Open(createFileDto.Path)
-	if err != nil {
-		return nil, err
-	}
-	defer src.Close()
-
-	err = s.fileStorage.Save(ctx, assetPath, src)
-	if err != nil {
-		return nil, err
-	}
-
-	var file = &model.File{
-		Name: createFileDto.Name,
-		Size: createFileDto.Size,
-		Path: assetPath,
-	}
-
-	err = gorm.G[model.File](s.db).Create(ctx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
 }
 
 func (s *FileService) FindAllFiles(ctx context.Context, versionId string) ([]model.File, error) {
@@ -78,4 +51,62 @@ func (s *FileService) FindFileById(ctx context.Context, id string) (*model.File,
 	}
 
 	return &file, nil
+}
+
+func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*model.File, error) {
+	assetPath := buildFileAssetPath("")
+
+	src, err := os.Open(createFileDto.Path)
+	if err != nil {
+		return nil, err
+	}
+	defer src.Close()
+
+	err = s.fileStorage.Save(ctx, assetPath, src)
+	if err != nil {
+		return nil, err
+	}
+
+	var file = &model.File{
+		Name: createFileDto.Name,
+		Size: createFileDto.Size,
+		Path: assetPath,
+	}
+
+	err = gorm.G[model.File](s.db).Create(ctx, file)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+func (s *FileService) DeleteFile(ctx context.Context, id string) error {
+	file, err := s.FindFileById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := gorm.G[model.File](s.db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	err = s.fileStorage.Delete(ctx, fmt.Sprintf("%d", file.ID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildFileAssetPath(fileUuid string) string {
+	if fileUuid == "" {
+		fileUuid = uuid.NewString()
+	}
+
+	return path.Join("files", fileUuid)
 }
