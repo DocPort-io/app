@@ -33,6 +33,7 @@ go.work.sum
 
 # Generated files
 pkg/docs
+pkg/database
 
 # Development files
 *.db
