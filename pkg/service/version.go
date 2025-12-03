@@ -1,54 +1,38 @@
 package service
 
 import (
+	"app/pkg/database"
 	"app/pkg/dto"
-	"app/pkg/model"
 	"context"
-
-	"gorm.io/gorm"
 )
 
 type VersionService struct {
-	db          *gorm.DB
+	queries     *database.Queries
 	fileService *FileService
 }
 
-func NewVersionService(db *gorm.DB, fileService *FileService) *VersionService {
-	return &VersionService{db: db, fileService: fileService}
+func NewVersionService(queries *database.Queries, fileService *FileService) *VersionService {
+	return &VersionService{queries: queries, fileService: fileService}
 }
 
-func (s *VersionService) FindAllVersions(ctx context.Context, projectId string) ([]model.Version, error) {
-	var versions []model.Version
-	var err error
-
-	if projectId != "" {
-		versions, err = gorm.G[model.Version](s.db).Where("project_id = ?", projectId).Find(ctx)
+func (s *VersionService) FindAllVersions(ctx context.Context, projectId *int64) ([]*database.Version, error) {
+	if projectId != nil {
+		versions, err := s.queries.ListVersionsByProjectId(ctx, *projectId)
 		if err != nil {
 			return nil, err
 		}
 		return versions, nil
 	}
 
-	versions, err = gorm.G[model.Version](s.db).Find(ctx)
+	versions, err := s.queries.ListVersions(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return versions, nil
 }
 
-func (s *VersionService) FindVersionById(ctx context.Context, id string) (*model.Version, error) {
-	version, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &version, nil
-}
-
-func (s *VersionService) CreateVersion(ctx context.Context, dto dto.CreateVersionDto) (*model.Version, error) {
-	version := dto.ToModel()
-
-	err := gorm.G[model.Version](s.db).Create(ctx, version)
+func (s *VersionService) FindVersionById(ctx context.Context, id *int64) (*database.Version, error) {
+	version, err := s.queries.GetVersion(ctx, *id)
 	if err != nil {
 		return nil, err
 	}
@@ -56,38 +40,42 @@ func (s *VersionService) CreateVersion(ctx context.Context, dto dto.CreateVersio
 	return version, nil
 }
 
-func (s *VersionService) UpdateVersion(ctx context.Context, id string, dto dto.UpdateVersionDto) (*model.Version, error) {
-	version := dto.ToModel()
-
-	rowsAffected, err := gorm.G[model.Version](s.db).Where("id = ?", id).Updates(ctx, *version)
-	if err != nil {
-		return nil, err
-	}
-	if rowsAffected == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
-
-	updatedVersion, err := gorm.G[model.Version](s.db).Where("id = ?", id).First(ctx)
+func (s *VersionService) CreateVersion(ctx context.Context, dto dto.CreateVersionDto) (*database.Version, error) {
+	version, err := s.queries.CreateVersion(ctx, &database.CreateVersionParams{
+		Name:        dto.Name,
+		Description: dto.Description,
+		ProjectID:   dto.ProjectId,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &updatedVersion, nil
+	return version, nil
 }
 
-func (s *VersionService) DeleteVersion(ctx context.Context, id string) error {
-	rowsAffected, err := gorm.G[model.Version](s.db).Where("id = ?", id).Delete(ctx)
+func (s *VersionService) UpdateVersion(ctx context.Context, id *int64, dto dto.UpdateVersionDto) (*database.Version, error) {
+	version, err := s.queries.UpdateVersion(ctx, &database.UpdateVersionParams{
+		Name:        dto.Name,
+		Description: dto.Description,
+		ID:          *id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return version, nil
+}
+
+func (s *VersionService) DeleteVersion(ctx context.Context, id *int64) error {
+	err := s.queries.DeleteVersion(ctx, *id)
 	if err != nil {
 		return err
-	}
-	if rowsAffected == 0 {
-		return gorm.ErrRecordNotFound
 	}
 
 	return nil
 }
 
-func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, uploadFileToVersionDto dto.UploadFileToVersionDto) (*model.File, error) {
+func (s *VersionService) UploadFileToVersion(ctx context.Context, id *int64, uploadFileToVersionDto dto.UploadFileToVersionDto) (*database.File, error) {
 	file, err := s.fileService.CreateFile(ctx, dto.CreateFileDto{
 		Name: uploadFileToVersionDto.Name,
 		Size: uploadFileToVersionDto.Size,
@@ -97,12 +85,10 @@ func (s *VersionService) UploadFileToVersion(ctx context.Context, id string, upl
 		return nil, err
 	}
 
-	version, err := s.FindVersionById(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.db.Model(&version).Association("Files").Append(file)
+	err = s.queries.AttachFileToVersion(ctx, &database.AttachFileToVersionParams{
+		VersionID: *id,
+		FileID:    file.ID,
+	})
 	if err != nil {
 		return nil, err
 	}
