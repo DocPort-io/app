@@ -1,3 +1,4 @@
+//go:generate sqlc generate -f ../../sqlc.yaml
 package app
 
 import (
