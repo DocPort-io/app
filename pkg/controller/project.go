@@ -3,6 +3,7 @@ package controller
 import (
 	"app/pkg/dto"
 	"app/pkg/service"
+	"app/pkg/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,11 @@ func (c *ProjectController) FindAllProjects(ctx *gin.Context) {
 //	@success	200	{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [get]
 func (c *ProjectController) GetProject(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	project, err := c.projectService.FindProjectById(ctx.Request.Context(), id)
 	if err != nil {
@@ -107,7 +112,11 @@ func (c *ProjectController) UpdateProject(ctx *gin.Context) {
 		return
 	}
 
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	project, err := c.projectService.UpdateProject(ctx.Request.Context(), id, input)
 	if err != nil {
@@ -130,9 +139,13 @@ func (c *ProjectController) UpdateProject(ctx *gin.Context) {
 //	@success	204
 //	@router		/projects/{id} [delete]
 func (c *ProjectController) DeleteProject(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
-	err := c.projectService.DeleteProject(ctx.Request.Context(), id)
+	err = c.projectService.DeleteProject(ctx.Request.Context(), id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

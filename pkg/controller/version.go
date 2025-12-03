@@ -27,7 +27,11 @@ func NewVersionController(versionService *service.VersionService) *VersionContro
 //	@success	200			{object}	dto.ListVersionsResponseDto
 //	@router		/versions [get]
 func (c *VersionController) FindAllVersions(ctx *gin.Context) {
-	projectId := ctx.Query("projectId")
+	projectId, err := util.GetQueryParameterAsInt64(ctx, "projectId")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	versions, err := c.versionService.FindAllVersions(ctx.Request.Context(), projectId)
 	if err != nil {
@@ -50,7 +54,11 @@ func (c *VersionController) FindAllVersions(ctx *gin.Context) {
 //	@success	200	{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [get]
 func (c *VersionController) GetVersion(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	version, err := c.versionService.FindVersionById(ctx.Request.Context(), id)
 	if err != nil {
@@ -111,7 +119,11 @@ func (c *VersionController) UpdateVersion(ctx *gin.Context) {
 		return
 	}
 
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	version, err := c.versionService.UpdateVersion(ctx.Request.Context(), id, input)
 	if err != nil {
@@ -133,9 +145,13 @@ func (c *VersionController) UpdateVersion(ctx *gin.Context) {
 //	@success	204
 //	@router		/versions/{id} [delete]
 func (c *VersionController) DeleteVersion(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
-	err := c.versionService.DeleteVersion(ctx.Request.Context(), id)
+	err = c.versionService.DeleteVersion(ctx.Request.Context(), id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -157,7 +173,11 @@ func (c *VersionController) DeleteVersion(ctx *gin.Context) {
 //	@success	201		{object}	dto.FileResponseDto
 //	@router		/versions/{id}/upload [post]
 func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	multipartFile, err := util.SaveMultipartFileToTemp(ctx, "file")
 	if err != nil {

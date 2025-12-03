@@ -27,7 +27,11 @@ func NewFileController(fileService *service.FileService) *FileController {
 //	@success	200			{object}	dto.ListFilesResponseDto
 //	@router		/files [get]
 func (c *FileController) FindAllFiles(ctx *gin.Context) {
-	versionId := ctx.Query("versionId")
+	versionId, err := util.GetQueryParameterAsInt64(ctx, "versionId")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid versionId parameter"})
+		return
+	}
 
 	files, err := c.fileService.FindAllFiles(ctx.Request.Context(), versionId)
 	if err != nil {
@@ -48,7 +52,11 @@ func (c *FileController) FindAllFiles(ctx *gin.Context) {
 //	@success	200	{object}	dto.FileResponseDto
 //	@router		/files/{id} [get]
 func (c *FileController) GetFile(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
 	file, err := c.fileService.FindFileById(ctx.Request.Context(), id)
 	if err != nil {
@@ -100,9 +108,13 @@ func (c *FileController) CreateFile(ctx *gin.Context) {
 //	@success	204
 //	@router		/files/{id} [delete]
 func (c *FileController) DeleteFile(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
 
-	err := c.fileService.DeleteFile(ctx.Request.Context(), id)
+	err = c.fileService.DeleteFile(ctx.Request.Context(), id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
