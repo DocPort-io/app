@@ -32,7 +32,9 @@ func NewDatabase() (*sql.DB, *database.Queries) {
 	}
 
 	err = migrations.Up()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	if err != nil && errors.Is(err, migrate.ErrNoChange) {
+		log.Println("no migrations applied, database schema is up to date")
+	} else if err != nil {
 		log.Fatalf("failed to run migrations: %s\n", err)
 	}
 
