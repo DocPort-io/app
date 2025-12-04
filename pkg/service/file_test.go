@@ -1,18 +1,22 @@
 package service
 
 import (
+	"app/pkg/database"
 	"app/pkg/dto"
-	"app/pkg/model"
 	"app/pkg/storage"
 	"context"
+	"database/sql"
 	"errors"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"testing"
 
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "modernc.org/sqlite"
 )
 
 type SpyFileStorage struct {
@@ -77,48 +81,60 @@ func createTempFile(t *testing.T) string {
 	return file.Name()
 }
 
-func setupTestDb(t *testing.T) *gorm.DB {
+func setupTestDb(t *testing.T) (*sql.DB, *database.Queries) {
 	t.Helper()
 
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := sql.Open("sqlite", "file::memory:?_pragma=foreign_keys(ON)")
 	if err != nil {
-		t.Fatalf("failed to connect to test database: %v", err)
+		log.Fatalf("failed to open database: %s\n", err)
 	}
 
-	err = db.AutoMigrate(&model.File{})
+	driver, err := sqlite.WithInstance(db, &sqlite.Config{})
 	if err != nil {
-		t.Fatalf("failed to migrate test database: %v", err)
+		log.Fatalf("failed to create database driver: %s\n", err)
 	}
 
-	return db
+	migrations, err := migrate.NewWithDatabaseInstance("file://../../migrations", "sqlite", driver)
+	if err != nil {
+		log.Fatalf("failed to create migration source: %s\n", err)
+	}
+
+	err = migrations.Up()
+	if err != nil {
+		log.Fatalf("failed to run migrations: %s\n", err)
+	}
+
+	queries := database.New(db)
+
+	return db, queries
 }
 
-func setupFileService(t *testing.T) (*FileService, *gorm.DB, *SpyFileStorage) {
+func setupFileService(t *testing.T) (*FileService, *sql.DB, *database.Queries, *SpyFileStorage) {
 	t.Helper()
 
-	db := setupTestDb(t)
+	db, queries := setupTestDb(t)
 	fileStorage := NewSpyFileStorage()
-	fileService := NewFileService(db, fileStorage)
-	return fileService, db, fileStorage
+	fileService := NewFileService(queries, fileStorage)
+	return fileService, db, queries, fileStorage
 }
 
 func TestFileService_FindAllFiles(t *testing.T) {
 	// Arrange
-	service, db, _ := setupFileService(t)
+	service, _, queries, _ := setupFileService(t)
 
-	var testFile = &model.File{
+	var testFile = &database.CreateFileParams{
 		Name: "test-file.pdf",
 		Size: 1024,
 		Path: "files/abcd.pdf",
 	}
 
-	err := gorm.G[model.File](db).Create(t.Context(), testFile)
+	_, err := queries.CreateFile(t.Context(), testFile)
 	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
 	// Act
-	result, err := service.FindAllFiles(t.Context(), "")
+	result, err := service.FindAllFiles(t.Context(), nil)
 
 	// Assert
 	if err != nil {
@@ -132,7 +148,7 @@ func TestFileService_FindAllFiles(t *testing.T) {
 
 func TestFileService_CreateFile(t *testing.T) {
 	// Arrange
-	service, _, fileStorage := setupFileService(t)
+	service, _, _, fileStorage := setupFileService(t)
 	tempFile := createTempFile(t)
 
 	// Act
@@ -162,21 +178,21 @@ func TestFileService_CreateFile(t *testing.T) {
 
 func TestFileService_FindFileById(t *testing.T) {
 	// Arrange
-	service, db, _ := setupFileService(t)
+	service, _, queries, _ := setupFileService(t)
 
-	testFile := &model.File{
+	testFile := &database.CreateFileParams{
 		Name: "find-me.pdf",
 		Size: 2048,
 		Path: "files/find-me.pdf",
 	}
 
-	if err := gorm.G[model.File](db).Create(t.Context(), testFile); err != nil {
+	file, err := queries.CreateFile(t.Context(), testFile)
+	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
 	// Act
-	idStr := fmt.Sprintf("%d", testFile.ID)
-	got, err := service.FindFileById(t.Context(), idStr)
+	got, err := service.FindFileById(t.Context(), &file.ID)
 
 	// Assert
 	if err != nil {
@@ -185,23 +201,24 @@ func TestFileService_FindFileById(t *testing.T) {
 	if got == nil {
 		t.Fatalf("expected a file, got nil")
 	}
-	if got.ID != testFile.ID || got.Name != testFile.Name || got.Size != testFile.Size {
+	if got.ID != file.ID || got.Name != testFile.Name || got.Size != testFile.Size {
 		t.Errorf("returned file does not match: got %+v, want %+v", got, testFile)
 	}
 }
 
 func TestFileService_FindFileById_NotFound(t *testing.T) {
 	// Arrange
-	service, _, _ := setupFileService(t)
+	service, _, _, _ := setupFileService(t)
 
 	// Act
-	_, err := service.FindFileById(t.Context(), "999999")
+	var fileId int64 = 999999
+	_, err := service.FindFileById(t.Context(), &fileId)
 
 	// Assert
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	if !errors.Is(err, sql.ErrNoRows) {
 		t.Fatalf("expected ErrRecordNotFound, got %v", err)
 	}
 }
