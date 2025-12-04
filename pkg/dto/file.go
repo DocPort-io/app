@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"app/pkg/model"
+	"app/pkg/database"
 	"app/pkg/util"
 	"time"
 )
@@ -21,14 +21,14 @@ func ToCreateFileDto(file *util.MultipartFile) *CreateFileDto {
 }
 
 type FileResponseDto struct {
-	ID        uint   `json:"id" example:"1"`
+	ID        int64  `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Name      string `json:"name" example:"example.pdf"`
 	Size      int64  `json:"size" example:"1024"`
 }
 
-func ToFileResponse(file *model.File) *FileResponseDto {
+func ToFileResponse(file *database.File) *FileResponseDto {
 	return &FileResponseDto{
 		ID:        file.ID,
 		CreatedAt: file.CreatedAt.Format(time.RFC3339),
@@ -39,14 +39,14 @@ func ToFileResponse(file *model.File) *FileResponseDto {
 }
 
 type ListFilesResponseFileDto struct {
-	ID        uint   `json:"id" example:"1"`
+	ID        int64  `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Name      string `json:"name" example:"example.pdf"`
 	Size      int64  `json:"size" example:"1024"`
 }
 
-func ToListFilesResponseFile(file *model.File) *ListFilesResponseFileDto {
+func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
 	return &ListFilesResponseFileDto{
 		ID:        file.ID,
 		CreatedAt: file.CreatedAt.Format(time.RFC3339),
@@ -61,10 +61,10 @@ type ListFilesResponseDto struct {
 	Total int64                      `json:"total" example:"1"`
 }
 
-func ToListFilesResponse(files []model.File, total int64) *ListFilesResponseDto {
+func ToListFilesResponse(files []*database.File, total int64) *ListFilesResponseDto {
 	listFilesResponseFileDtos := make([]ListFilesResponseFileDto, len(files))
 	for i, file := range files {
-		listFilesResponseFileDtos[i] = *ToListFilesResponseFile(&file)
+		listFilesResponseFileDtos[i] = *ToListFilesResponseFile(file)
 	}
 
 	return &ListFilesResponseDto{

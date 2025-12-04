@@ -19,8 +19,8 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	defer cancel()
 
 	fileStorage := app.NewFileStorage("fs")
-	db := app.NewDatabase()
-	srv := app.NewServer(db, fileStorage)
+	db, queries := app.NewDatabase()
+	srv := app.NewServer(db, queries, fileStorage)
 
 	httpServer := &http.Server{
 		Addr:    net.JoinHostPort("127.0.0.1", "8080"),

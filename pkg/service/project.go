@@ -1,23 +1,21 @@
 package service
 
 import (
+	"app/pkg/database"
 	"app/pkg/dto"
-	"app/pkg/model"
 	"context"
-
-	"gorm.io/gorm"
 )
 
 type ProjectService struct {
-	db *gorm.DB
+	queries *database.Queries
 }
 
-func NewProjectService(db *gorm.DB) *ProjectService {
-	return &ProjectService{db: db}
+func NewProjectService(queries *database.Queries) *ProjectService {
+	return &ProjectService{queries: queries}
 }
 
-func (s *ProjectService) FindAllProjects(ctx context.Context) ([]model.Project, error) {
-	projects, err := gorm.G[model.Project](s.db).Preload("Location", nil).Find(ctx)
+func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, error) {
+	projects, err := s.queries.ListProjectsWithLocations(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -25,19 +23,8 @@ func (s *ProjectService) FindAllProjects(ctx context.Context) ([]model.Project, 
 	return projects, nil
 }
 
-func (s *ProjectService) FindProjectById(ctx context.Context, id string) (*model.Project, error) {
-	project, err := gorm.G[model.Project](s.db).Where("id = ?", id).First(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &project, nil
-}
-
-func (s *ProjectService) CreateProject(ctx context.Context, dto dto.CreateProjectDto) (*model.Project, error) {
-	project := dto.ToModel()
-
-	err := gorm.G[model.Project](s.db).Create(ctx, project)
+func (s *ProjectService) FindProjectById(ctx context.Context, id *int64) (*database.Project, error) {
+	project, err := s.queries.GetProject(ctx, *id)
 	if err != nil {
 		return nil, err
 	}
@@ -45,32 +32,37 @@ func (s *ProjectService) CreateProject(ctx context.Context, dto dto.CreateProjec
 	return project, nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, id string, dto dto.UpdateProjectDto) (*model.Project, error) {
-	project := dto.ToModel()
-
-	rowsAffected, err := gorm.G[model.Project](s.db).Where("id = ?", id).Updates(ctx, *project)
-	if err != nil {
-		return nil, err
-	}
-	if rowsAffected == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
-
-	updatedProject, err := gorm.G[model.Project](s.db).Where("id = ?", id).First(ctx)
+func (s *ProjectService) CreateProject(ctx context.Context, dto dto.CreateProjectDto) (*database.Project, error) {
+	project, err := s.queries.CreateProject(ctx, &database.CreateProjectParams{
+		Slug:       dto.Slug,
+		Name:       dto.Name,
+		LocationID: nil,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &updatedProject, nil
+	return project, nil
 }
 
-func (s *ProjectService) DeleteProject(ctx context.Context, id string) error {
-	rowsAffected, err := gorm.G[model.Project](s.db).Where("id = ?", id).Delete(ctx)
+func (s *ProjectService) UpdateProject(ctx context.Context, id *int64, dto dto.UpdateProjectDto) (*database.Project, error) {
+	project, err := s.queries.UpdateProject(ctx, &database.UpdateProjectParams{
+		Slug:       dto.Slug,
+		Name:       dto.Name,
+		LocationID: nil,
+		ID:         *id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
+}
+
+func (s *ProjectService) DeleteProject(ctx context.Context, id *int64) error {
+	err := s.queries.DeleteProject(ctx, *id)
 	if err != nil {
 		return err
-	}
-	if rowsAffected == 0 {
-		return gorm.ErrRecordNotFound
 	}
 
 	return nil

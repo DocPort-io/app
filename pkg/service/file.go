@@ -1,59 +1,51 @@
 package service
 
 import (
+	"app/pkg/database"
 	"app/pkg/dto"
-	"app/pkg/model"
 	"app/pkg/storage"
 	"context"
-	"fmt"
 	"os"
 	"path"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type FileService struct {
-	db          *gorm.DB
+	queries     *database.Queries
 	fileStorage storage.FileStorage
 }
 
-func NewFileService(db *gorm.DB, fileStorage storage.FileStorage) *FileService {
-	return &FileService{db: db, fileStorage: fileStorage}
+func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) *FileService {
+	return &FileService{queries: queries, fileStorage: fileStorage}
 }
 
-func (s *FileService) FindAllFiles(ctx context.Context, versionId string) ([]model.File, error) {
-	var files []model.File
-	var err error
-
-	if versionId != "" {
-		version, err := gorm.G[model.Version](s.db).Preload("Files", nil).Where("id = ?", versionId).First(ctx)
+func (s *FileService) FindAllFiles(ctx context.Context, versionId *int64) ([]*database.File, error) {
+	if versionId != nil {
+		files, err := s.queries.ListFilesByVersionId(ctx, *versionId)
 		if err != nil {
 			return nil, err
 		}
-
-		files = version.Files
-
-		return files, err
+		return files, nil
 	}
 
-	files, err = gorm.G[model.File](s.db).Find(ctx)
+	files, err := s.queries.ListFiles(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	return files, nil
 }
 
-func (s *FileService) FindFileById(ctx context.Context, id string) (*model.File, error) {
-	file, err := gorm.G[model.File](s.db).Where("id = ?", id).First(ctx)
+func (s *FileService) FindFileById(ctx context.Context, id *int64) (*database.File, error) {
+	file, err := s.queries.GetFile(ctx, *id)
 	if err != nil {
 		return nil, err
 	}
-
-	return &file, nil
+	return file, nil
 }
 
-func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*model.File, error) {
+func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*database.File, error) {
 	assetPath := buildFileAssetPath("")
 
 	src, err := os.Open(createFileDto.Path)
@@ -67,13 +59,11 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFi
 		return nil, err
 	}
 
-	var file = &model.File{
+	file, err := s.queries.CreateFile(ctx, &database.CreateFileParams{
 		Name: createFileDto.Name,
 		Size: createFileDto.Size,
 		Path: assetPath,
-	}
-
-	err = gorm.G[model.File](s.db).Create(ctx, file)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -81,21 +71,18 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFi
 	return file, nil
 }
 
-func (s *FileService) DeleteFile(ctx context.Context, id string) error {
+func (s *FileService) DeleteFile(ctx context.Context, id *int64) error {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := gorm.G[model.File](s.db).Where("id = ?", id).Delete(ctx)
+	err = s.queries.DeleteFile(ctx, file.ID)
 	if err != nil {
 		return err
 	}
-	if rowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
 
-	err = s.fileStorage.Delete(ctx, fmt.Sprintf("%d", file.ID))
+	err = s.fileStorage.Delete(ctx, file.Path)
 	if err != nil {
 		return err
 	}
