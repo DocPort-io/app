@@ -37,3 +37,4 @@ pkg/database
 
 # Development files
 *.db
+storage/
