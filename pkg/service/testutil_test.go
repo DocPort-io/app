@@ -108,6 +108,14 @@ func setupVersionService(t *testing.T) (*VersionService, *FileService, *database
 	return vs, fileSvc, queries, db, spy
 }
 
+// setupProjectService wires a ProjectService on an in-memory test DB.
+func setupProjectService(t *testing.T) (*ProjectService, *sql.DB) {
+	t.Helper()
+	db, queries := setupTestDb(t)
+	svc := NewProjectService(queries)
+	return svc, db
+}
+
 // seedProject creates a project row required for versions FKs.
 func seedProject(t *testing.T, q *database.Queries, slug, name string) *database.Project {
 	t.Helper()
