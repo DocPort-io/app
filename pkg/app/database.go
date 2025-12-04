@@ -3,6 +3,7 @@ package app
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -31,7 +32,7 @@ func NewDatabase() (*sql.DB, *database.Queries) {
 	}
 
 	err = migrations.Up()
-	if err != nil {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		log.Fatalf("failed to run migrations: %s\n", err)
 	}
 
