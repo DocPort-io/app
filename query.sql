@@ -97,8 +97,15 @@ WHERE id = ?
 LIMIT 1;
 
 -- name: CreateFile :one
-INSERT INTO files (name, size, path)
-VALUES (?, ?, ?)
+INSERT INTO files (name)
+VALUES (?)
+RETURNING *;
+
+-- name: UpdateFileWithUploadedFile :one
+UPDATE files
+SET size = ?,
+    path = ?
+WHERE id = ?
 RETURNING *;
 
 -- name: DeleteFile :exec

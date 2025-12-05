@@ -71,13 +71,21 @@ func (c *FileController) GetFile(ctx *gin.Context) {
 //
 //	@summary	Create a file
 //	@tags		files
-//	@accept		multipart/form-data
+//	@accept		json
 //	@produce	json
-//	@param		file	formData	file	true	"File to upload"
+//	@param		request	body		dto.CreateFileDto	true	"Create a file"
 //	@success	201		{object}	dto.FileResponseDto
 //	@router		/files [post]
 func (c *FileController) CreateFile(ctx *gin.Context) {
-	multipartFile, err := util.SaveMultipartFileToTemp(ctx, "file")
+	var input dto.CreateFileDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	file, err := c.fileService.CreateFile(ctx.Request.Context(), input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -85,9 +93,33 @@ func (c *FileController) CreateFile(ctx *gin.Context) {
 		return
 	}
 
-	createFileDto := dto.ToCreateFileDto(multipartFile)
+	ctx.JSON(http.StatusCreated, dto.ToFileResponse(file))
+}
 
-	file, err := c.fileService.CreateFile(ctx.Request.Context(), *createFileDto)
+// UploadFile godoc
+//
+//	@summary	Upload a file to a version
+//	@tags		files
+//	@accept		multipart/form-data
+//	@produce	json
+//	@param		id		path		uint	true	"File identifier"
+//	@param		file	formData	file	true	"File to upload"
+//	@success	201		{object}	dto.FileResponseDto
+//	@router		/files/{id}/upload [post]
+func (c *FileController) UploadFile(ctx *gin.Context) {
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
+
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid file parameter"})
+		return
+	}
+
+	file, err := c.fileService.UploadFile(ctx.Request.Context(), id, dto.UploadFileDto{FileHeader: fileHeader})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

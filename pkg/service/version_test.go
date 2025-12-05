@@ -139,7 +139,7 @@ func TestVersionService_UploadFileToVersion(t *testing.T) {
 
 	// Assert
 	if err != nil {
-		t.Fatalf("UploadFileToVersion error: %v", err)
+		t.Fatalf("AttachFileToVersion error: %v", err)
 	}
 	if uploaded == nil || uploaded.ID == 0 {
 		t.Fatalf("expected a created file, got %+v", uploaded)

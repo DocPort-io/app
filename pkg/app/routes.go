@@ -27,10 +27,11 @@ func registerRoutes(router *gin.Engine, projectController *controller.ProjectCon
 	router.POST("/api/v1/versions", versionController.CreateVersion)
 	router.PUT("/api/v1/versions/:id", versionController.UpdateVersion)
 	router.DELETE("/api/v1/versions/:id", versionController.DeleteVersion)
-	router.POST("/api/v1/versions/:id/upload", versionController.UploadFileToVersion)
+	router.POST("/api/v1/versions/:id/attach-file", versionController.AttachFileToVersion)
 
 	router.GET("/api/v1/files", fileController.FindAllFiles)
 	router.GET("/api/v1/files/:id", fileController.GetFile)
+	router.POST("/api/v1/files/:id/upload", fileController.UploadFile)
 	router.POST("/api/v1/files", fileController.CreateFile)
 	router.DELETE("/api/v1/files/:id", fileController.DeleteFile)
 

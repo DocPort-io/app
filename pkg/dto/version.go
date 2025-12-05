@@ -2,7 +2,6 @@ package dto
 
 import (
 	"app/pkg/database"
-	"app/pkg/util"
 	"time"
 )
 
@@ -17,18 +16,8 @@ type UpdateVersionDto struct {
 	Description *string `json:"description" example:"First version of the project"`
 }
 
-type UploadFileToVersionDto struct {
-	Name string `json:"name"`
-	Size int64  `json:"size"`
-	Path string `json:"path"`
-}
-
-func ToUploadFileToVersionDto(file *util.MultipartFile) *UploadFileToVersionDto {
-	return &UploadFileToVersionDto{
-		Name: file.Name,
-		Size: file.Size,
-		Path: file.Path,
-	}
+type AttachFileToVersionDto struct {
+	FileId int64 `json:"fileId" example:"1"`
 }
 
 type VersionResponseDto struct {

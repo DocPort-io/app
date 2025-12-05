@@ -7,12 +7,11 @@ import (
 )
 
 type VersionService struct {
-	queries     *database.Queries
-	fileService *FileService
+	queries *database.Queries
 }
 
-func NewVersionService(queries *database.Queries, fileService *FileService) *VersionService {
-	return &VersionService{queries: queries, fileService: fileService}
+func NewVersionService(queries *database.Queries) *VersionService {
+	return &VersionService{queries: queries}
 }
 
 func (s *VersionService) FindAllVersions(ctx context.Context, projectId *int64) ([]*database.Version, error) {
@@ -75,23 +74,14 @@ func (s *VersionService) DeleteVersion(ctx context.Context, id *int64) error {
 	return nil
 }
 
-func (s *VersionService) UploadFileToVersion(ctx context.Context, id *int64, uploadFileToVersionDto dto.UploadFileToVersionDto) (*database.File, error) {
-	file, err := s.fileService.CreateFile(ctx, dto.CreateFileDto{
-		Name: uploadFileToVersionDto.Name,
-		Size: uploadFileToVersionDto.Size,
-		Path: uploadFileToVersionDto.Path,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.queries.AttachFileToVersion(ctx, &database.AttachFileToVersionParams{
+func (s *VersionService) AttachFileToVersion(ctx context.Context, id *int64, attachFileToVersionDto dto.AttachFileToVersionDto) error {
+	err := s.queries.AttachFileToVersion(ctx, &database.AttachFileToVersionParams{
 		VersionID: *id,
-		FileID:    file.ID,
+		FileID:    attachFileToVersionDto.FileId,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return file, nil
+	return nil
 }

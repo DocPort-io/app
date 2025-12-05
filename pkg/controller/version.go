@@ -162,24 +162,32 @@ func (c *VersionController) DeleteVersion(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
-// UploadFileToVersion godoc
+// AttachFileToVersion godoc
 //
-//	@summary	Upload a file to a version
+//	@summary	Attaches a file to a version
 //	@tags		versions
-//	@accept		multipart/form-data
+//	@accept		json
 //	@produce	json
-//	@param		id		path		uint	true	"Version identifier"
-//	@param		file	formData	file	true	"File to upload"
+//	@param		id		path		uint						true	"Version identifier"
+//	@param		request	body		dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	201		{object}	dto.FileResponseDto
-//	@router		/versions/{id}/upload [post]
-func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
+//	@router		/versions/{id}/attach-file [post]
+func (c *VersionController) AttachFileToVersion(ctx *gin.Context) {
 	id, err := util.GetPathParameterAsInt64(ctx, "id")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
 		return
 	}
 
-	multipartFile, err := util.SaveMultipartFileToTemp(ctx, "file")
+	var input dto.AttachFileToVersionDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = c.versionService.AttachFileToVersion(ctx.Request.Context(), id, input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -187,15 +195,5 @@ func (c *VersionController) UploadFileToVersion(ctx *gin.Context) {
 		return
 	}
 
-	uploadFileToVersionDto := dto.ToUploadFileToVersionDto(multipartFile)
-
-	file, err := c.versionService.UploadFileToVersion(ctx.Request.Context(), id, *uploadFileToVersionDto)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, dto.ToFileResponse(file))
+	ctx.JSON(http.StatusNoContent, nil)
 }

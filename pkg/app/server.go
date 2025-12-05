@@ -17,9 +17,9 @@ func NewServer(db *sql.DB, queries *database.Queries, fileStorage storage.FileSt
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	fileService := service.NewFileService(queries, fileStorage)
 	projectService := service.NewProjectService(queries)
-	versionService := service.NewVersionService(queries, fileService)
+	versionService := service.NewVersionService(queries)
+	fileService := service.NewFileService(queries, fileStorage)
 
 	projectController := controller.NewProjectController(projectService)
 	versionController := controller.NewVersionController(versionService)

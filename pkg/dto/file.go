@@ -2,22 +2,16 @@ package dto
 
 import (
 	"app/pkg/database"
-	"app/pkg/util"
+	"mime/multipart"
 	"time"
 )
 
 type CreateFileDto struct {
 	Name string `json:"name" binding:"required" example:"example.pdf"`
-	Size int64  `json:"size" binding:"required" example:"1024"`
-	Path string `json:"-" binding:"required" example:"/tmp/example.pdf"`
 }
 
-func ToCreateFileDto(file *util.MultipartFile) *CreateFileDto {
-	return &CreateFileDto{
-		Name: file.Name,
-		Size: file.Size,
-		Path: file.Path,
-	}
+type UploadFileDto struct {
+	FileHeader *multipart.FileHeader
 }
 
 type FileResponseDto struct {
@@ -25,7 +19,7 @@ type FileResponseDto struct {
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Name      string `json:"name" example:"example.pdf"`
-	Size      int64  `json:"size" example:"1024"`
+	Size      *int64 `json:"size" example:"1024"`
 }
 
 func ToFileResponse(file *database.File) *FileResponseDto {
@@ -43,7 +37,7 @@ type ListFilesResponseFileDto struct {
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Name      string `json:"name" example:"example.pdf"`
-	Size      int64  `json:"size" example:"1024"`
+	Size      *int64 `json:"size" example:"1024"`
 }
 
 func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {

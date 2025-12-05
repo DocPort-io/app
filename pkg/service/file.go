@@ -5,7 +5,6 @@ import (
 	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
-	"os"
 	"path"
 
 	"github.com/google/uuid"
@@ -46,23 +45,32 @@ func (s *FileService) FindFileById(ctx context.Context, id *int64) (*database.Fi
 }
 
 func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*database.File, error) {
+	file, err := s.queries.CreateFile(ctx, createFileDto.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+func (s *FileService) UploadFile(ctx context.Context, id *int64, uploadFileDto dto.UploadFileDto) (*database.File, error) {
+	fileStream, err := uploadFileDto.FileHeader.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer fileStream.Close()
+
 	assetPath := buildFileAssetPath("")
 
-	src, err := os.Open(createFileDto.Path)
-	if err != nil {
-		return nil, err
-	}
-	defer src.Close()
-
-	err = s.fileStorage.Save(ctx, assetPath, src)
+	err = s.fileStorage.Save(ctx, assetPath, fileStream)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := s.queries.CreateFile(ctx, &database.CreateFileParams{
-		Name: createFileDto.Name,
-		Size: createFileDto.Size,
-		Path: assetPath,
+	file, err := s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
+		ID:   *id,
+		Size: &uploadFileDto.FileHeader.Size,
+		Path: &assetPath,
 	})
 	if err != nil {
 		return nil, err
@@ -82,7 +90,7 @@ func (s *FileService) DeleteFile(ctx context.Context, id *int64) error {
 		return err
 	}
 
-	err = s.fileStorage.Delete(ctx, file.Path)
+	err = s.fileStorage.Delete(ctx, *file.Path)
 	if err != nil {
 		return err
 	}

@@ -39,7 +39,7 @@ func NewFilesystemStorage(rootPath string) (FileStorage, error) {
 func (s *filesystemStorage) Save(_ context.Context, path string, data io.Reader) error {
 	path = filepath.FromSlash(path)
 
-	if err := s.root.MkdirAll(filepath.Dir(path), 0700); err != nil {
+	if err := s.root.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("failed to create directories for path '%s': %w", path, err)
 	}
 
