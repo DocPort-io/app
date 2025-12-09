@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -52,7 +53,10 @@ func (s *filesystemStorage) Save(_ context.Context, path string, data io.Reader)
 
 	_, err = io.Copy(tmpFile, data)
 	if err != nil {
-		tmpFile.Close()
+		err := tmpFile.Close()
+		if err != nil {
+			log.Printf("failed to close file stream: %v", err)
+		}
 		_ = s.root.Remove(tmpName)
 		return fmt.Errorf("failed to write data to temporary file '%s': %w", tmpName, err)
 	}

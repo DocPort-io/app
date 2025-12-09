@@ -2,19 +2,16 @@ package service
 
 import (
 	"app/pkg/database"
-	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
 	"database/sql"
 	"errors"
 	"io"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "modernc.org/sqlite"
 )
@@ -49,24 +46,6 @@ func (s *SpyFileStorage) List(ctx context.Context, root string) ([]storage.Objec
 func (s *SpyFileStorage) Walk(ctx context.Context, root string, walkFunc storage.WalkFunc) error {
 	s.Calls = append(s.Calls, "Walk")
 	return nil
-}
-
-// createTempFile creates a temporary file with known contents and returns its path.
-func createTempFile(t *testing.T) string {
-	t.Helper()
-	file, err := os.CreateTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	const content = "Hello, world!"
-	if n, err := file.Write([]byte(content)); err != nil || n != len(content) {
-		t.Fatalf("failed writing temp content: %v, n=%d", err, n)
-	}
-	if err := file.Close(); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Remove(file.Name()) })
-	return file.Name()
 }
 
 // setupTestDb prepares an in-memory SQLite database with migrations applied.
@@ -134,14 +113,4 @@ func seedVersion(t *testing.T, q *database.Queries, projectID int64, name string
 		t.Fatalf("failed to create version: %v", err)
 	}
 	return v
-}
-
-// mustCreateFileViaService uses FileService to create a file from a temp path.
-func mustCreateFileViaService(t *testing.T, fs *FileService, name string) *database.File {
-	t.Helper()
-	f, err := fs.CreateFile(context.Background(), dto.CreateFileDto{Name: name})
-	if err != nil {
-		t.Fatalf("failed to create file: %v", err)
-	}
-	return f
 }
