@@ -20,6 +20,10 @@ type AttachFileToVersionDto struct {
 	FileId int64 `json:"fileId" example:"1"`
 }
 
+type DetachFileFromVersionDto struct {
+	FileId int64 `json:"fileId" example:"1"`
+}
+
 type VersionResponseDto struct {
 	ID          int64   `json:"id" example:"1"`
 	CreatedAt   string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`

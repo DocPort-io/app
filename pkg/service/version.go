@@ -85,3 +85,15 @@ func (s *VersionService) AttachFileToVersion(ctx context.Context, id *int64, att
 
 	return nil
 }
+
+func (s *VersionService) DetachFileFromVersion(ctx context.Context, id *int64, detachFileFromVersionDto dto.DetachFileFromVersionDto) error {
+	err := s.queries.DetachFileFromVersion(ctx, &database.DetachFileFromVersionParams{
+		VersionID: *id,
+		FileID:    detachFileFromVersionDto.FileId,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -116,3 +116,9 @@ WHERE id = ?;
 -- name: AttachFileToVersion :exec
 INSERT INTO versions_files (version_id, file_id)
 VALUES (?, ?);
+
+-- name: DetachFileFromVersion :exec
+DELETE
+FROM versions_files
+WHERE version_id = ?
+  AND file_id = ?;

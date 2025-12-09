@@ -167,10 +167,9 @@ func (c *VersionController) DeleteVersion(ctx *gin.Context) {
 //	@summary	Attaches a file to a version
 //	@tags		versions
 //	@accept		json
-//	@produce	json
-//	@param		id		path		uint						true	"Version identifier"
-//	@param		request	body		dto.AttachFileToVersionDto	true	"File to attach"
-//	@success	201		{object}	dto.FileResponseDto
+//	@param		id		path	uint						true	"Version identifier"
+//	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
+//	@success	204
 //	@router		/versions/{id}/attach-file [post]
 func (c *VersionController) AttachFileToVersion(ctx *gin.Context) {
 	id, err := util.GetPathParameterAsInt64(ctx, "id")
@@ -188,6 +187,40 @@ func (c *VersionController) AttachFileToVersion(ctx *gin.Context) {
 	}
 
 	err = c.versionService.AttachFileToVersion(ctx.Request.Context(), id, input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
+}
+
+// DetachFileFromVersion godoc
+//
+//	@summary	Detach a file from a version
+//	@tags		versions
+//	@accept		json
+//	@param		id		path	uint							true	"Version identifier"
+//	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
+//	@success	204
+//	@router		/versions/{id}/detach-file [post]
+func (c *VersionController) DetachFileFromVersion(ctx *gin.Context) {
+	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		return
+	}
+
+	var input dto.DetachFileFromVersionDto
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	err = c.versionService.DetachFileFromVersion(ctx.Request.Context(), id, input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
