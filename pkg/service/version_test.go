@@ -126,37 +126,3 @@ func TestVersionService_FindVersionById_NotFound(t *testing.T) {
 		t.Fatalf("expected sql.ErrNoRows, got %v", err)
 	}
 }
-
-func TestVersionService_UploadFileToVersion(t *testing.T) {
-	// Arrange
-	vs, fileSvc, q, _, spy := setupVersionService(t)
-	p := seedProject(t, q, "proj-f", "Project F")
-	v := seedVersion(t, q, p.ID, "v1", nil)
-
-	// Act
-	tmp := createTempFile(t)
-	uploaded, err := vs.UploadFileToVersion(t.Context(), &v.ID, dto.UploadFileToVersionDto{Name: "doc.pdf", Size: 13, Path: tmp})
-
-	// Assert
-	if err != nil {
-		t.Fatalf("AttachFileToVersion error: %v", err)
-	}
-	if uploaded == nil || uploaded.ID == 0 {
-		t.Fatalf("expected a created file, got %+v", uploaded)
-	}
-
-	// verify join via ListFilesByVersionId
-	files, err := q.ListFilesByVersionId(t.Context(), v.ID)
-	if err != nil {
-		t.Fatalf("ListFilesByVersionId error: %v", err)
-	}
-	if len(files) != 1 || files[0].ID != uploaded.ID {
-		t.Fatalf("expected file to be attached to version; got: %+v", files)
-	}
-
-	// verify that underlying FileService used storage.Save once
-	_ = fileSvc
-	if len(spy.Calls) == 0 || spy.Calls[0] != "Save" {
-		t.Fatalf("expected storage Save to be called, got calls: %+v", spy.Calls)
-	}
-}

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"app/pkg/database"
 	"app/pkg/dto"
 	"database/sql"
 	"errors"
@@ -12,13 +11,8 @@ func TestFileService_FindAllFiles(t *testing.T) {
 	// Arrange
 	service, _, queries, _ := setupFileService(t)
 
-	var testFile = &database.CreateFileParams{
-		Name: "test-file.pdf",
-		Size: 1024,
-		Path: "files/abcd.pdf",
-	}
-
-	_, err := queries.CreateFile(t.Context(), testFile)
+	var testFileName = "test-file.pdf"
+	_, err := queries.CreateFile(t.Context(), testFileName)
 	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
@@ -38,14 +32,11 @@ func TestFileService_FindAllFiles(t *testing.T) {
 
 func TestFileService_CreateFile(t *testing.T) {
 	// Arrange
-	service, _, _, fileStorage := setupFileService(t)
-	tempFile := createTempFile(t)
+	service, _, _, _ := setupFileService(t)
 
 	// Act
 	file := &dto.CreateFileDto{
 		Name: "test-file.pdf",
-		Size: 1024,
-		Path: tempFile,
 	}
 
 	result, err := service.CreateFile(t.Context(), *file)
@@ -58,25 +49,14 @@ func TestFileService_CreateFile(t *testing.T) {
 	if result == nil {
 		t.Errorf("expected a file, got nil")
 	}
-
-	if len(fileStorage.Calls) == 0 {
-		t.Errorf("expected at least one call to fileStorage.Save, got none")
-	} else if fileStorage.Calls[0] != "Save" {
-		t.Errorf("expected call to fileStorage.Save, got %s", fileStorage.Calls[0])
-	}
 }
 
 func TestFileService_FindFileById(t *testing.T) {
 	// Arrange
 	service, _, queries, _ := setupFileService(t)
 
-	testFile := &database.CreateFileParams{
-		Name: "find-me.pdf",
-		Size: 2048,
-		Path: "files/find-me.pdf",
-	}
-
-	file, err := queries.CreateFile(t.Context(), testFile)
+	var testFileName = "test-file.pdf"
+	file, err := queries.CreateFile(t.Context(), testFileName)
 	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
@@ -91,8 +71,8 @@ func TestFileService_FindFileById(t *testing.T) {
 	if got == nil {
 		t.Fatalf("expected a file, got nil")
 	}
-	if got.ID != file.ID || got.Name != testFile.Name || got.Size != testFile.Size {
-		t.Errorf("returned file does not match: got %+v, want %+v", got, testFile)
+	if got.ID != file.ID || got.Name != testFileName {
+		t.Errorf("returned file does not match: got %+v, want %+v", got, testFileName)
 	}
 }
 

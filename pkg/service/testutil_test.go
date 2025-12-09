@@ -104,7 +104,7 @@ func setupFileService(t *testing.T) (*FileService, *sql.DB, *database.Queries, *
 func setupVersionService(t *testing.T) (*VersionService, *FileService, *database.Queries, *sql.DB, *SpyFileStorage) {
 	t.Helper()
 	fileSvc, db, queries, spy := setupFileService(t)
-	vs := NewVersionService(queries, fileSvc)
+	vs := NewVersionService(queries)
 	return vs, fileSvc, queries, db, spy
 }
 
@@ -139,8 +139,7 @@ func seedVersion(t *testing.T, q *database.Queries, projectID int64, name string
 // mustCreateFileViaService uses FileService to create a file from a temp path.
 func mustCreateFileViaService(t *testing.T, fs *FileService, name string) *database.File {
 	t.Helper()
-	tmp := createTempFile(t)
-	f, err := fs.CreateFile(context.Background(), dto.CreateFileDto{Name: name, Size: 13, Path: tmp})
+	f, err := fs.CreateFile(context.Background(), dto.CreateFileDto{Name: name})
 	if err != nil {
 		t.Fatalf("failed to create file: %v", err)
 	}
