@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
 )
 
@@ -34,20 +33,16 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 		}
 	}()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		<-ctx.Done()
-		shutdownCtx := context.Background()
-		shutdownCtx, cancel := context.WithTimeout(shutdownCtx, 10*time.Second)
-		defer cancel()
-		if err := httpServer.Shutdown(shutdownCtx); err != nil {
-			log.Fatalf("failed to shutdown app: %s\n", err)
-		}
-		log.Println("app shutdown complete")
-	}()
-	wg.Wait()
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("failed to shutdown app: %s\n", err)
+	}
+	log.Println("app shutdown complete")
+
 	return nil
 }
 
