@@ -15,6 +15,7 @@ import (
 func NewServer(db *sql.DB, queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
 	router := chi.NewRouter()
 
+	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 

@@ -5,8 +5,8 @@ import (
 	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
-	"log"
-	"mime/multipart"
+	"fmt"
+	"io"
 	"path"
 
 	"github.com/google/uuid"
@@ -57,12 +57,7 @@ func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *d
 	if err != nil {
 		return nil, err
 	}
-	defer func(fileStream multipart.File) {
-		err := fileStream.Close()
-		if err != nil {
-			log.Printf("failed to close file stream: %v", err)
-		}
-	}(fileStream)
+	defer fileStream.Close()
 
 	assetPath := buildFileAssetPath("")
 
@@ -81,6 +76,25 @@ func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *d
 	}
 
 	return file, nil
+}
+
+func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.File, io.Reader, error) {
+	file, err := s.FindFileById(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if file.Path == nil {
+		return nil, nil, fmt.Errorf("file has no path")
+	}
+
+	reader, err := s.fileStorage.Retrieve(ctx, *file.Path)
+	if err != nil {
+		return nil, nil, err
+	}
+	//defer reader.Close()
+
+	return file, reader, nil
 }
 
 func (s *FileService) DeleteFile(ctx context.Context, id int64) error {

@@ -37,14 +37,14 @@ func NewFilesystemStorage(rootPath string) (FileStorage, error) {
 	}, nil
 }
 
-func (s *filesystemStorage) Save(_ context.Context, path string, data io.Reader) error {
-	path = filepath.FromSlash(path)
+func (s *filesystemStorage) Save(_ context.Context, relativePath string, data io.Reader) error {
+	relativePath = filepath.FromSlash(relativePath)
 
-	if err := s.root.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return fmt.Errorf("failed to create directories for path '%s': %w", path, err)
+	if err := s.root.MkdirAll(filepath.Dir(relativePath), 0o700); err != nil {
+		return fmt.Errorf("failed to create directories for relativePath '%s': %w", relativePath, err)
 	}
 
-	tmpName := path + "." + uuid.NewString() + ".tmp"
+	tmpName := relativePath + "." + uuid.NewString() + ".tmp"
 
 	tmpFile, err := s.root.Create(tmpName)
 	if err != nil {
@@ -66,17 +66,23 @@ func (s *filesystemStorage) Save(_ context.Context, path string, data io.Reader)
 		return fmt.Errorf("failed to close temporary file '%s': %w", tmpName, err)
 	}
 
-	if err = s.root.Rename(tmpName, path); err != nil {
+	if err = s.root.Rename(tmpName, relativePath); err != nil {
 		_ = s.root.Remove(tmpName)
-		return fmt.Errorf("failed to move temporary file '%s' to '%s': %w", tmpName, path, err)
+		return fmt.Errorf("failed to move temporary file '%s' to '%s': %w", tmpName, relativePath, err)
 	}
 
 	return nil
 }
 
 func (s *filesystemStorage) Retrieve(ctx context.Context, relativePath string) (io.ReadCloser, error) {
-	//TODO implement me
-	panic("implement me")
+	relativePath = filepath.FromSlash(relativePath)
+
+	file, err := s.root.Open(relativePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file '%s': %w", relativePath, err)
+	}
+
+	return file, nil
 }
 
 func (s *filesystemStorage) Delete(ctx context.Context, relativePath string) error {

@@ -48,6 +48,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 			r.Route("/{fileId}", func(r chi.Router) {
 				r.Get("/", fileController.GetFile)
 				r.Post("/upload", fileController.UploadFile)
+				r.Get("/download", fileController.DownloadFile)
 				r.Delete("/", fileController.DeleteFile)
 			})
 		})

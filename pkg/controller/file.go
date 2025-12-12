@@ -6,6 +6,8 @@ import (
 	"app/pkg/service"
 	"app/pkg/util"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -130,6 +132,38 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusCreated)
 	render.Render(w, r, dto.ToFileResponse(file))
+}
+
+// DownloadFile godoc
+//
+//	@summary	Download a file
+//	@tags		files
+//	@accept		json
+//	@param		id	path	uint	true	"File identifier"
+//	@success	200
+//	@router		/files/{id}/download [get]
+func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
+	fileId, err := util.URLParamInt64(r, "fileId")
+	if err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
+		return
+	}
+
+	file, reader, err := c.fileService.DownloadFile(r.Context(), fileId)
+	if err != nil {
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
+		return
+	}
+
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", *file.Size))
+
+	_, err = io.Copy(w, reader)
+	if err != nil {
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
+		return
+	}
 }
 
 // DeleteFile godoc
