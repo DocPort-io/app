@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/database"
+	"net/http"
 	"time"
 )
 
@@ -11,17 +12,33 @@ type CreateVersionDto struct {
 	ProjectId   int64   `json:"projectId" example:"1"`
 }
 
+func (v *CreateVersionDto) Bind(r *http.Request) error {
+	return nil
+}
+
 type UpdateVersionDto struct {
 	Name        string  `json:"name" example:"v0.0.1"`
 	Description *string `json:"description" example:"First version of the project"`
+}
+
+func (v *UpdateVersionDto) Bind(r *http.Request) error {
+	return nil
 }
 
 type AttachFileToVersionDto struct {
 	FileId int64 `json:"fileId" example:"1"`
 }
 
+func (v *AttachFileToVersionDto) Bind(r *http.Request) error {
+	return nil
+}
+
 type DetachFileFromVersionDto struct {
 	FileId int64 `json:"fileId" example:"1"`
+}
+
+func (v *DetachFileFromVersionDto) Bind(r *http.Request) error {
+	return nil
 }
 
 type VersionResponseDto struct {
@@ -31,6 +48,10 @@ type VersionResponseDto struct {
 	Name        string  `json:"name" example:"v0.0.1"`
 	Description *string `json:"description" example:"First version of the project"`
 	ProjectId   int64   `json:"projectId" example:"1"`
+}
+
+func (v *VersionResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToVersionResponse(version *database.Version) *VersionResponseDto {
@@ -65,6 +86,10 @@ func ToListVersionsResponseVersion(version *database.Version) *ListVersionsRespo
 type ListVersionsResponseDto struct {
 	Versions []ListVersionsResponseVersionDto `json:"versions"`
 	Total    int64                            `json:"total" example:"1"`
+}
+
+func (l *ListVersionsResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToListVersionsResponse(versions []*database.Version, total int64) *ListVersionsResponseDto {

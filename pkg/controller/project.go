@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/dto"
 	"app/pkg/service"
 	"app/pkg/util"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 )
 
 type ProjectController struct {
@@ -25,16 +26,14 @@ func NewProjectController(projectService *service.ProjectService) *ProjectContro
 //	@produce	json
 //	@success	200	{object}	dto.ListProjectsResponseDto
 //	@router		/projects [get]
-func (c *ProjectController) FindAllProjects(ctx *gin.Context) {
-	projects, err := c.projectService.FindAllProjects(ctx.Request.Context())
+func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
+	projects, total, err := c.projectService.FindAllProjects(r.Context())
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToListProjectsResponse(projects, int64(len(projects))))
+	render.Render(w, r, dto.ToListProjectsResponse(projects, total))
 }
 
 // GetProject godoc
@@ -46,22 +45,20 @@ func (c *ProjectController) FindAllProjects(ctx *gin.Context) {
 //	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [get]
-func (c *ProjectController) GetProject(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
+	projectId, err := util.URLParamInt64(r, "projectId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	project, err := c.projectService.FindProjectById(ctx.Request.Context(), id)
+	project, err := c.projectService.FindProjectById(r.Context(), projectId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToProjectResponse(project))
+	render.Render(w, r, dto.ToProjectResponse(project))
 }
 
 // CreateProject godoc
@@ -73,24 +70,21 @@ func (c *ProjectController) GetProject(ctx *gin.Context) {
 //	@param		request	body		dto.CreateProjectDto	true	"Create a project"
 //	@success	201		{object}	dto.ProjectResponseDto
 //	@router		/projects [post]
-func (c *ProjectController) CreateProject(ctx *gin.Context) {
-	var input dto.CreateProjectDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
+	input := &dto.CreateProjectDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	project, err := c.projectService.CreateProject(ctx.Request.Context(), input)
+	project, err := c.projectService.CreateProject(r.Context(), input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToProjectResponse(project))
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, dto.ToProjectResponse(project))
 }
 
 // UpdateProject godoc
@@ -103,30 +97,26 @@ func (c *ProjectController) CreateProject(ctx *gin.Context) {
 //	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
 //	@success	200		{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [put]
-func (c *ProjectController) UpdateProject(ctx *gin.Context) {
-	var input dto.UpdateProjectDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
+	input := &dto.UpdateProjectDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	projectId, err := util.URLParamInt64(r, "projectId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	project, err := c.projectService.UpdateProject(ctx.Request.Context(), id, input)
+	project, err := c.projectService.UpdateProject(r.Context(), projectId, input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToProjectResponse(project))
+	render.Render(w, r, dto.ToProjectResponse(project))
 }
 
 // DeleteProject godoc
@@ -138,20 +128,18 @@ func (c *ProjectController) UpdateProject(ctx *gin.Context) {
 //	@param		id	path	uint	true	"Project identifier"
 //	@success	204
 //	@router		/projects/{id} [delete]
-func (c *ProjectController) DeleteProject(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
+	projectId, err := util.URLParamInt64(r, "projectId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	err = c.projectService.DeleteProject(ctx.Request.Context(), id)
+	err = c.projectService.DeleteProject(r.Context(), projectId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	render.NoContent(w, r)
 }

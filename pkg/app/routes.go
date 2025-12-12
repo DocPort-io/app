@@ -1,13 +1,12 @@
-//go:generate swag init --dir ../../ -g ./pkg/app/routes.go -o ../docs --parseDependency --parseInternal --useStructName
 package app
 
 import (
 	"app/pkg/controller"
+
 	_ "app/pkg/docs"
 
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 //	@title		DocPort.io API
@@ -15,26 +14,44 @@ import (
 
 // @host		localhost:8080
 // @basepath	/api/v1
-func registerRoutes(router *gin.Engine, projectController *controller.ProjectController, versionController *controller.VersionController, fileController *controller.FileController) {
-	router.GET("/api/v1/projects", projectController.FindAllProjects)
-	router.GET("/api/v1/projects/:id", projectController.GetProject)
-	router.POST("/api/v1/projects", projectController.CreateProject)
-	router.PUT("/api/v1/projects/:id", projectController.UpdateProject)
-	router.DELETE("/api/v1/projects/:id", projectController.DeleteProject)
+func registerRoutes(router *chi.Mux, projectController *controller.ProjectController, versionController *controller.VersionController, fileController *controller.FileController) {
+	router.Route("/api/v1", func(r chi.Router) {
 
-	router.GET("/api/v1/versions", versionController.FindAllVersions)
-	router.GET("/api/v1/versions/:id", versionController.GetVersion)
-	router.POST("/api/v1/versions", versionController.CreateVersion)
-	router.PUT("/api/v1/versions/:id", versionController.UpdateVersion)
-	router.DELETE("/api/v1/versions/:id", versionController.DeleteVersion)
-	router.POST("/api/v1/versions/:id/attach-file", versionController.AttachFileToVersion)
-	router.POST("/api/v1/versions/:id/detach-file", versionController.DetachFileFromVersion)
+		r.Route("/projects", func(r chi.Router) {
+			r.Get("/", projectController.FindAllProjects)
+			r.Post("/", projectController.CreateProject)
 
-	router.GET("/api/v1/files", fileController.FindAllFiles)
-	router.GET("/api/v1/files/:id", fileController.GetFile)
-	router.POST("/api/v1/files/:id/upload", fileController.UploadFile)
-	router.POST("/api/v1/files", fileController.CreateFile)
-	router.DELETE("/api/v1/files/:id", fileController.DeleteFile)
+			r.Route("/{projectId}", func(r chi.Router) {
+				r.Get("/", projectController.GetProject)
+				r.Put("/", projectController.UpdateProject)
+				r.Delete("/", projectController.DeleteProject)
+			})
+		})
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		r.Route("/versions", func(r chi.Router) {
+			r.Get("/", versionController.FindAllVersions)
+			r.Post("/", versionController.CreateVersion)
+
+			r.Route("/{versionId}", func(r chi.Router) {
+				r.Get("/", versionController.GetVersion)
+				r.Put("/", versionController.UpdateVersion)
+				r.Delete("/", versionController.DeleteVersion)
+				r.Post("/attach-file", versionController.AttachFileToVersion)
+				r.Post("/detach-file", versionController.DetachFileFromVersion)
+			})
+		})
+
+		r.Route("/files", func(r chi.Router) {
+			r.Get("/", fileController.FindAllFiles)
+			r.Post("/", fileController.CreateFile)
+
+			r.Route("/{fileId}", func(r chi.Router) {
+				r.Get("/", fileController.GetFile)
+				r.Post("/upload", fileController.UploadFile)
+				r.Delete("/", fileController.DeleteFile)
+			})
+		})
+	})
+
+	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 }

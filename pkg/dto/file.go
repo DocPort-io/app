@@ -3,6 +3,7 @@ package dto
 import (
 	"app/pkg/database"
 	"mime/multipart"
+	"net/http"
 	"time"
 )
 
@@ -10,7 +11,12 @@ type CreateFileDto struct {
 	Name string `json:"name" binding:"required" example:"example.pdf"`
 }
 
+func (c *CreateFileDto) Bind(r *http.Request) error {
+	return nil
+}
+
 type UploadFileDto struct {
+	File       multipart.File
 	FileHeader *multipart.FileHeader
 }
 
@@ -20,6 +26,10 @@ type FileResponseDto struct {
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Name      string `json:"name" example:"example.pdf"`
 	Size      *int64 `json:"size" example:"1024"`
+}
+
+func (f *FileResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToFileResponse(file *database.File) *FileResponseDto {
@@ -53,6 +63,10 @@ func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
 type ListFilesResponseDto struct {
 	Files []ListFilesResponseFileDto `json:"files"`
 	Total int64                      `json:"total" example:"1"`
+}
+
+func (l *ListFilesResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToListFilesResponse(files []*database.File, total int64) *ListFilesResponseDto {

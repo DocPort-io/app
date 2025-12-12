@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/database"
+	"net/http"
 	"time"
 )
 
@@ -10,9 +11,17 @@ type CreateProjectDto struct {
 	Name string `json:"name" binding:"required" example:"Project X"`
 }
 
+func (c *CreateProjectDto) Bind(r *http.Request) error {
+	return nil
+}
+
 type UpdateProjectDto struct {
 	Slug string `json:"slug" example:"project-x"`
 	Name string `json:"name" example:"Project X"`
+}
+
+func (u *UpdateProjectDto) Bind(r *http.Request) error {
+	return nil
 }
 
 type ProjectResponseDto struct {
@@ -21,6 +30,10 @@ type ProjectResponseDto struct {
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
 	Slug      string `json:"slug" example:"project-x"`
 	Name      string `json:"name" example:"Project X"`
+}
+
+func (p *ProjectResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToProjectResponse(project *database.Project) *ProjectResponseDto {
@@ -74,6 +87,10 @@ func ToListProjectsResponseProject(project *database.ListProjectsWithLocationsRo
 type ListProjectsResponseDto struct {
 	Projects []ListProjectsResponseProjectDto `json:"projects"`
 	Total    int64                            `json:"total" example:"1"`
+}
+
+func (l *ListProjectsResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 func ToListProjectsResponse(projects []*database.ListProjectsWithLocationsRow, total int64) *ListProjectsResponseDto {

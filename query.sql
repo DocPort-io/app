@@ -6,6 +6,10 @@ FROM projects
 WHERE id = ?
 LIMIT 1;
 
+-- name: CountProjects :one
+SELECT count(projects.id)
+FROM projects;
+
 -- name: ListProjectsWithLocations :many
 SELECT projects.*,
        locations.name AS location_name,
@@ -35,10 +39,10 @@ WHERE id = ?;
 
 -- Versions
 
--- name: ListVersions :many
-SELECT *
+-- name: CountVersionsByProjectId :one
+SELECT count(versions.id)
 FROM versions
-ORDER BY created_at DESC;
+WHERE project_id = ?;
 
 -- name: ListVersionsByProjectId :many
 SELECT *
@@ -78,10 +82,11 @@ ORDER BY created_at DESC;
 
 -- Files
 
--- name: ListFiles :many
-SELECT *
+-- name: CountFilesByVersionId :one
+SELECT count(files.id)
 FROM files
-ORDER BY created_at DESC;
+         INNER JOIN versions_files ON files.id = versions_files.file_id
+WHERE versions_files.version_id = ?;
 
 -- name: ListFilesByVersionId :many
 SELECT files.*

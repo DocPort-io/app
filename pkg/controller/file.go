@@ -1,13 +1,18 @@
 package controller
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/dto"
 	"app/pkg/service"
 	"app/pkg/util"
+	"errors"
+	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 )
+
+var ErrFileRequired = errors.New("required file missing")
 
 type FileController struct {
 	fileService *service.FileService
@@ -26,20 +31,20 @@ func NewFileController(fileService *service.FileService) *FileController {
 //	@param		versionId	query		uint	false	"Version identifier"
 //	@success	200			{object}	dto.ListFilesResponseDto
 //	@router		/files [get]
-func (c *FileController) FindAllFiles(ctx *gin.Context) {
-	versionId, err := util.GetQueryParameterAsInt64(ctx, "versionId")
+func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
+	versionId, err := util.QueryParamInt64(r, "versionId", true)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid versionId parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	files, err := c.fileService.FindAllFiles(ctx.Request.Context(), versionId)
+	files, total, err := c.fileService.FindAllFiles(r.Context(), versionId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToListFilesResponse(files, int64(len(files))))
+	render.Render(w, r, dto.ToListFilesResponse(files, total))
 }
 
 // GetFile godoc
@@ -51,20 +56,20 @@ func (c *FileController) FindAllFiles(ctx *gin.Context) {
 //	@param		id	path		uint	true	"File identifier"
 //	@success	200	{object}	dto.FileResponseDto
 //	@router		/files/{id} [get]
-func (c *FileController) GetFile(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
+	fileId, err := util.URLParamInt64(r, "fileId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	file, err := c.fileService.FindFileById(ctx.Request.Context(), id)
+	file, err := c.fileService.FindFileById(r.Context(), fileId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToFileResponse(file))
+	render.Render(w, r, dto.ToFileResponse(file))
 }
 
 // CreateFile godoc
@@ -76,24 +81,20 @@ func (c *FileController) GetFile(ctx *gin.Context) {
 //	@param		request	body		dto.CreateFileDto	true	"Create a file"
 //	@success	201		{object}	dto.FileResponseDto
 //	@router		/files [post]
-func (c *FileController) CreateFile(ctx *gin.Context) {
-	var input dto.CreateFileDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
+	input := &dto.CreateFileDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	file, err := c.fileService.CreateFile(ctx.Request.Context(), input)
+	file, err := c.fileService.CreateFile(r.Context(), input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToFileResponse(file))
+	render.Render(w, r, dto.ToFileResponse(file))
 }
 
 // UploadFile godoc
@@ -106,28 +107,29 @@ func (c *FileController) CreateFile(ctx *gin.Context) {
 //	@param		file	formData	file	true	"File to upload"
 //	@success	201		{object}	dto.FileResponseDto
 //	@router		/files/{id}/upload [post]
-func (c *FileController) UploadFile(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
+	fileId, err := util.URLParamInt64(r, "fileId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	fileHeader, err := ctx.FormFile("file")
+	multipartFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid file parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	file, err := c.fileService.UploadFile(ctx.Request.Context(), id, dto.UploadFileDto{FileHeader: fileHeader})
+	uploadFileDto := &dto.UploadFileDto{File: multipartFile, FileHeader: multipartFileHeader}
+
+	file, err := c.fileService.UploadFile(r.Context(), fileId, uploadFileDto)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToFileResponse(file))
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, dto.ToFileResponse(file))
 }
 
 // DeleteFile godoc
@@ -139,20 +141,19 @@ func (c *FileController) UploadFile(ctx *gin.Context) {
 //	@param		id	path	uint	true	"File identifier"
 //	@success	204
 //	@router		/files/{id} [delete]
-func (c *FileController) DeleteFile(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
+	fileId, err := util.URLParamInt64(r, "fileId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	err = c.fileService.DeleteFile(ctx.Request.Context(), id)
+	err = c.fileService.DeleteFile(r.Context(), fileId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		log.Printf("error deleting file: %v", err)
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	render.NoContent(w, r)
 }

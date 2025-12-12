@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/dto"
 	"app/pkg/service"
 	"app/pkg/util"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 )
 
 type VersionController struct {
@@ -23,25 +24,23 @@ func NewVersionController(versionService *service.VersionService) *VersionContro
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		projectId	query		uint	false	"Project identifier"
+//	@param		projectId	query		uint	true	"Project identifier"
 //	@success	200			{object}	dto.ListVersionsResponseDto
 //	@router		/versions [get]
-func (c *VersionController) FindAllVersions(ctx *gin.Context) {
-	projectId, err := util.GetQueryParameterAsInt64(ctx, "projectId")
+func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Request) {
+	projectId, err := util.QueryParamInt64(r, "projectId", true)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	versions, err := c.versionService.FindAllVersions(ctx.Request.Context(), projectId)
+	versions, total, err := c.versionService.FindAllVersions(r.Context(), projectId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToListVersionsResponse(versions, int64(len(versions))))
+	render.Render(w, r, dto.ToListVersionsResponse(versions, total))
 }
 
 // GetVersion godoc
@@ -53,22 +52,20 @@ func (c *VersionController) FindAllVersions(ctx *gin.Context) {
 //	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [get]
-func (c *VersionController) GetVersion(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
+	versionId, err := util.URLParamInt64(r, "versionId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	version, err := c.versionService.FindVersionById(ctx.Request.Context(), id)
+	version, err := c.versionService.FindVersionById(r.Context(), versionId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToVersionResponse(version))
+	render.Render(w, r, dto.ToVersionResponse(version))
 }
 
 // CreateVersion godoc
@@ -80,24 +77,21 @@ func (c *VersionController) GetVersion(ctx *gin.Context) {
 //	@param		request	body		dto.CreateVersionDto	true	"Create a version"
 //	@success	201		{object}	dto.VersionResponseDto
 //	@router		/versions [post]
-func (c *VersionController) CreateVersion(ctx *gin.Context) {
-	var input dto.CreateVersionDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request) {
+	input := &dto.CreateVersionDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	version, err := c.versionService.CreateVersion(ctx.Request.Context(), input)
+	version, err := c.versionService.CreateVersion(r.Context(), input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dto.ToVersionResponse(version))
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, dto.ToVersionResponse(version))
 }
 
 // UpdateVersion godoc
@@ -110,30 +104,26 @@ func (c *VersionController) CreateVersion(ctx *gin.Context) {
 //	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
 //	@success	200		{object}	dto.VersionResponseDto
 //	@router		/versions/{id} [put]
-func (c *VersionController) UpdateVersion(ctx *gin.Context) {
-	var input dto.UpdateVersionDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
+	input := &dto.UpdateVersionDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+	versionId, err := util.URLParamInt64(r, "versionId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	version, err := c.versionService.UpdateVersion(ctx.Request.Context(), id, input)
+	version, err := c.versionService.UpdateVersion(r.Context(), versionId, input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.ToVersionResponse(version))
+	render.Render(w, r, dto.ToVersionResponse(version))
 }
 
 // DeleteVersion godoc
@@ -144,22 +134,20 @@ func (c *VersionController) UpdateVersion(ctx *gin.Context) {
 //	@param		id	path	uint	true	"Version identifier"
 //	@success	204
 //	@router		/versions/{id} [delete]
-func (c *VersionController) DeleteVersion(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
+	versionId, err := util.URLParamInt64(r, "versionId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	err = c.versionService.DeleteVersion(ctx.Request.Context(), id)
+	err = c.versionService.DeleteVersion(r.Context(), versionId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	render.NoContent(w, r)
 }
 
 // AttachFileToVersion godoc
@@ -171,30 +159,26 @@ func (c *VersionController) DeleteVersion(ctx *gin.Context) {
 //	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	204
 //	@router		/versions/{id}/attach-file [post]
-func (c *VersionController) AttachFileToVersion(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
+	versionId, err := util.URLParamInt64(r, "versionId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	var input dto.AttachFileToVersionDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	input := &dto.AttachFileToVersionDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	err = c.versionService.AttachFileToVersion(ctx.Request.Context(), id, input)
+	err = c.versionService.AttachFileToVersion(r.Context(), versionId, input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	render.NoContent(w, r)
 }
 
 // DetachFileFromVersion godoc
@@ -206,27 +190,24 @@ func (c *VersionController) AttachFileToVersion(ctx *gin.Context) {
 //	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
 //	@success	204
 //	@router		/versions/{id}/detach-file [post]
-func (c *VersionController) DetachFileFromVersion(ctx *gin.Context) {
-	id, err := util.GetPathParameterAsInt64(ctx, "id")
+func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
+	versionId, err := util.URLParamInt64(r, "versionId")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid id parameter"})
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	var input dto.DetachFileFromVersionDto
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-	}
-
-	err = c.versionService.DetachFileFromVersion(ctx.Request.Context(), id, input)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+	input := &dto.DetachFileFromVersionDto{}
+	if err := render.Bind(r, input); err != nil {
+		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, nil)
+	err = c.versionService.DetachFileFromVersion(r.Context(), versionId, input)
+	if err != nil {
+		render.Render(w, r, apperrors.ErrInternalServerError(err))
+		return
+	}
+
+	render.NoContent(w, r)
 }

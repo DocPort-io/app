@@ -21,32 +21,29 @@ func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) 
 	return &FileService{queries: queries, fileStorage: fileStorage}
 }
 
-func (s *FileService) FindAllFiles(ctx context.Context, versionId *int64) ([]*database.File, error) {
-	if versionId != nil {
-		files, err := s.queries.ListFilesByVersionId(ctx, *versionId)
-		if err != nil {
-			return nil, err
-		}
-		return files, nil
-	}
-
-	files, err := s.queries.ListFiles(ctx)
+func (s *FileService) FindAllFiles(ctx context.Context, versionId int64) ([]*database.File, int64, error) {
+	files, err := s.queries.ListFilesByVersionId(ctx, versionId)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return files, nil
+	count, err := s.queries.CountFilesByVersionId(ctx, versionId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return files, count, nil
 }
 
-func (s *FileService) FindFileById(ctx context.Context, id *int64) (*database.File, error) {
-	file, err := s.queries.GetFile(ctx, *id)
+func (s *FileService) FindFileById(ctx context.Context, id int64) (*database.File, error) {
+	file, err := s.queries.GetFile(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
 }
 
-func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFileDto) (*database.File, error) {
+func (s *FileService) CreateFile(ctx context.Context, createFileDto *dto.CreateFileDto) (*database.File, error) {
 	file, err := s.queries.CreateFile(ctx, createFileDto.Name)
 	if err != nil {
 		return nil, err
@@ -55,7 +52,7 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto dto.CreateFi
 	return file, nil
 }
 
-func (s *FileService) UploadFile(ctx context.Context, id *int64, uploadFileDto dto.UploadFileDto) (*database.File, error) {
+func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error) {
 	fileStream, err := uploadFileDto.FileHeader.Open()
 	if err != nil {
 		return nil, err
@@ -75,7 +72,7 @@ func (s *FileService) UploadFile(ctx context.Context, id *int64, uploadFileDto d
 	}
 
 	file, err := s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
-		ID:   *id,
+		ID:   id,
 		Size: &uploadFileDto.FileHeader.Size,
 		Path: &assetPath,
 	})
@@ -86,7 +83,7 @@ func (s *FileService) UploadFile(ctx context.Context, id *int64, uploadFileDto d
 	return file, nil
 }
 
-func (s *FileService) DeleteFile(ctx context.Context, id *int64) error {
+func (s *FileService) DeleteFile(ctx context.Context, id int64) error {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return err
@@ -97,9 +94,11 @@ func (s *FileService) DeleteFile(ctx context.Context, id *int64) error {
 		return err
 	}
 
-	err = s.fileStorage.Delete(ctx, *file.Path)
-	if err != nil {
-		return err
+	if file.Path != nil {
+		err = s.fileStorage.Delete(ctx, *file.Path)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

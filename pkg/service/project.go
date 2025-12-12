@@ -14,17 +14,22 @@ func NewProjectService(queries *database.Queries) *ProjectService {
 	return &ProjectService{queries: queries}
 }
 
-func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, error) {
+func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, int64, error) {
 	projects, err := s.queries.ListProjectsWithLocations(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return projects, nil
+	count, err := s.queries.CountProjects(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return projects, count, nil
 }
 
-func (s *ProjectService) FindProjectById(ctx context.Context, id *int64) (*database.Project, error) {
-	project, err := s.queries.GetProject(ctx, *id)
+func (s *ProjectService) FindProjectById(ctx context.Context, id int64) (*database.Project, error) {
+	project, err := s.queries.GetProject(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +37,7 @@ func (s *ProjectService) FindProjectById(ctx context.Context, id *int64) (*datab
 	return project, nil
 }
 
-func (s *ProjectService) CreateProject(ctx context.Context, dto dto.CreateProjectDto) (*database.Project, error) {
+func (s *ProjectService) CreateProject(ctx context.Context, dto *dto.CreateProjectDto) (*database.Project, error) {
 	project, err := s.queries.CreateProject(ctx, &database.CreateProjectParams{
 		Slug:       dto.Slug,
 		Name:       dto.Name,
@@ -45,12 +50,12 @@ func (s *ProjectService) CreateProject(ctx context.Context, dto dto.CreateProjec
 	return project, nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, id *int64, dto dto.UpdateProjectDto) (*database.Project, error) {
+func (s *ProjectService) UpdateProject(ctx context.Context, id int64, dto *dto.UpdateProjectDto) (*database.Project, error) {
 	project, err := s.queries.UpdateProject(ctx, &database.UpdateProjectParams{
 		Slug:       dto.Slug,
 		Name:       dto.Name,
 		LocationID: nil,
-		ID:         *id,
+		ID:         id,
 	})
 	if err != nil {
 		return nil, err
@@ -59,8 +64,8 @@ func (s *ProjectService) UpdateProject(ctx context.Context, id *int64, dto dto.U
 	return project, nil
 }
 
-func (s *ProjectService) DeleteProject(ctx context.Context, id *int64) error {
-	err := s.queries.DeleteProject(ctx, *id)
+func (s *ProjectService) DeleteProject(ctx context.Context, id int64) error {
+	err := s.queries.DeleteProject(ctx, id)
 	if err != nil {
 		return err
 	}

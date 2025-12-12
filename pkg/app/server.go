@@ -8,14 +8,15 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func NewServer(db *sql.DB, queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
-	router := gin.New()
+	router := chi.NewRouter()
 
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
 
 	projectService := service.NewProjectService(queries)
 	versionService := service.NewVersionService(queries)
