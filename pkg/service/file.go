@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
+	"mime/multipart"
 	"path"
 
 	"github.com/google/uuid"
@@ -57,7 +59,12 @@ func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *d
 	if err != nil {
 		return nil, err
 	}
-	defer fileStream.Close()
+	defer func(fileStream multipart.File) {
+		err := fileStream.Close()
+		if err != nil {
+			log.Printf("error closing file stream: %v", err)
+		}
+	}(fileStream)
 
 	assetPath := buildFileAssetPath("")
 
