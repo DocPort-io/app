@@ -32,8 +32,11 @@ func URLParamInt64(request *http.Request, key string) (int64, error) {
 
 func QueryParamInt64(request *http.Request, key string, required bool) (int64, error) {
 	value := request.URL.Query().Get(key)
-	if value == "" && required {
-		return 0, fmt.Errorf("%w: %s", ErrParamRequired, key)
+	if value == "" {
+		if required {
+			return 0, fmt.Errorf("%w: %s", ErrParamRequired, key)
+		}
+		return 0, nil
 	}
 
 	intValue, err := strconv.ParseInt(value, 10, 64)
