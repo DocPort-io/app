@@ -8,7 +8,7 @@ import (
 type Type string
 
 const (
-	TypeFileSystem Type = "fs"
+	TypeFileSystem Type = "filesystem"
 	TypeS3         Type = "s3"
 )
 

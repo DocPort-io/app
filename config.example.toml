@@ -4,3 +4,7 @@ url = "file:docport.db?_pragma=foreign_keys(ON)"
 
 [server]
 host = "localhost:8080"
+
+[storage]
+provider = "filesystem"
+path = "./storage"

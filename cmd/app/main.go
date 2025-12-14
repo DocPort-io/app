@@ -2,6 +2,7 @@ package main
 
 import (
 	"app/pkg/app"
+	"app/pkg/storage"
 	"context"
 	"errors"
 	"io"
@@ -35,7 +36,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 		log.Fatalf("error reading config file, %s", err)
 	}
 
-	fileStorage := app.NewFileStorage("fs")
+	fileStorage := app.NewFileStorage(storage.Type(viper.GetString("storage.provider")))
 	db, queries := app.NewDatabase()
 	srv := app.NewServer(db, queries, fileStorage)
 
