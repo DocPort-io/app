@@ -5,13 +5,20 @@ import (
 	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"log"
+	"mime"
 	"mime/multipart"
 	"path"
+	"path/filepath"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrFileAlreadyExists = errors.New("file already exists")
+	ErrIncompleteFile    = errors.New("file not complete")
 )
 
 type FileService struct {
@@ -55,30 +62,47 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto *dto.CreateF
 }
 
 func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error) {
-	fileStream, err := uploadFileDto.FileHeader.Open()
+	defer func(File multipart.File) {
+		err := File.Close()
+		if err != nil {
+			log.Printf("error closing uploaded file: %v", err)
+		}
+	}(uploadFileDto.File)
+
+	file, err := s.queries.GetFile(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	defer func(fileStream multipart.File) {
-		err := fileStream.Close()
-		if err != nil {
-			log.Printf("error closing file stream: %v", err)
-		}
-	}(fileStream)
+
+	if file.IsComplete {
+		return nil, ErrFileAlreadyExists
+	}
 
 	assetPath := buildFileAssetPath("")
 
-	err = s.fileStorage.Save(ctx, assetPath, fileStream)
+	ext := filepath.Ext(uploadFileDto.FileHeader.Filename)
+	mimeType := mime.TypeByExtension(ext)
+	log.Printf("detected file type %s for file %s", mimeType, uploadFileDto.FileHeader.Filename)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	err = s.fileStorage.Save(ctx, assetPath, uploadFileDto.File)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
-		ID:   id,
-		Size: &uploadFileDto.FileHeader.Size,
-		Path: &assetPath,
+	file, err = s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
+		ID:       id,
+		Size:     &uploadFileDto.FileHeader.Size,
+		Path:     &assetPath,
+		MimeType: &mimeType,
 	})
 	if err != nil {
+		fileDeleteErr := s.fileStorage.Delete(ctx, assetPath)
+		if fileDeleteErr != nil {
+			log.Printf("error deleting file during upload: %v", fileDeleteErr)
+		}
 		return nil, err
 	}
 
@@ -91,8 +115,8 @@ func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.Fil
 		return nil, nil, err
 	}
 
-	if file.Path == nil {
-		return nil, nil, fmt.Errorf("file has no path")
+	if !file.IsComplete {
+		return nil, nil, ErrIncompleteFile
 	}
 
 	reader, err := s.fileStorage.Retrieve(ctx, *file.Path)

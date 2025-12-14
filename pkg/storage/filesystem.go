@@ -86,8 +86,14 @@ func (s *filesystemStorage) Retrieve(ctx context.Context, relativePath string) (
 }
 
 func (s *filesystemStorage) Delete(ctx context.Context, relativePath string) error {
-	//TODO implement me
-	panic("implement me")
+	relativePath = filepath.FromSlash(relativePath)
+
+	err := s.root.Remove(relativePath)
+	if err != nil {
+		return fmt.Errorf("failed to delete file '%s': %w", relativePath, err)
+	}
+
+	return nil
 }
 
 func (s *filesystemStorage) List(ctx context.Context, root string) ([]ObjectInfo, error) {

@@ -1,2 +1,8 @@
 ALTER TABLE files
-    ADD COLUMN is_complete BOOLEAN;
+    ADD COLUMN is_complete BOOLEAN NOT NULL DEFAULT FALSE;
+
+
+UPDATE files
+SET is_complete = TRUE
+WHERE size IS NOT NULL
+  AND path IS NOT NULL;

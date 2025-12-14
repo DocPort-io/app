@@ -108,9 +108,12 @@ RETURNING *;
 
 -- name: UpdateFileWithUploadedFile :one
 UPDATE files
-SET size = ?,
-    path = ?
+SET size        = ?,
+    path        = ?,
+    mime_type   = ?,
+    is_complete = TRUE
 WHERE id = ?
+  AND is_complete = FALSE
 RETURNING *;
 
 -- name: DeleteFile :exec

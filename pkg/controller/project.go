@@ -3,8 +3,8 @@ package controller
 import (
 	"app/pkg/apperrors"
 	"app/pkg/dto"
+	"app/pkg/httputil"
 	"app/pkg/service"
-	"app/pkg/util"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -46,7 +46,7 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@success	200	{object}	dto.ProjectResponseDto
 //	@router		/projects/{id} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
-	projectId, err := util.URLParamInt64(r, "projectId")
+	projectId, err := httputil.URLParamInt64(r, "projectId")
 	if err != nil {
 		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
@@ -104,7 +104,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	projectId, err := util.URLParamInt64(r, "projectId")
+	projectId, err := httputil.URLParamInt64(r, "projectId")
 	if err != nil {
 		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return
@@ -129,7 +129,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 //	@success	204
 //	@router		/projects/{id} [delete]
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
-	projectId, err := util.URLParamInt64(r, "projectId")
+	projectId, err := httputil.URLParamInt64(r, "projectId")
 	if err != nil {
 		render.Render(w, r, apperrors.ErrBadRequestError(err))
 		return

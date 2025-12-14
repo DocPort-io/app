@@ -21,11 +21,13 @@ type UploadFileDto struct {
 }
 
 type FileResponseDto struct {
-	ID        int64  `json:"id" example:"1"`
-	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
-	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
-	Name      string `json:"name" example:"example.pdf"`
-	Size      *int64 `json:"size" example:"1024"`
+	ID         int64   `json:"id" example:"1"`
+	CreatedAt  string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
+	UpdatedAt  string  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
+	Name       string  `json:"name" example:"example.pdf"`
+	Size       *int64  `json:"size" example:"1024"`
+	MimeType   *string `json:"mimeType" example:"application/pdf"`
+	IsComplete bool    `json:"isComplete" example:"false"`
 }
 
 func (f *FileResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
@@ -34,29 +36,35 @@ func (f *FileResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
 
 func ToFileResponse(file *database.File) *FileResponseDto {
 	return &FileResponseDto{
-		ID:        file.ID,
-		CreatedAt: file.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: file.UpdatedAt.Format(time.RFC3339),
-		Name:      file.Name,
-		Size:      file.Size,
+		ID:         file.ID,
+		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
+		Name:       file.Name,
+		Size:       file.Size,
+		MimeType:   file.MimeType,
+		IsComplete: file.IsComplete,
 	}
 }
 
 type ListFilesResponseFileDto struct {
-	ID        int64  `json:"id" example:"1"`
-	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
-	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
-	Name      string `json:"name" example:"example.pdf"`
-	Size      *int64 `json:"size" example:"1024"`
+	ID         int64   `json:"id" example:"1"`
+	CreatedAt  string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
+	UpdatedAt  string  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
+	Name       string  `json:"name" example:"example.pdf"`
+	Size       *int64  `json:"size" example:"1024"`
+	MimeType   *string `json:"mimeType" example:"application/pdf"`
+	IsComplete bool    `json:"isComplete" example:"false"`
 }
 
 func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
 	return &ListFilesResponseFileDto{
-		ID:        file.ID,
-		CreatedAt: file.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: file.UpdatedAt.Format(time.RFC3339),
-		Name:      file.Name,
-		Size:      file.Size,
+		ID:         file.ID,
+		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
+		Name:       file.Name,
+		Size:       file.Size,
+		MimeType:   file.MimeType,
+		IsComplete: file.IsComplete,
 	}
 }
 
