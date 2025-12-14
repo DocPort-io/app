@@ -8,9 +8,11 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	// Import for migration source "file" registration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/spf13/viper"
+	// Import for database driver "sqlite" registration
 	_ "modernc.org/sqlite"
 
 	"app/pkg/database"
