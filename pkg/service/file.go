@@ -21,16 +21,25 @@ var (
 	ErrIncompleteFile    = errors.New("file not complete")
 )
 
-type FileService struct {
+type FileService interface {
+	FindAllFiles(ctx context.Context, versionId int64) ([]*database.File, int64, error)
+	FindFileById(ctx context.Context, id int64) (*database.File, error)
+	CreateFile(ctx context.Context, createFileDto *dto.CreateFileDto) (*database.File, error)
+	UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error)
+	DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error)
+	DeleteFile(ctx context.Context, id int64) error
+}
+
+type fileServiceImpl struct {
 	queries     *database.Queries
 	fileStorage storage.FileStorage
 }
 
-func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) *FileService {
-	return &FileService{queries: queries, fileStorage: fileStorage}
+func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) FileService {
+	return &fileServiceImpl{queries: queries, fileStorage: fileStorage}
 }
 
-func (s *FileService) FindAllFiles(ctx context.Context, versionId int64) ([]*database.File, int64, error) {
+func (s *fileServiceImpl) FindAllFiles(ctx context.Context, versionId int64) ([]*database.File, int64, error) {
 	files, err := s.queries.ListFilesByVersionId(ctx, versionId)
 	if err != nil {
 		return nil, 0, err
@@ -44,7 +53,7 @@ func (s *FileService) FindAllFiles(ctx context.Context, versionId int64) ([]*dat
 	return files, count, nil
 }
 
-func (s *FileService) FindFileById(ctx context.Context, id int64) (*database.File, error) {
+func (s *fileServiceImpl) FindFileById(ctx context.Context, id int64) (*database.File, error) {
 	file, err := s.queries.GetFile(ctx, id)
 	if err != nil {
 		return nil, err
@@ -52,7 +61,7 @@ func (s *FileService) FindFileById(ctx context.Context, id int64) (*database.Fil
 	return file, nil
 }
 
-func (s *FileService) CreateFile(ctx context.Context, createFileDto *dto.CreateFileDto) (*database.File, error) {
+func (s *fileServiceImpl) CreateFile(ctx context.Context, createFileDto *dto.CreateFileDto) (*database.File, error) {
 	file, err := s.queries.CreateFile(ctx, createFileDto.Name)
 	if err != nil {
 		return nil, err
@@ -61,7 +70,7 @@ func (s *FileService) CreateFile(ctx context.Context, createFileDto *dto.CreateF
 	return file, nil
 }
 
-func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error) {
+func (s *fileServiceImpl) UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error) {
 	defer func(File multipart.File) {
 		err := File.Close()
 		if err != nil {
@@ -109,7 +118,7 @@ func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *d
 	return file, nil
 }
 
-func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error) {
+func (s *fileServiceImpl) DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error) {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return nil, nil, err
@@ -127,7 +136,7 @@ func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.Fil
 	return file, reader, nil
 }
 
-func (s *FileService) DeleteFile(ctx context.Context, id int64) error {
+func (s *fileServiceImpl) DeleteFile(ctx context.Context, id int64) error {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return err

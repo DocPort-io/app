@@ -2,9 +2,11 @@ package controller
 
 import (
 	"app/pkg/apperrors"
+	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
 	"app/pkg/service"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,12 +16,42 @@ import (
 	"github.com/go-chi/render"
 )
 
+const FileCtxKey = "file"
+
 type FileController struct {
-	fileService *service.FileService
+	fileService service.FileService
 }
 
-func NewFileController(fileService *service.FileService) *FileController {
+func NewFileController(fileService service.FileService) *FileController {
 	return &FileController{fileService: fileService}
+}
+
+func (c *FileController) FileCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fileId, err := httputil.URLParamInt64(r, "fileId")
+		if err != nil {
+			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			return
+		}
+
+		file, err := c.fileService.FindFileById(r.Context(), fileId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNotFound) {
+				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
+				return
+			}
+
+			httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), FileCtxKey, file)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func getFile(ctx context.Context) *database.File {
+	return ctx.Value(FileCtxKey).(*database.File)
 }
 
 // FindAllFiles godoc
@@ -57,18 +89,7 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 //	@success	200	{object}	dto.FileResponseDto
 //	@router		/api/v1/files/{id} [get]
 func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
-	fileId, err := httputil.URLParamInt64(r, "fileId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
-
-	file, err := c.fileService.FindFileById(r.Context(), fileId)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
-		return
-	}
-
+	file := getFile(r.Context())
 	httputil.Render(w, r, dto.ToFileResponse(file))
 }
 
@@ -110,11 +131,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{id}/upload [post]
 func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
-	fileId, err := httputil.URLParamInt64(r, "fileId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
+	file := getFile(r.Context())
 
 	multipartFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
@@ -124,7 +141,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	uploadFileDto := &dto.UploadFileDto{File: multipartFile, FileHeader: multipartFileHeader}
 
-	file, err := c.fileService.UploadFile(r.Context(), fileId, uploadFileDto)
+	file, err = c.fileService.UploadFile(r.Context(), file.ID, uploadFileDto)
 	if err != nil {
 		if errors.Is(err, service.ErrFileAlreadyExists) {
 			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
@@ -149,13 +166,9 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{id}/download [get]
 func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
-	fileId, err := httputil.URLParamInt64(r, "fileId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
+	file := getFile(r.Context())
 
-	file, reader, err := c.fileService.DownloadFile(r.Context(), fileId)
+	file, reader, err := c.fileService.DownloadFile(r.Context(), file.ID)
 	if err != nil {
 		if errors.Is(err, service.ErrIncompleteFile) {
 			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
@@ -193,13 +206,9 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 //	@success	204
 //	@router		/api/v1/files/{id} [delete]
 func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
-	fileId, err := httputil.URLParamInt64(r, "fileId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
+	file := getFile(r.Context())
 
-	err = c.fileService.DeleteFile(r.Context(), fileId)
+	err := c.fileService.DeleteFile(r.Context(), file.ID)
 	if err != nil {
 		log.Printf("error deleting file: %v", err)
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
