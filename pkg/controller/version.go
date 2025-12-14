@@ -84,7 +84,7 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
-//	@router		/api/v1/versions/{id} [get]
+//	@router		/api/v1/versions/{versionId} [get]
 func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 	httputil.Render(w, r, dto.ToVersionResponse(version))
@@ -125,7 +125,7 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Version identifier"
 //	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
 //	@success	200		{object}	dto.VersionResponseDto
-//	@router		/api/v1/versions/{id} [put]
+//	@router		/api/v1/versions/{versionId} [put]
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
@@ -160,7 +160,7 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 //	@accept		json
 //	@param		id	path	uint	true	"Version identifier"
 //	@success	204
-//	@router		/api/v1/versions/{id} [delete]
+//	@router		/api/v1/versions/{versionId} [delete]
 func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
@@ -181,7 +181,7 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path	uint						true	"Version identifier"
 //	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	204
-//	@router		/api/v1/versions/{id}/attach-file [post]
+//	@router		/api/v1/versions/{versionId}/attach-file [post]
 func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
@@ -208,7 +208,7 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@param		id		path	uint							true	"Version identifier"
 //	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
 //	@success	204
-//	@router		/api/v1/versions/{id}/detach-file [post]
+//	@router		/api/v1/versions/{versionId}/detach-file [post]
 func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
