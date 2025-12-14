@@ -39,3 +39,5 @@ pkg/database
 *.db
 storage/
 config.toml
+# Added by goreleaser init:
+dist/
