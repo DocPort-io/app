@@ -3,10 +3,12 @@ package util
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 )
 
 var (
@@ -40,4 +42,11 @@ func QueryParamInt64(request *http.Request, key string, required bool) (int64, e
 	}
 
 	return intValue, nil
+}
+
+func Render(w http.ResponseWriter, r *http.Request, v render.Renderer) {
+	err := render.Render(w, r, v)
+	if err != nil {
+		log.Printf("error rendering response: %v", err)
+	}
 }

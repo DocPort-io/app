@@ -78,7 +78,7 @@ func (s *FileService) UploadFile(ctx context.Context, id int64, uploadFileDto *d
 	return file, nil
 }
 
-func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.File, io.Reader, error) {
+func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error) {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return nil, nil, err
@@ -92,7 +92,6 @@ func (s *FileService) DownloadFile(ctx context.Context, id int64) (*database.Fil
 	if err != nil {
 		return nil, nil, err
 	}
-	//defer reader.Close()
 
 	return file, reader, nil
 }
