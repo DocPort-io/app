@@ -9,15 +9,23 @@ import (
 	"errors"
 )
 
-type ProjectService struct {
+type ProjectService interface {
+	FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, int64, error)
+	FindProjectById(ctx context.Context, id int64) (*database.Project, error)
+	CreateProject(ctx context.Context, dto *dto.CreateProjectDto) (*database.Project, error)
+	UpdateProject(ctx context.Context, id int64, dto *dto.UpdateProjectDto) (*database.Project, error)
+	DeleteProject(ctx context.Context, id int64) error
+}
+
+type projectServiceImpl struct {
 	queries *database.Queries
 }
 
-func NewProjectService(queries *database.Queries) *ProjectService {
-	return &ProjectService{queries: queries}
+func NewProjectService(queries *database.Queries) ProjectService {
+	return &projectServiceImpl{queries: queries}
 }
 
-func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, int64, error) {
+func (s *projectServiceImpl) FindAllProjects(ctx context.Context) ([]*database.ListProjectsWithLocationsRow, int64, error) {
 	projects, err := s.queries.ListProjectsWithLocations(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -31,7 +39,7 @@ func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListP
 	return projects, count, nil
 }
 
-func (s *ProjectService) FindProjectById(ctx context.Context, id int64) (*database.Project, error) {
+func (s *projectServiceImpl) FindProjectById(ctx context.Context, id int64) (*database.Project, error) {
 	project, err := s.queries.GetProject(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -43,7 +51,7 @@ func (s *ProjectService) FindProjectById(ctx context.Context, id int64) (*databa
 	return project, nil
 }
 
-func (s *ProjectService) CreateProject(ctx context.Context, dto *dto.CreateProjectDto) (*database.Project, error) {
+func (s *projectServiceImpl) CreateProject(ctx context.Context, dto *dto.CreateProjectDto) (*database.Project, error) {
 	project, err := s.queries.CreateProject(ctx, &database.CreateProjectParams{
 		Slug:       dto.Slug,
 		Name:       dto.Name,
@@ -56,7 +64,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, dto *dto.CreateProje
 	return project, nil
 }
 
-func (s *ProjectService) UpdateProject(ctx context.Context, id int64, dto *dto.UpdateProjectDto) (*database.Project, error) {
+func (s *projectServiceImpl) UpdateProject(ctx context.Context, id int64, dto *dto.UpdateProjectDto) (*database.Project, error) {
 	project, err := s.queries.UpdateProject(ctx, &database.UpdateProjectParams{
 		Slug:       dto.Slug,
 		Name:       dto.Name,
@@ -70,7 +78,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, id int64, dto *dto.U
 	return project, nil
 }
 
-func (s *ProjectService) DeleteProject(ctx context.Context, id int64) error {
+func (s *projectServiceImpl) DeleteProject(ctx context.Context, id int64) error {
 	err := s.queries.DeleteProject(ctx, id)
 	if err != nil {
 		return err

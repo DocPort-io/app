@@ -35,6 +35,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 			r.Post("/", versionController.CreateVersion)
 
 			r.Route("/{versionId}", func(r chi.Router) {
+				r.Use(versionController.VersionCtx)
 				r.Get("/", versionController.GetVersion)
 				r.Put("/", versionController.UpdateVersion)
 				r.Delete("/", versionController.DeleteVersion)

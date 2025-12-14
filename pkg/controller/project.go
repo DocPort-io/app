@@ -16,10 +16,10 @@ import (
 const ProjectCtxKey = "project"
 
 type ProjectController struct {
-	projectService *service.ProjectService
+	projectService service.ProjectService
 }
 
-func NewProjectController(projectService *service.ProjectService) *ProjectController {
+func NewProjectController(projectService service.ProjectService) *ProjectController {
 	return &ProjectController{projectService: projectService}
 }
 
@@ -28,6 +28,7 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 		projectId, err := httputil.URLParamInt64(r, "projectId")
 		if err != nil {
 			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			return
 		}
 
 		project, err := c.projectService.FindProjectById(r.Context(), projectId)
@@ -38,6 +39,7 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 			}
 
 			httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+			return
 		}
 
 		ctx := context.WithValue(r.Context(), ProjectCtxKey, project)

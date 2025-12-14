@@ -6,15 +6,25 @@ import (
 	"context"
 )
 
-type VersionService struct {
+type VersionService interface {
+	FindAllVersions(ctx context.Context, projectId int64) ([]*database.Version, int64, error)
+	FindVersionById(ctx context.Context, id int64) (*database.Version, error)
+	CreateVersion(ctx context.Context, dto *dto.CreateVersionDto) (*database.Version, error)
+	UpdateVersion(ctx context.Context, id int64, dto *dto.UpdateVersionDto) (*database.Version, error)
+	DeleteVersion(ctx context.Context, id int64) error
+	AttachFileToVersion(ctx context.Context, id int64, attachFileToVersionDto *dto.AttachFileToVersionDto) error
+	DetachFileFromVersion(ctx context.Context, id int64, detachFileFromVersionDto *dto.DetachFileFromVersionDto) error
+}
+
+type versionServiceImpl struct {
 	queries *database.Queries
 }
 
-func NewVersionService(queries *database.Queries) *VersionService {
-	return &VersionService{queries: queries}
+func NewVersionService(queries *database.Queries) VersionService {
+	return &versionServiceImpl{queries: queries}
 }
 
-func (s *VersionService) FindAllVersions(ctx context.Context, projectId int64) ([]*database.Version, int64, error) {
+func (s *versionServiceImpl) FindAllVersions(ctx context.Context, projectId int64) ([]*database.Version, int64, error) {
 	versions, err := s.queries.ListVersionsByProjectId(ctx, projectId)
 	if err != nil {
 		return nil, 0, err
@@ -28,7 +38,7 @@ func (s *VersionService) FindAllVersions(ctx context.Context, projectId int64) (
 	return versions, count, nil
 }
 
-func (s *VersionService) FindVersionById(ctx context.Context, id int64) (*database.Version, error) {
+func (s *versionServiceImpl) FindVersionById(ctx context.Context, id int64) (*database.Version, error) {
 	version, err := s.queries.GetVersion(ctx, id)
 	if err != nil {
 		return nil, err
@@ -37,7 +47,7 @@ func (s *VersionService) FindVersionById(ctx context.Context, id int64) (*databa
 	return version, nil
 }
 
-func (s *VersionService) CreateVersion(ctx context.Context, dto *dto.CreateVersionDto) (*database.Version, error) {
+func (s *versionServiceImpl) CreateVersion(ctx context.Context, dto *dto.CreateVersionDto) (*database.Version, error) {
 	version, err := s.queries.CreateVersion(ctx, &database.CreateVersionParams{
 		Name:        dto.Name,
 		Description: dto.Description,
@@ -50,7 +60,7 @@ func (s *VersionService) CreateVersion(ctx context.Context, dto *dto.CreateVersi
 	return version, nil
 }
 
-func (s *VersionService) UpdateVersion(ctx context.Context, id int64, dto *dto.UpdateVersionDto) (*database.Version, error) {
+func (s *versionServiceImpl) UpdateVersion(ctx context.Context, id int64, dto *dto.UpdateVersionDto) (*database.Version, error) {
 	version, err := s.queries.UpdateVersion(ctx, &database.UpdateVersionParams{
 		Name:        dto.Name,
 		Description: dto.Description,
@@ -63,7 +73,7 @@ func (s *VersionService) UpdateVersion(ctx context.Context, id int64, dto *dto.U
 	return version, nil
 }
 
-func (s *VersionService) DeleteVersion(ctx context.Context, id int64) error {
+func (s *versionServiceImpl) DeleteVersion(ctx context.Context, id int64) error {
 	err := s.queries.DeleteVersion(ctx, id)
 	if err != nil {
 		return err
@@ -72,7 +82,7 @@ func (s *VersionService) DeleteVersion(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *VersionService) AttachFileToVersion(ctx context.Context, id int64, attachFileToVersionDto *dto.AttachFileToVersionDto) error {
+func (s *versionServiceImpl) AttachFileToVersion(ctx context.Context, id int64, attachFileToVersionDto *dto.AttachFileToVersionDto) error {
 	err := s.queries.AttachFileToVersion(ctx, &database.AttachFileToVersionParams{
 		VersionID: id,
 		FileID:    attachFileToVersionDto.FileId,
@@ -84,7 +94,7 @@ func (s *VersionService) AttachFileToVersion(ctx context.Context, id int64, atta
 	return nil
 }
 
-func (s *VersionService) DetachFileFromVersion(ctx context.Context, id int64, detachFileFromVersionDto *dto.DetachFileFromVersionDto) error {
+func (s *versionServiceImpl) DetachFileFromVersion(ctx context.Context, id int64, detachFileFromVersionDto *dto.DetachFileFromVersionDto) error {
 	err := s.queries.DetachFileFromVersion(ctx, &database.DetachFileFromVersionParams{
 		VersionID: id,
 		FileID:    detachFileFromVersionDto.FileId,
