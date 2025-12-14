@@ -3,9 +3,10 @@ package app
 import (
 	"app/pkg/controller"
 
-	_ "app/pkg/docs"
+	docs "app/pkg/docs"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
@@ -13,7 +14,7 @@ import (
 //	@version	0.0.1
 
 // @host		localhost:8080
-// @basepath	/api/v1
+// @basepath	/
 func registerRoutes(router *chi.Mux, projectController *controller.ProjectController, versionController *controller.VersionController, fileController *controller.FileController) {
 	router.Route("/api/v1", func(r chi.Router) {
 
@@ -53,6 +54,8 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 			})
 		})
 	})
+
+	docs.SwaggerInfo.Host = viper.GetString("server.host")
 
 	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 }

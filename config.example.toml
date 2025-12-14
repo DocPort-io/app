@@ -1,3 +1,6 @@
 [database]
 driver = "sqlite"
 url = "file:docport.db?_pragma=foreign_keys(ON)"
+
+[server]
+host = "localhost:8080"
