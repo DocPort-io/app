@@ -1,10 +1,12 @@
 package service
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
+	"database/sql"
 	"errors"
 	"io"
 	"log"
@@ -56,6 +58,9 @@ func (s *fileServiceImpl) FindAllFiles(ctx context.Context, versionId int64) ([]
 func (s *fileServiceImpl) FindFileById(ctx context.Context, id int64) (*database.File, error) {
 	file, err := s.queries.GetFile(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, apperrors.ErrNotFound
+		}
 		return nil, err
 	}
 	return file, nil

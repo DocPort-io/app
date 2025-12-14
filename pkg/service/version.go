@@ -1,9 +1,12 @@
 package service
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/database"
 	"app/pkg/dto"
 	"context"
+	"database/sql"
+	"errors"
 )
 
 type VersionService interface {
@@ -41,6 +44,9 @@ func (s *versionServiceImpl) FindAllVersions(ctx context.Context, projectId int6
 func (s *versionServiceImpl) FindVersionById(ctx context.Context, id int64) (*database.Version, error) {
 	version, err := s.queries.GetVersion(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, apperrors.ErrNotFound
+		}
 		return nil, err
 	}
 
