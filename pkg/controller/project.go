@@ -25,7 +25,7 @@ func NewProjectController(projectService *service.ProjectService) *ProjectContro
 //	@accept		json
 //	@produce	json
 //	@success	200	{object}	dto.ListProjectsResponseDto
-//	@router		/projects [get]
+//	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
 	projects, total, err := c.projectService.FindAllProjects(r.Context())
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
-//	@router		/projects/{id} [get]
+//	@router		/api/v1/projects/{id} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 	projectId, err := httputil.URLParamInt64(r, "projectId")
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateProjectDto	true	"Create a project"
 //	@success	201		{object}	dto.ProjectResponseDto
-//	@router		/projects [post]
+//	@router		/api/v1/projects [post]
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateProjectDto{}
 	if err := render.Bind(r, input); err != nil {
@@ -96,7 +96,7 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Project identifier"
 //	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
 //	@success	200		{object}	dto.ProjectResponseDto
-//	@router		/projects/{id} [put]
+//	@router		/api/v1/projects/{id} [put]
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	input := &dto.UpdateProjectDto{}
 	if err := render.Bind(r, input); err != nil {
@@ -127,7 +127,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 //	@produce	json
 //	@param		id	path	uint	true	"Project identifier"
 //	@success	204
-//	@router		/projects/{id} [delete]
+//	@router		/api/v1/projects/{id} [delete]
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	projectId, err := httputil.URLParamInt64(r, "projectId")
 	if err != nil {

@@ -26,7 +26,7 @@ func NewVersionController(versionService *service.VersionService) *VersionContro
 //	@produce	json
 //	@param		projectId	query		uint	true	"Project identifier"
 //	@success	200			{object}	dto.ListVersionsResponseDto
-//	@router		/versions [get]
+//	@router		/api/v1/versions [get]
 func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Request) {
 	projectId, err := httputil.QueryParamInt64(r, "projectId", true)
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
-//	@router		/versions/{id} [get]
+//	@router		/api/v1/versions/{id} [get]
 func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
@@ -76,7 +76,7 @@ func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateVersionDto	true	"Create a version"
 //	@success	201		{object}	dto.VersionResponseDto
-//	@router		/versions [post]
+//	@router		/api/v1/versions [post]
 func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateVersionDto{}
 	if err := render.Bind(r, input); err != nil {
@@ -103,7 +103,7 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Version identifier"
 //	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
 //	@success	200		{object}	dto.VersionResponseDto
-//	@router		/versions/{id} [put]
+//	@router		/api/v1/versions/{id} [put]
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	input := &dto.UpdateVersionDto{}
 	if err := render.Bind(r, input); err != nil {
@@ -133,7 +133,7 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 //	@accept		json
 //	@param		id	path	uint	true	"Version identifier"
 //	@success	204
-//	@router		/versions/{id} [delete]
+//	@router		/api/v1/versions/{id} [delete]
 func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
@@ -158,7 +158,7 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path	uint						true	"Version identifier"
 //	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	204
-//	@router		/versions/{id}/attach-file [post]
+//	@router		/api/v1/versions/{id}/attach-file [post]
 func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
@@ -189,7 +189,7 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@param		id		path	uint							true	"Version identifier"
 //	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
 //	@success	204
-//	@router		/versions/{id}/detach-file [post]
+//	@router		/api/v1/versions/{id}/detach-file [post]
 func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {

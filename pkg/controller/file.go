@@ -30,7 +30,7 @@ func NewFileController(fileService *service.FileService) *FileController {
 //	@produce	json
 //	@param		versionId	query		uint	false	"Version identifier"
 //	@success	200			{object}	dto.ListFilesResponseDto
-//	@router		/files [get]
+//	@router		/api/v1/files [get]
 func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.QueryParamInt64(r, "versionId", true)
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		id	path		uint	true	"File identifier"
 //	@success	200	{object}	dto.FileResponseDto
-//	@router		/files/{id} [get]
+//	@router		/api/v1/files/{id} [get]
 func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 	fileId, err := httputil.URLParamInt64(r, "fileId")
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateFileDto	true	"Create a file"
 //	@success	201		{object}	dto.FileResponseDto
-//	@router		/files [post]
+//	@router		/api/v1/files [post]
 func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateFileDto{}
 	if err := render.Bind(r, input); err != nil {
@@ -107,7 +107,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 //	@param		file	formData	file	true	"File to upload"
 //	@success	201		{object}	dto.FileResponseDto
 //	@failure	400		{object}	apperrors.ErrResponse
-//	@router		/files/{id}/upload [post]
+//	@router		/api/v1/files/{id}/upload [post]
 func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	fileId, err := httputil.URLParamInt64(r, "fileId")
 	if err != nil {
@@ -146,7 +146,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 //	@param		id	path	uint	true	"File identifier"
 //	@success	200
 //	@failure	400	{object}	apperrors.ErrResponse
-//	@router		/files/{id}/download [get]
+//	@router		/api/v1/files/{id}/download [get]
 func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	fileId, err := httputil.URLParamInt64(r, "fileId")
 	if err != nil {
@@ -190,7 +190,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		id	path	uint	true	"File identifier"
 //	@success	204
-//	@router		/files/{id} [delete]
+//	@router		/api/v1/files/{id} [delete]
 func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	fileId, err := httputil.URLParamInt64(r, "fileId")
 	if err != nil {
