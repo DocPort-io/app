@@ -62,6 +62,8 @@ func getFile(ctx context.Context) *database.File {
 //	@produce	json
 //	@param		versionId	query		uint	false	"Version identifier"
 //	@success	200			{object}	dto.ListFilesResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/files [get]
 func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.QueryParamInt64(r, "versionId", true)
@@ -87,6 +89,9 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		id	path		uint	true	"File identifier"
 //	@success	200	{object}	dto.FileResponseDto
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{fileId} [get]
 func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
@@ -101,6 +106,8 @@ func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateFileDto	true	"Create a file"
 //	@success	201		{object}	dto.FileResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/files [post]
 func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateFileDto{}
@@ -129,6 +136,9 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 //	@param		file	formData	file	true	"File to upload"
 //	@success	201		{object}	dto.FileResponseDto
 //	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	404		{object}	apperrors.ErrResponse
+//	@failure	409		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{fileId}/upload [post]
 func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
@@ -144,7 +154,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	file, err = c.fileService.UploadFile(r.Context(), file.ID, uploadFileDto)
 	if err != nil {
 		if errors.Is(err, service.ErrFileAlreadyExists) {
-			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			httputil.Render(w, r, apperrors.ErrHTTPConflictError(err))
 			return
 		}
 
@@ -164,6 +174,8 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 //	@param		id	path	uint	true	"File identifier"
 //	@success	200
 //	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{fileId}/download [get]
 func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
@@ -204,6 +216,8 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		id	path	uint	true	"File identifier"
 //	@success	204
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{fileId} [delete]
 func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())

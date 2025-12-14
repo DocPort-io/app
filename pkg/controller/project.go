@@ -58,6 +58,8 @@ func getProject(ctx context.Context) *database.Project {
 //	@accept		json
 //	@produce	json
 //	@success	200	{object}	dto.ListProjectsResponseDto
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
 	projects, total, err := c.projectService.FindAllProjects(r.Context())
@@ -77,6 +79,9 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
@@ -91,6 +96,8 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateProjectDto	true	"Create a project"
 //	@success	201		{object}	dto.ProjectResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [post]
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateProjectDto{}
@@ -118,6 +125,9 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Project identifier"
 //	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
 //	@success	200		{object}	dto.ProjectResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	404		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [put]
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
@@ -148,6 +158,8 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 //	@produce	json
 //	@param		id	path	uint	true	"Project identifier"
 //	@success	204
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [delete]
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())

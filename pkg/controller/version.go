@@ -59,6 +59,8 @@ func getVersion(ctx context.Context) *database.Version {
 //	@produce	json
 //	@param		projectId	query		uint	true	"Project identifier"
 //	@success	200			{object}	dto.ListVersionsResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions [get]
 func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Request) {
 	projectId, err := httputil.QueryParamInt64(r, "projectId", true)
@@ -84,6 +86,9 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Version identifier"
 //	@success	200	{object}	dto.VersionResponseDto
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId} [get]
 func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -98,6 +103,8 @@ func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		request	body		dto.CreateVersionDto	true	"Create a version"
 //	@success	201		{object}	dto.VersionResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions [post]
 func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateVersionDto{}
@@ -125,6 +132,9 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Version identifier"
 //	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
 //	@success	200		{object}	dto.VersionResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	404		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId} [put]
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -160,6 +170,8 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 //	@accept		json
 //	@param		id	path	uint	true	"Version identifier"
 //	@success	204
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId} [delete]
 func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -181,6 +193,9 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@param		id		path	uint						true	"Version identifier"
 //	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	204
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId}/attach-file [post]
 func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -208,6 +223,9 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@param		id		path	uint							true	"Version identifier"
 //	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
 //	@success	204
+//	@failure	400	{object}	apperrors.ErrResponse
+//	@failure	404	{object}	apperrors.ErrResponse
+//	@failure	500	{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId}/detach-file [post]
 func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())

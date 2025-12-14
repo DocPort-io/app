@@ -40,6 +40,14 @@ func ErrHTTPNotFoundError() render.Renderer {
 	}
 }
 
+func ErrHTTPConflictError(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: 409,
+		ErrorText:      err.Error(),
+	}
+}
+
 func ErrHTTPInternalServerError(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
