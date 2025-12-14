@@ -41,7 +41,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	srv := app.NewServer(db, queries, fileStorage)
 
 	httpServer := &http.Server{
-		Addr:    net.JoinHostPort("127.0.0.1", "8080"),
+		Addr:    net.JoinHostPort(viper.GetString("server.bind"), viper.GetString("server.port")),
 		Handler: srv,
 	}
 
