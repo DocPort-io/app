@@ -3,7 +3,7 @@ package app
 import (
 	"app/pkg/controller"
 
-	docs "app/pkg/docs"
+	"app/pkg/docs"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/viper"
