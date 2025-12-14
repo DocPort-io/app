@@ -30,13 +30,13 @@ func NewVersionController(versionService *service.VersionService) *VersionContro
 func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Request) {
 	projectId, err := httputil.QueryParamInt64(r, "projectId", true)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	versions, total, err := c.versionService.FindAllVersions(r.Context(), projectId)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -55,13 +55,13 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	version, err := c.versionService.FindVersionById(r.Context(), versionId)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -80,13 +80,13 @@ func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateVersionDto{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	version, err := c.versionService.CreateVersion(r.Context(), input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -107,19 +107,19 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	input := &dto.UpdateVersionDto{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	version, err := c.versionService.UpdateVersion(r.Context(), versionId, input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -137,13 +137,13 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	err = c.versionService.DeleteVersion(r.Context(), versionId)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -162,19 +162,19 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	input := &dto.AttachFileToVersionDto{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	err = c.versionService.AttachFileToVersion(r.Context(), versionId, input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -193,19 +193,19 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.URLParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	input := &dto.DetachFileFromVersionDto{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	err = c.versionService.DetachFileFromVersion(r.Context(), versionId, input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 

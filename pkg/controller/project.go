@@ -2,13 +2,18 @@ package controller
 
 import (
 	"app/pkg/apperrors"
+	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
 	"app/pkg/service"
+	"context"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/render"
 )
+
+const ProjectCtxKey = "project"
 
 type ProjectController struct {
 	projectService *service.ProjectService
@@ -16,6 +21,32 @@ type ProjectController struct {
 
 func NewProjectController(projectService *service.ProjectService) *ProjectController {
 	return &ProjectController{projectService: projectService}
+}
+
+func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		projectId, err := httputil.URLParamInt64(r, "projectId")
+		if err != nil {
+			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		}
+
+		project, err := c.projectService.FindProjectById(r.Context(), projectId)
+		if err != nil {
+			if errors.Is(err, apperrors.ErrNotFound) {
+				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
+				return
+			}
+
+			httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		}
+
+		ctx := context.WithValue(r.Context(), ProjectCtxKey, project)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func getProject(ctx context.Context) *database.Project {
+	return ctx.Value(ProjectCtxKey).(*database.Project)
 }
 
 // FindAllProjects godoc
@@ -29,7 +60,7 @@ func NewProjectController(projectService *service.ProjectService) *ProjectContro
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
 	projects, total, err := c.projectService.FindAllProjects(r.Context())
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -44,20 +75,9 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@produce	json
 //	@param		id	path		uint	true	"Project identifier"
 //	@success	200	{object}	dto.ProjectResponseDto
-//	@router		/api/v1/projects/{id} [get]
+//	@router		/api/v1/projects/{projectId} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
-	projectId, err := httputil.URLParamInt64(r, "projectId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
-		return
-	}
-
-	project, err := c.projectService.FindProjectById(r.Context(), projectId)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
-		return
-	}
-
+	project := getProject(r.Context())
 	httputil.Render(w, r, dto.ToProjectResponse(project))
 }
 
@@ -73,13 +93,13 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateProjectDto{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
 	project, err := c.projectService.CreateProject(r.Context(), input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -96,23 +116,22 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@param		id		path		uint					true	"Project identifier"
 //	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
 //	@success	200		{object}	dto.ProjectResponseDto
-//	@router		/api/v1/projects/{id} [put]
+//	@router		/api/v1/projects/{projectId} [put]
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
-	input := &dto.UpdateProjectDto{}
+	project := getProject(r.Context())
+
+	input := &dto.UpdateProjectDto{
+		Slug: project.Slug,
+		Name: project.Name,
+	}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
-	projectId, err := httputil.URLParamInt64(r, "projectId")
+	project, err := c.projectService.UpdateProject(r.Context(), project.ID, input)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
-		return
-	}
-
-	project, err := c.projectService.UpdateProject(r.Context(), projectId, input)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
@@ -127,17 +146,13 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 //	@produce	json
 //	@param		id	path	uint	true	"Project identifier"
 //	@success	204
-//	@router		/api/v1/projects/{id} [delete]
+//	@router		/api/v1/projects/{projectId} [delete]
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
-	projectId, err := httputil.URLParamInt64(r, "projectId")
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrBadRequestError(err))
-		return
-	}
+	project := getProject(r.Context())
 
-	err = c.projectService.DeleteProject(r.Context(), projectId)
+	err := c.projectService.DeleteProject(r.Context(), project.ID)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrInternalServerError(err))
+		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 

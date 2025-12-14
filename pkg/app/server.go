@@ -10,14 +10,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 )
 
 func NewServer(db *sql.DB, queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
 	router := chi.NewRouter()
 
+	router.Use(middleware.Heartbeat("/heartbeat"))
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
+	router.Use(render.SetContentType(render.ContentTypeJSON))
 
 	projectService := service.NewProjectService(queries)
 	versionService := service.NewVersionService(queries)

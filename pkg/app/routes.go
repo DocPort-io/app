@@ -23,6 +23,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 			r.Post("/", projectController.CreateProject)
 
 			r.Route("/{projectId}", func(r chi.Router) {
+				r.Use(projectController.ProjectCtx)
 				r.Get("/", projectController.GetProject)
 				r.Put("/", projectController.UpdateProject)
 				r.Delete("/", projectController.DeleteProject)

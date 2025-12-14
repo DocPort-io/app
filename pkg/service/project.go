@@ -1,9 +1,12 @@
 package service
 
 import (
+	"app/pkg/apperrors"
 	"app/pkg/database"
 	"app/pkg/dto"
 	"context"
+	"database/sql"
+	"errors"
 )
 
 type ProjectService struct {
@@ -31,6 +34,9 @@ func (s *ProjectService) FindAllProjects(ctx context.Context) ([]*database.ListP
 func (s *ProjectService) FindProjectById(ctx context.Context, id int64) (*database.Project, error) {
 	project, err := s.queries.GetProject(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, apperrors.ErrNotFound
+		}
 		return nil, err
 	}
 

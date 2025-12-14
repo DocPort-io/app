@@ -1,9 +1,14 @@
 package apperrors
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/render"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 type ErrResponse struct {
@@ -19,7 +24,7 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ErrBadRequestError(err error) render.Renderer {
+func ErrHTTPBadRequestError(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: 400,
@@ -27,7 +32,15 @@ func ErrBadRequestError(err error) render.Renderer {
 	}
 }
 
-func ErrInternalServerError(err error) render.Renderer {
+func ErrHTTPNotFoundError() render.Renderer {
+	return &ErrResponse{
+		Err:            ErrNotFound,
+		HTTPStatusCode: 404,
+		ErrorText:      ErrNotFound.Error(),
+	}
+}
+
+func ErrHTTPInternalServerError(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: 500,
