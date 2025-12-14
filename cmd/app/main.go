@@ -10,12 +10,30 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 func run(ctx context.Context, w io.Writer, args []string) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("/etc/docport/")
+	viper.AddConfigPath("$HOME/.docport")
+	viper.AddConfigPath(".")
+
+	viper.SetEnvPrefix("docport")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalf("error reading config file, %s", err)
+	}
 
 	fileStorage := app.NewFileStorage("fs")
 	db, queries := app.NewDatabase()

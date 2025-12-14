@@ -1,6 +1,7 @@
 package app
 
 import (
+	appRoot "app"
 	"database/sql"
 	"errors"
 	"log"
@@ -8,13 +9,18 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/spf13/viper"
 	_ "modernc.org/sqlite"
 
 	"app/pkg/database"
 )
 
 func NewDatabase() (*sql.DB, *database.Queries) {
-	db, err := sql.Open("sqlite", "file:test.db?_pragma=foreign_keys(ON)")
+	databaseDriver := viper.GetString("database.driver")
+	databaseUrl := viper.GetString("database.url")
+
+	db, err := sql.Open(databaseDriver, databaseUrl)
 	if err != nil {
 		log.Fatalf("failed to open database: %s\n", err)
 	}
@@ -24,16 +30,25 @@ func NewDatabase() (*sql.DB, *database.Queries) {
 		log.Fatalf("failed to create database driver: %s\n", err)
 	}
 
-	migrations, err := migrate.NewWithDatabaseInstance("file://./migrations", "sqlite", driver)
+	iofsDriver, err := iofs.New(appRoot.MigrationsFS, "migrations")
+	if err != nil {
+		log.Fatalf("failed to create migration source: %s\n", err)
+	}
+
+	migrations, err := migrate.NewWithInstance("iofs", iofsDriver, databaseDriver, driver)
 	if err != nil {
 		log.Fatalf("failed to create migration source: %s\n", err)
 	}
 
 	err = migrations.Up()
-	if err != nil && errors.Is(err, migrate.ErrNoChange) {
-		log.Println("no migrations applied, database schema is up to date")
-	} else if err != nil {
-		log.Fatalf("failed to run migrations: %s\n", err)
+	if err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
+			log.Println("no migrations applied, database schema is up to date")
+		} else {
+			log.Fatalf("failed to run migrations: %s\n", err)
+		}
+	} else {
+		log.Println("migrations applied, database schema has been updated")
 	}
 
 	queries := database.New(db)
