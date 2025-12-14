@@ -94,6 +94,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	render.Status(r, http.StatusCreated)
 	httputil.Render(w, r, dto.ToFileResponse(file))
 }
 
