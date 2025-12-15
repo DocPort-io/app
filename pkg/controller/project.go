@@ -5,6 +5,7 @@ import (
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
+	"app/pkg/pagination"
 	"app/pkg/service"
 	"context"
 	"errors"
@@ -59,25 +60,21 @@ func getProject(ctx context.Context) *database.Project {
 //	@produce	json
 //	@param		limit	query		int64	false	"Amount of results to return"
 //	@param		offset	query		int64	false	"Offset of results to return"
-//	@success	200		{object}	dto.ListProjectsResponseDto
+//	@success	200		{object}	dto.ListProjectsResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
-	limit, err := httputil.QueryParamInt64(r, "limit", false)
+	limit, err := pagination.Limit(r)
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
-	offset, err := httputil.QueryParamInt64(r, "offset", false)
+	offset, err := pagination.Offset(r)
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
-	}
-
-	if limit == 0 || limit > 100 {
-		limit = 100
 	}
 
 	projectsResult, err := c.projectService.FindAllProjects(r.Context(), &dto.FindAllProjectsParams{
@@ -98,7 +95,7 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@accept		json
 //	@produce	json
 //	@param		projectId	path		uint	true	"Project identifier"
-//	@success	200			{object}	dto.ProjectResponseDto
+//	@success	200			{object}	dto.ProjectResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -114,13 +111,13 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		request	body		dto.CreateProjectDto	true	"Create a project"
-//	@success	201		{object}	dto.ProjectResponseDto
+//	@param		request	body		dto.CreateProjectRequest	true	"Create a project"
+//	@success	201		{object}	dto.ProjectResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [post]
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
-	input := &dto.CreateProjectDto{}
+	input := &dto.CreateProjectRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
@@ -145,9 +142,9 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		projectId	path		uint					true	"Project identifier"
-//	@param		request		body		dto.UpdateProjectDto	true	"Update a project"
-//	@success	200			{object}	dto.ProjectResponseDto
+//	@param		projectId	path		uint						true	"Project identifier"
+//	@param		request		body		dto.UpdateProjectRequest	true	"Update a project"
+//	@success	200			{object}	dto.ProjectResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -155,7 +152,7 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
 
-	input := &dto.UpdateProjectDto{
+	input := &dto.UpdateProjectRequest{
 		Slug: project.Slug,
 		Name: project.Name,
 	}

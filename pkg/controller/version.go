@@ -63,7 +63,7 @@ func getVersion(ctx context.Context) *database.Version {
 //	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions [get]
 func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Request) {
-	projectId, err := httputil.QueryParamInt64(r, "projectId", true)
+	projectId, err := httputil.QueryParamInt64(r, "projectId")
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return

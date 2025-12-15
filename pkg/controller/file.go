@@ -67,7 +67,7 @@ func getFile(ctx context.Context) *database.File {
 //	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/files [get]
 func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
-	versionId, err := httputil.QueryParamInt64(r, "versionId", true)
+	versionId, err := httputil.QueryParamInt64(r, "versionId")
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return

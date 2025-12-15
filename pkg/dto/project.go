@@ -6,10 +6,7 @@ import (
 	"time"
 )
 
-type PaginationParams struct {
-	Limit  int64
-	Offset int64
-}
+// Service layer
 
 type FindAllProjectsParams struct {
 	*PaginationParams
@@ -53,25 +50,27 @@ type DeleteProjectParams struct {
 	ID int64
 }
 
-type CreateProjectDto struct {
+// Controller layer
+
+type CreateProjectRequest struct {
 	Slug string `json:"slug" binding:"required" example:"project-x"`
 	Name string `json:"name" binding:"required" example:"Project X"`
 }
 
-func (c *CreateProjectDto) Bind(r *http.Request) error {
+func (c *CreateProjectRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type UpdateProjectDto struct {
+type UpdateProjectRequest struct {
 	Slug string `json:"slug" example:"project-x"`
 	Name string `json:"name" example:"Project X"`
 }
 
-func (u *UpdateProjectDto) Bind(r *http.Request) error {
+func (u *UpdateProjectRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type ProjectResponseDto struct {
+type ProjectResponse struct {
 	ID        int64  `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -79,12 +78,12 @@ type ProjectResponseDto struct {
 	Name      string `json:"name" example:"Project X"`
 }
 
-func (p *ProjectResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (p *ProjectResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToProjectResponse(project *database.Project) *ProjectResponseDto {
-	return &ProjectResponseDto{
+func ToProjectResponse(project *database.Project) *ProjectResponse {
+	return &ProjectResponse{
 		ID:        project.ID,
 		CreatedAt: project.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
@@ -93,62 +92,62 @@ func ToProjectResponse(project *database.Project) *ProjectResponseDto {
 	}
 }
 
-type ListProjectsResponseProjectLocationDto struct {
+type ListProjectsResponseProjectLocation struct {
 	Name *string  `json:"name" example:"Office"`
 	Lat  *float64 `json:"lat" example:"52.520008"`
 	Lon  *float64 `json:"lon" example:"13.404954"`
 }
 
-func ToListProjectsResponseProjectLocationDto(project *database.ListProjectsWithLocationsRow) *ListProjectsResponseProjectLocationDto {
+func ToListProjectsResponseProjectLocation(project *database.ListProjectsWithLocationsRow) *ListProjectsResponseProjectLocation {
 	if project.LocationName == nil {
 		return nil
 	}
 
-	return &ListProjectsResponseProjectLocationDto{
+	return &ListProjectsResponseProjectLocation{
 		Name: project.LocationName,
 		Lat:  project.LocationLat,
 		Lon:  project.LocationLon,
 	}
 }
 
-type ListProjectsResponseProjectDto struct {
-	ID        int64                                   `json:"id" example:"1"`
-	CreatedAt string                                  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
-	UpdatedAt string                                  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
-	Slug      string                                  `json:"slug" example:"project-x"`
-	Name      string                                  `json:"name" example:"Project X"`
-	Location  *ListProjectsResponseProjectLocationDto `json:"location"`
+type listProjectsResponseProject struct {
+	ID        int64                                `json:"id" example:"1"`
+	CreatedAt string                               `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
+	UpdatedAt string                               `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
+	Slug      string                               `json:"slug" example:"project-x"`
+	Name      string                               `json:"name" example:"Project X"`
+	Location  *ListProjectsResponseProjectLocation `json:"location"`
 }
 
-func ToListProjectsResponseProject(project *database.ListProjectsWithLocationsRow) *ListProjectsResponseProjectDto {
-	return &ListProjectsResponseProjectDto{
+func toListProjectsResponseProject(project *database.ListProjectsWithLocationsRow) *listProjectsResponseProject {
+	return &listProjectsResponseProject{
 		ID:        project.ID,
 		CreatedAt: project.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
 		Slug:      project.Slug,
 		Name:      project.Name,
-		Location:  ToListProjectsResponseProjectLocationDto(project),
+		Location:  ToListProjectsResponseProjectLocation(project),
 	}
 }
 
-type ListProjectsResponseDto struct {
-	Projects []ListProjectsResponseProjectDto `json:"projects"`
-	Total    int64                            `json:"total" example:"1"`
-	Limit    int64                            `json:"limit" example:"100"`
-	Offset   int64                            `json:"offset" example:"0"`
+type ListProjectsResponse struct {
+	Projects []listProjectsResponseProject `json:"projects"`
+	Total    int64                         `json:"total" example:"1"`
+	Limit    int64                         `json:"limit" example:"100"`
+	Offset   int64                         `json:"offset" example:"0"`
 }
 
-func (l *ListProjectsResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (l *ListProjectsResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListProjectsResponse(result *FindAllProjectsResult) *ListProjectsResponseDto {
-	projectResponseProjectDtos := make([]ListProjectsResponseProjectDto, len(result.Projects))
+func ToListProjectsResponse(result *FindAllProjectsResult) *ListProjectsResponse {
+	listProjectsResponseProjects := make([]listProjectsResponseProject, len(result.Projects))
 	for i, project := range result.Projects {
-		projectResponseProjectDtos[i] = *ToListProjectsResponseProject(project)
+		listProjectsResponseProjects[i] = *toListProjectsResponseProject(project)
 	}
-	return &ListProjectsResponseDto{
-		Projects: projectResponseProjectDtos,
+	return &ListProjectsResponse{
+		Projects: listProjectsResponseProjects,
 		Total:    result.Total,
 		Limit:    result.Limit,
 		Offset:   result.Offset,
