@@ -18,45 +18,51 @@ type mockVersionService struct {
 	mock.Mock
 }
 
-func (m *mockVersionService) FindAllVersions(ctx context.Context, projectId int64) ([]*database.Version, int64, error) {
-	args := m.Called(ctx, projectId)
-	if args.Get(0) == nil {
-		return nil, 0, args.Error(1)
-	}
-	return args.Get(0).([]*database.Version), args.Get(1).(int64), nil
-}
-
-func (m *mockVersionService) FindVersionById(ctx context.Context, id int64) (*database.Version, error) {
-	args := m.Called(ctx, id)
+func (m *mockVersionService) FindAllVersions(ctx context.Context, params *dto.FindAllVersionsParams) (*dto.FindAllVersionsResult, error) {
+	args := m.Called(ctx, params.ProjectID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*database.Version), args.Error(1)
+	return args.Get(0).(*dto.FindAllVersionsResult), args.Error(1)
 }
 
-func (m *mockVersionService) CreateVersion(ctx context.Context, dto *dto.CreateVersionDto) (*database.Version, error) {
-	//TODO implement me
-	panic("implement me")
+func (m *mockVersionService) FindVersionById(ctx context.Context, params *dto.FindVersionByIdParams) (*dto.FindVersionByIdResult, error) {
+	args := m.Called(ctx, params.ID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*dto.FindVersionByIdResult), args.Error(1)
 }
 
-func (m *mockVersionService) UpdateVersion(ctx context.Context, id int64, dto *dto.UpdateVersionDto) (*database.Version, error) {
-	//TODO implement me
-	panic("implement me")
+func (m *mockVersionService) CreateVersion(ctx context.Context, params *dto.CreateVersionParams) (*dto.CreateVersionResult, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*dto.CreateVersionResult), args.Error(1)
 }
 
-func (m *mockVersionService) DeleteVersion(ctx context.Context, id int64) error {
-	//TODO implement me
-	panic("implement me")
+func (m *mockVersionService) UpdateVersion(ctx context.Context, params *dto.UpdateVersionParams) (*dto.UpdateVersionResult, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*dto.UpdateVersionResult), args.Error(1)
 }
 
-func (m *mockVersionService) AttachFileToVersion(ctx context.Context, id int64, attachFileToVersionDto *dto.AttachFileToVersionDto) error {
-	//TODO implement me
-	panic("implement me")
+func (m *mockVersionService) DeleteVersion(ctx context.Context, params *dto.DeleteVersionParams) error {
+	args := m.Called(ctx, params)
+	return args.Error(0)
 }
 
-func (m *mockVersionService) DetachFileFromVersion(ctx context.Context, id int64, detachFileFromVersionDto *dto.DetachFileFromVersionDto) error {
-	//TODO implement me
-	panic("implement me")
+func (m *mockVersionService) AttachFileToVersion(ctx context.Context, params *dto.AttachFileToVersionParams) error {
+	args := m.Called(ctx, params)
+	return args.Error(0)
+}
+
+func (m *mockVersionService) DetachFileFromVersion(ctx context.Context, params *dto.DetachFileFromVersionParams) error {
+	args := m.Called(ctx, params)
+	return args.Error(0)
 }
 
 func setupFixtures() (*chi.Mux, *mockVersionService) {
@@ -82,7 +88,7 @@ func setupFixtures() (*chi.Mux, *mockVersionService) {
 func TestVersionController_VersionCtx(t *testing.T) {
 	// Arrange
 	r, versionService := setupFixtures()
-	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&database.Version{ID: 123}, nil)
+	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 123}}, nil)
 
 	// Act
 	req, _ := http.NewRequest("GET", "/123", nil)
@@ -102,7 +108,7 @@ func TestVersionController_VersionCtx(t *testing.T) {
 func TestVersionController_GetVersion(t *testing.T) {
 	// Arrange
 	r, versionService := setupFixtures()
-	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&database.Version{ID: 123}, nil)
+	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 123}}, nil)
 
 	// Act
 	req, _ := http.NewRequest("GET", "/123", nil)
@@ -124,7 +130,7 @@ func TestVersionController_FindAllVersions(t *testing.T) {
 	r, versionService := setupFixtures()
 	items := make([]*database.Version, 1)
 	items[0] = &database.Version{ID: 123}
-	versionService.On("FindAllVersions", mock.Anything, mock.AnythingOfType("int64")).Return(items, int64(1), nil)
+	versionService.On("FindAllVersions", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindAllVersionsResult{Versions: items, Total: int64(1)}, nil)
 
 	// Act
 	req, _ := http.NewRequest("GET", "/?projectId=123", nil)

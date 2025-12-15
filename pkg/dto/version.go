@@ -6,42 +6,97 @@ import (
 	"time"
 )
 
-type CreateVersionDto struct {
+// Service layer
+
+type FindAllVersionsParams struct {
+	ProjectID int64
+}
+
+type FindAllVersionsResult struct {
+	Versions []*database.Version
+	Total    int64
+}
+
+type FindVersionByIdParams struct {
+	ID int64
+}
+
+type FindVersionByIdResult struct {
+	Version *database.Version
+}
+
+type CreateVersionParams struct {
+	Name        string
+	Description *string
+	ProjectID   int64
+}
+
+type CreateVersionResult struct {
+	Version *database.Version
+}
+
+type UpdateVersionParams struct {
+	ID          int64
+	Name        string
+	Description *string
+}
+
+type UpdateVersionResult struct {
+	Version *database.Version
+}
+
+type DeleteVersionParams struct {
+	ID int64
+}
+
+type AttachFileToVersionParams struct {
+	VersionID int64
+	FileID    int64
+}
+
+type DetachFileFromVersionParams struct {
+	VersionID int64
+	FileID    int64
+}
+
+// Controller layer
+
+type CreateVersionRequest struct {
 	Name        string  `json:"name" binding:"required" example:"v0.0.1"`
 	Description *string `json:"description" example:"First version of the project"`
 	ProjectId   int64   `json:"projectId" example:"1"`
 }
 
-func (v *CreateVersionDto) Bind(r *http.Request) error {
+func (v *CreateVersionRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type UpdateVersionDto struct {
+type UpdateVersionRequest struct {
 	Name        string  `json:"name" example:"v0.0.1"`
 	Description *string `json:"description" example:"First version of the project"`
 }
 
-func (v *UpdateVersionDto) Bind(r *http.Request) error {
+func (v *UpdateVersionRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type AttachFileToVersionDto struct {
+type AttachFileToVersionRequest struct {
 	FileId int64 `json:"fileId" example:"1"`
 }
 
-func (v *AttachFileToVersionDto) Bind(r *http.Request) error {
+func (v *AttachFileToVersionRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type DetachFileFromVersionDto struct {
+type DetachFileFromVersionRequest struct {
 	FileId int64 `json:"fileId" example:"1"`
 }
 
-func (v *DetachFileFromVersionDto) Bind(r *http.Request) error {
+func (v *DetachFileFromVersionRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type VersionResponseDto struct {
+type VersionResponse struct {
 	ID          int64   `json:"id" example:"1"`
 	CreatedAt   string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt   string  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -50,12 +105,12 @@ type VersionResponseDto struct {
 	ProjectId   int64   `json:"projectId" example:"1"`
 }
 
-func (v *VersionResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (v *VersionResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToVersionResponse(version *database.Version) *VersionResponseDto {
-	return &VersionResponseDto{
+func ToVersionResponse(version *database.Version) *VersionResponse {
+	return &VersionResponse{
 		ID:          version.ID,
 		CreatedAt:   version.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   version.UpdatedAt.Format(time.RFC3339),
@@ -65,7 +120,7 @@ func ToVersionResponse(version *database.Version) *VersionResponseDto {
 	}
 }
 
-type ListVersionsResponseVersionDto struct {
+type listVersionsResponseVersion struct {
 	ID        int64  `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -73,8 +128,8 @@ type ListVersionsResponseVersionDto struct {
 	ProjectId int64  `json:"projectId" example:"1"`
 }
 
-func ToListVersionsResponseVersion(version *database.Version) *ListVersionsResponseVersionDto {
-	return &ListVersionsResponseVersionDto{
+func toListVersionsResponseVersion(version *database.Version) *listVersionsResponseVersion {
+	return &listVersionsResponseVersion{
 		ID:        version.ID,
 		CreatedAt: version.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: version.UpdatedAt.Format(time.RFC3339),
@@ -83,21 +138,21 @@ func ToListVersionsResponseVersion(version *database.Version) *ListVersionsRespo
 	}
 }
 
-type ListVersionsResponseDto struct {
-	Versions []ListVersionsResponseVersionDto `json:"versions"`
-	Total    int64                            `json:"total" example:"1"`
+type ListVersionsResponse struct {
+	Versions []listVersionsResponseVersion `json:"versions"`
+	Total    int64                         `json:"total" example:"1"`
 }
 
-func (l *ListVersionsResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (l *ListVersionsResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListVersionsResponse(versions []*database.Version, total int64) *ListVersionsResponseDto {
-	versionsResponseVersionDtos := make([]ListVersionsResponseVersionDto, len(versions))
+func ToListVersionsResponse(versions []*database.Version, total int64) *ListVersionsResponse {
+	versionsResponseVersionDtos := make([]listVersionsResponseVersion, len(versions))
 	for i, version := range versions {
-		versionsResponseVersionDtos[i] = *ToListVersionsResponseVersion(version)
+		versionsResponseVersionDtos[i] = *toListVersionsResponseVersion(version)
 	}
-	return &ListVersionsResponseDto{
+	return &ListVersionsResponse{
 		Versions: versionsResponseVersionDtos,
 		Total:    total,
 	}

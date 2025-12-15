@@ -31,7 +31,7 @@ func (c *VersionController) VersionCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		version, err := c.versionService.FindVersionById(r.Context(), versionId)
+		result, err := c.versionService.FindVersionById(r.Context(), &dto.FindVersionByIdParams{ID: versionId})
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNotFound) {
 				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
@@ -42,7 +42,7 @@ func (c *VersionController) VersionCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), VersionCtxKey, version)
+		ctx := context.WithValue(r.Context(), VersionCtxKey, result.Version)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -58,7 +58,7 @@ func getVersion(ctx context.Context) *database.Version {
 //	@accept		json
 //	@produce	json
 //	@param		projectId	query		uint	true	"Project identifier"
-//	@success	200			{object}	dto.ListVersionsResponseDto
+//	@success	200			{object}	dto.ListVersionsResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions [get]
@@ -69,13 +69,13 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	versions, total, err := c.versionService.FindAllVersions(r.Context(), projectId)
+	result, err := c.versionService.FindAllVersions(r.Context(), &dto.FindAllVersionsParams{ProjectID: projectId})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListVersionsResponse(versions, total))
+	httputil.Render(w, r, dto.ToListVersionsResponse(result.Versions, result.Total))
 }
 
 // GetVersion godoc
@@ -85,7 +85,7 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 //	@accept		json
 //	@produce	json
 //	@param		versionId	path		uint	true	"Version identifier"
-//	@success	200			{object}	dto.VersionResponseDto
+//	@success	200			{object}	dto.VersionResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -101,26 +101,32 @@ func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		request	body		dto.CreateVersionDto	true	"Create a version"
-//	@success	201		{object}	dto.VersionResponseDto
+//	@param		request	body		dto.CreateVersionRequest	true	"Create a version"
+//	@success	201		{object}	dto.VersionResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions [post]
 func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request) {
-	input := &dto.CreateVersionDto{}
+	input := &dto.CreateVersionRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
-	version, err := c.versionService.CreateVersion(r.Context(), input)
+	// Map controller DTO to service params
+	createParams := &dto.CreateVersionParams{
+		Name:        input.Name,
+		Description: input.Description,
+		ProjectID:   input.ProjectId,
+	}
+	createResult, err := c.versionService.CreateVersion(r.Context(), createParams)
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
 	render.Status(r, http.StatusCreated)
-	httputil.Render(w, r, dto.ToVersionResponse(version))
+	httputil.Render(w, r, dto.ToVersionResponse(createResult.Version))
 }
 
 // UpdateVersion godoc
@@ -130,8 +136,8 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@accept		json
 //	@produce	json
 //	@param		versionId	path		uint					true	"Version identifier"
-//	@param		request		body		dto.UpdateVersionDto	true	"Update a version"
-//	@success	200			{object}	dto.VersionResponseDto
+//	@param		request		body		dto.UpdateVersionRequest	true	"Update a version"
+//	@success	200			{object}	dto.VersionResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -139,7 +145,7 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
-	input := &dto.UpdateVersionDto{
+	input := &dto.UpdateVersionRequest{
 		Name:        version.Name,
 		Description: version.Description,
 	}
@@ -154,13 +160,18 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	version, err = c.versionService.UpdateVersion(r.Context(), versionId, input)
+	updateParams := &dto.UpdateVersionParams{
+		ID:          versionId,
+		Name:        input.Name,
+		Description: input.Description,
+	}
+	updateResult, err := c.versionService.UpdateVersion(r.Context(), updateParams)
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToVersionResponse(version))
+	httputil.Render(w, r, dto.ToVersionResponse(updateResult.Version))
 }
 
 // DeleteVersion godoc
@@ -176,7 +187,7 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
-	err := c.versionService.DeleteVersion(r.Context(), version.ID)
+	err := c.versionService.DeleteVersion(r.Context(), &dto.DeleteVersionParams{ID: version.ID})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
@@ -191,7 +202,7 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@tags		versions
 //	@accept		json
 //	@param		versionId	path	uint						true	"Version identifier"
-//	@param		request		body	dto.AttachFileToVersionDto	true	"File to attach"
+//	@param		request		body	dto.AttachFileToVersionRequest	true	"File to attach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@failure	404	{object}	apperrors.ErrResponse
@@ -200,13 +211,13 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
-	input := &dto.AttachFileToVersionDto{}
+	input := &dto.AttachFileToVersionRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
-	err := c.versionService.AttachFileToVersion(r.Context(), version.ID, input)
+	err := c.versionService.AttachFileToVersion(r.Context(), &dto.AttachFileToVersionParams{VersionID: version.ID, FileID: input.FileId})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
@@ -221,7 +232,7 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@tags		versions
 //	@accept		json
 //	@param		versionId	path	uint							true	"Version identifier"
-//	@param		request		body	dto.DetachFileFromVersionDto	true	"File to detach"
+//	@param		request		body	dto.DetachFileFromVersionRequest	true	"File to detach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@failure	404	{object}	apperrors.ErrResponse
@@ -230,13 +241,13 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 func (c *VersionController) DetachFileFromVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
 
-	input := &dto.DetachFileFromVersionDto{}
+	input := &dto.DetachFileFromVersionRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
 	}
 
-	err := c.versionService.DetachFileFromVersion(r.Context(), version.ID, input)
+	err := c.versionService.DetachFileFromVersion(r.Context(), &dto.DetachFileFromVersionParams{VersionID: version.ID, FileID: input.FileId})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
