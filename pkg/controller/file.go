@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dustin/go-humanize"
 	"github.com/go-chi/render"
 )
 
@@ -143,7 +144,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
 
-	r.Body = http.MaxBytesReader(w, r.Body, 1_073_741_824)
+	r.Body = http.MaxBytesReader(w, r.Body, 1*humanize.GiByte)
 
 	multipartFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
