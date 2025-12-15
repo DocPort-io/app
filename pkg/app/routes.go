@@ -2,6 +2,7 @@ package app
 
 import (
 	"app/pkg/controller"
+	"app/pkg/paginate"
 
 	"app/pkg/docs"
 
@@ -19,7 +20,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 	router.Route("/api/v1", func(r chi.Router) {
 
 		r.Route("/projects", func(r chi.Router) {
-			r.Get("/", projectController.FindAllProjects)
+			r.With(paginate.Paginate).Get("/", projectController.FindAllProjects)
 			r.Post("/", projectController.CreateProject)
 
 			r.Route("/{projectId}", func(r chi.Router) {

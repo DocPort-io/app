@@ -5,7 +5,7 @@ import (
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
-	"app/pkg/pagination"
+	"app/pkg/paginate"
 	"app/pkg/service"
 	"context"
 	"errors"
@@ -65,20 +65,10 @@ func getProject(ctx context.Context) *database.Project {
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
-	limit, err := pagination.Limit(r)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
-
-	offset, err := pagination.Offset(r)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
-		return
-	}
+	pagination := paginate.GetPagination(r.Context())
 
 	projectsResult, err := c.projectService.FindAllProjects(r.Context(), &dto.FindAllProjectsParams{
-		PaginationParams: &dto.PaginationParams{Limit: limit, Offset: offset},
+		Pagination: pagination,
 	})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))

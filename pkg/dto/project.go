@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/database"
+	"app/pkg/paginate"
 	"net/http"
 	"time"
 )
@@ -9,7 +10,7 @@ import (
 // Service layer
 
 type FindAllProjectsParams struct {
-	*PaginationParams
+	*paginate.Pagination
 }
 
 type FindAllProjectsResult struct {
