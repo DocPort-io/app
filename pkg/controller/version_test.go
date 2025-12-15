@@ -3,15 +3,19 @@ package controller
 import (
 	"app/pkg/database"
 	"app/pkg/dto"
+	"app/pkg/paginate"
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type mockVersionService struct {
@@ -71,18 +75,34 @@ func setupFixtures() (*chi.Mux, *mockVersionService) {
 
 	r := chi.NewRouter()
 	r.Route("/", func(r chi.Router) {
-		r.Get("/", versionController.FindAllVersions)
+		r.With(paginate.Paginate).Get("/", versionController.FindAllVersions)
 		r.Post("/", versionController.CreateVersion)
 
 		r.Route("/{versionId}", func(r chi.Router) {
 			r.Use(versionController.VersionCtx)
 			r.Get("/", versionController.GetVersion)
-			r.Post("/", versionController.UpdateVersion)
+			r.Put("/", versionController.UpdateVersion)
 			r.Delete("/", versionController.DeleteVersion)
 		})
 	})
 
 	return r, versionService
+}
+
+// test helpers
+func newJSONRequest(t *testing.T, method, target, body string) *http.Request {
+	t.Helper()
+	req, err := http.NewRequest(method, target, strings.NewReader(body))
+	require.NoError(t, err)
+	if body != "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	return req
+}
+
+func decodeJSON(t *testing.T, buf *bytes.Buffer, v any) {
+	t.Helper()
+	require.NoError(t, json.Unmarshal(buf.Bytes(), v))
 }
 
 func TestVersionController_VersionCtx(t *testing.T) {
@@ -91,15 +111,15 @@ func TestVersionController_VersionCtx(t *testing.T) {
 	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 123}}, nil)
 
 	// Act
-	req, _ := http.NewRequest("GET", "/123", nil)
+	req := newJSONRequest(t, http.MethodGet, "/123", "")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	// Assert
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &response)
+	var response map[string]any
+	decodeJSON(t, w.Body, &response)
 	assert.Equal(t, float64(123), response["id"])
 
 	versionService.AssertExpectations(t)
@@ -111,15 +131,15 @@ func TestVersionController_GetVersion(t *testing.T) {
 	versionService.On("FindVersionById", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 123}}, nil)
 
 	// Act
-	req, _ := http.NewRequest("GET", "/123", nil)
+	req := newJSONRequest(t, http.MethodGet, "/123", "")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	// Assert
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &response)
+	var response map[string]any
+	decodeJSON(t, w.Body, &response)
 	assert.Equal(t, float64(123), response["id"])
 
 	versionService.AssertExpectations(t)
@@ -133,16 +153,54 @@ func TestVersionController_FindAllVersions(t *testing.T) {
 	versionService.On("FindAllVersions", mock.Anything, mock.AnythingOfType("int64")).Return(&dto.FindAllVersionsResult{Versions: items, Total: int64(1)}, nil)
 
 	// Act
-	req, _ := http.NewRequest("GET", "/?projectId=123", nil)
+	req := newJSONRequest(t, http.MethodGet, "/?projectId=123", "")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	// Assert
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	//var response map[string]interface{}
-	//json.Unmarshal(w.Body.Bytes(), &response)
-	//assert.Equal(t, int64(123), response["versions"][0]["id"])
+	// decode into a lightweight shape for clarity
+	type listResp struct {
+		Versions []struct {
+			ID int64 `json:"id"`
+		} `json:"versions"`
+		Total int64 `json:"total"`
+	}
+	var resp listResp
+	decodeJSON(t, w.Body, &resp)
+	require.Len(t, resp.Versions, 1)
+	assert.Equal(t, int64(123), resp.Versions[0].ID)
+	assert.Equal(t, int64(1), resp.Total)
 
 	versionService.AssertExpectations(t)
+}
+
+func TestVersionController_CreateUpdateDelete(t *testing.T) {
+	r, svc := setupFixtures()
+
+	// Create
+	svc.On("CreateVersion", mock.Anything, mock.AnythingOfType("*dto.CreateVersionParams")).Return(&dto.CreateVersionResult{Version: &database.Version{ID: 11, ProjectID: 5, Name: "v"}}, nil)
+	reqC := newJSONRequest(t, http.MethodPost, "/", `{"name":"v","projectId":5}`)
+	wC := httptest.NewRecorder()
+	r.ServeHTTP(wC, reqC)
+	assert.Equal(t, http.StatusCreated, wC.Code)
+
+	// Update
+	svc.ExpectedCalls = nil
+	svc.On("FindVersionById", mock.Anything, int64(7)).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 7, Name: "old"}}, nil)
+	svc.On("UpdateVersion", mock.Anything, mock.AnythingOfType("*dto.UpdateVersionParams")).Return(&dto.UpdateVersionResult{Version: &database.Version{ID: 7, Name: "new"}}, nil)
+	reqU := newJSONRequest(t, http.MethodPut, "/7", `{"name":"new"}`)
+	wU := httptest.NewRecorder()
+	r.ServeHTTP(wU, reqU)
+	assert.Equal(t, http.StatusOK, wU.Code)
+
+	// Delete
+	svc.ExpectedCalls = nil
+	svc.On("FindVersionById", mock.Anything, int64(8)).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 8}}, nil)
+	svc.On("DeleteVersion", mock.Anything, mock.AnythingOfType("*dto.DeleteVersionParams")).Return(nil)
+	reqD := newJSONRequest(t, http.MethodDelete, "/8", "")
+	wD := httptest.NewRecorder()
+	r.ServeHTTP(wD, reqD)
+	assert.Equal(t, http.StatusNoContent, wD.Code)
 }
