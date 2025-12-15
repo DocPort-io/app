@@ -143,6 +143,8 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
 
+	r.Body = http.MaxBytesReader(w, r.Body, 1_073_741_824)
+
 	multipartFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
@@ -197,9 +199,19 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}(reader)
 
+	contentType := "application/octet-stream"
+	if file.MimeType != nil {
+		contentType = *file.MimeType
+	}
+
+	contentLength := int64(0)
+	if file.Size != nil {
+		contentLength = *file.Size
+	}
+
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
-	w.Header().Set("Content-Type", *file.MimeType)
-	w.Header().Set("Content-Length", fmt.Sprintf("%d", *file.Size))
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
 
 	_, err = io.Copy(w, reader)
 	if err != nil {
