@@ -32,7 +32,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 		})
 
 		r.Route("/versions", func(r chi.Router) {
-			r.Get("/", versionController.FindAllVersions)
+			r.With(paginate.Paginate).Get("/", versionController.FindAllVersions)
 			r.Post("/", versionController.CreateVersion)
 
 			r.Route("/{versionId}", func(r chi.Router) {
@@ -46,7 +46,7 @@ func registerRoutes(router *chi.Mux, projectController *controller.ProjectContro
 		})
 
 		r.Route("/files", func(r chi.Router) {
-			r.Get("/", fileController.FindAllFiles)
+			r.With(paginate.Paginate).Get("/", fileController.FindAllFiles)
 			r.Post("/", fileController.CreateFile)
 
 			r.Route("/{fileId}", func(r chi.Router) {

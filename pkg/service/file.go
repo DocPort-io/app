@@ -41,7 +41,11 @@ func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) 
 }
 
 func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *dto.FindAllFilesParams) (*dto.FindAllFilesResult, error) {
-	files, err := s.queries.ListFilesByVersionId(ctx, params.VersionID)
+	files, err := s.queries.ListFilesByVersionId(ctx, &database.ListFilesByVersionIdParams{
+		VersionID: params.VersionID,
+		Limit:     params.Limit,
+		Offset:    params.Offset,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +55,7 @@ func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *dto.FindAllF
 		return nil, err
 	}
 
-	return &dto.FindAllFilesResult{Files: files, Total: count}, nil
+	return &dto.FindAllFilesResult{Files: files, Total: count, Limit: params.Limit, Offset: params.Offset}, nil
 }
 
 func (s *fileServiceImpl) FindFileById(ctx context.Context, params *dto.FindFileByIdParams) (*dto.FindFileByIdResult, error) {

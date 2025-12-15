@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/database"
+	"app/pkg/paginate"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -12,11 +13,14 @@ import (
 
 type FindAllFilesParams struct {
 	VersionID int64
+	*paginate.Pagination
 }
 
 type FindAllFilesResult struct {
-	Files []*database.File
-	Total int64
+	Files  []*database.File
+	Total  int64
+	Limit  int64
+	Offset int64
 }
 
 type FindFileByIdParams struct {
@@ -122,22 +126,25 @@ func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
 }
 
 type ListFilesResponseDto struct {
-	Files []ListFilesResponseFileDto `json:"files"`
-	Total int64                      `json:"total" example:"1"`
+	Files  []ListFilesResponseFileDto `json:"files"`
+	Total  int64                      `json:"total" example:"1"`
+	Limit  int64                      `json:"limit" example:"100"`
+	Offset int64                      `json:"offset" example:"0"`
 }
 
 func (l *ListFilesResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListFilesResponse(files []*database.File, total int64) *ListFilesResponseDto {
-	listFilesResponseFileDtos := make([]ListFilesResponseFileDto, len(files))
-	for i, file := range files {
+func ToListFilesResponse(result *FindAllFilesResult) *ListFilesResponseDto {
+	listFilesResponseFileDtos := make([]ListFilesResponseFileDto, len(result.Files))
+	for i, file := range result.Files {
 		listFilesResponseFileDtos[i] = *ToListFilesResponseFile(file)
 	}
-
 	return &ListFilesResponseDto{
-		Files: listFilesResponseFileDtos,
-		Total: total,
+		Files:  listFilesResponseFileDtos,
+		Total:  result.Total,
+		Limit:  result.Limit,
+		Offset: result.Offset,
 	}
 }

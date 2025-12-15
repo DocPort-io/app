@@ -5,6 +5,7 @@ import (
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
+	"app/pkg/paginate"
 	"app/pkg/service"
 	"context"
 	"errors"
@@ -58,6 +59,8 @@ func getVersion(ctx context.Context) *database.Version {
 //	@accept		json
 //	@produce	json
 //	@param		projectId	query		uint	true	"Project identifier"
+//	@param		limit		query		uint	false	"Max items per page (1-100)"
+//	@param		offset		query		uint	false	"Items to skip before starting to collect the result set"
 //	@success	200			{object}	dto.ListVersionsResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -69,13 +72,15 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	result, err := c.versionService.FindAllVersions(r.Context(), &dto.FindAllVersionsParams{ProjectID: projectId})
+	pagination := paginate.GetPagination(r.Context())
+
+	result, err := c.versionService.FindAllVersions(r.Context(), &dto.FindAllVersionsParams{ProjectID: projectId, Pagination: pagination})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListVersionsResponse(result.Versions, result.Total))
+	httputil.Render(w, r, dto.ToListVersionsResponse(result))
 }
 
 // GetVersion godoc
@@ -135,7 +140,7 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		versionId	path		uint					true	"Version identifier"
+//	@param		versionId	path		uint						true	"Version identifier"
 //	@param		request		body		dto.UpdateVersionRequest	true	"Update a version"
 //	@success	200			{object}	dto.VersionResponse
 //	@failure	400			{object}	apperrors.ErrResponse
@@ -201,7 +206,7 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@summary	Attaches a file to a version
 //	@tags		versions
 //	@accept		json
-//	@param		versionId	path	uint						true	"Version identifier"
+//	@param		versionId	path	uint							true	"Version identifier"
 //	@param		request		body	dto.AttachFileToVersionRequest	true	"File to attach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse
@@ -231,7 +236,7 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@summary	Detach a file from a version
 //	@tags		versions
 //	@accept		json
-//	@param		versionId	path	uint							true	"Version identifier"
+//	@param		versionId	path	uint								true	"Version identifier"
 //	@param		request		body	dto.DetachFileFromVersionRequest	true	"File to detach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse

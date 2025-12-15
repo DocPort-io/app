@@ -5,6 +5,7 @@ import (
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
+	"app/pkg/paginate"
 	"app/pkg/service"
 	"context"
 	"errors"
@@ -62,6 +63,8 @@ func getFile(ctx context.Context) *database.File {
 //	@accept		json
 //	@produce	json
 //	@param		versionId	query		uint	false	"Version identifier"
+//	@param		limit		query		uint	false	"Max items per page (1-100)"
+//	@param		offset		query		uint	false	"Items to skip before starting to collect the result set"
 //	@success	200			{object}	dto.ListFilesResponseDto
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -73,13 +76,15 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := c.fileService.FindAllFiles(r.Context(), &dto.FindAllFilesParams{VersionID: versionId})
+	pagination := paginate.GetPagination(r.Context())
+
+	result, err := c.fileService.FindAllFiles(r.Context(), &dto.FindAllFilesParams{VersionID: versionId, Pagination: pagination})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListFilesResponse(result.Files, result.Total))
+	httputil.Render(w, r, dto.ToListFilesResponse(result))
 }
 
 // GetFile godoc

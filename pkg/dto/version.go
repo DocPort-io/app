@@ -2,6 +2,7 @@ package dto
 
 import (
 	"app/pkg/database"
+	"app/pkg/paginate"
 	"net/http"
 	"time"
 )
@@ -10,11 +11,14 @@ import (
 
 type FindAllVersionsParams struct {
 	ProjectID int64
+	*paginate.Pagination
 }
 
 type FindAllVersionsResult struct {
 	Versions []*database.Version
 	Total    int64
+	Limit    int64
+	Offset   int64
 }
 
 type FindVersionByIdParams struct {
@@ -141,19 +145,23 @@ func toListVersionsResponseVersion(version *database.Version) *listVersionsRespo
 type ListVersionsResponse struct {
 	Versions []listVersionsResponseVersion `json:"versions"`
 	Total    int64                         `json:"total" example:"1"`
+	Limit    int64                         `json:"limit" example:"100"`
+	Offset   int64                         `json:"offset" example:"0"`
 }
 
 func (l *ListVersionsResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListVersionsResponse(versions []*database.Version, total int64) *ListVersionsResponse {
-	versionsResponseVersionDtos := make([]listVersionsResponseVersion, len(versions))
-	for i, version := range versions {
+func ToListVersionsResponse(result *FindAllVersionsResult) *ListVersionsResponse {
+	versionsResponseVersionDtos := make([]listVersionsResponseVersion, len(result.Versions))
+	for i, version := range result.Versions {
 		versionsResponseVersionDtos[i] = *toListVersionsResponseVersion(version)
 	}
 	return &ListVersionsResponse{
 		Versions: versionsResponseVersionDtos,
-		Total:    total,
+		Total:    result.Total,
+		Limit:    result.Limit,
+		Offset:   result.Offset,
 	}
 }

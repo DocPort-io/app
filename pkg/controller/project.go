@@ -58,8 +58,8 @@ func getProject(ctx context.Context) *database.Project {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		limit	query		int64	false	"Amount of results to return"
-//	@param		offset	query		int64	false	"Offset of results to return"
+//	@param		limit	query		uint	false	"Max items per page (1-100)"
+//	@param		offset	query		uint	false	"Items to skip before starting to collect the result set"
 //	@success	200		{object}	dto.ListProjectsResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse

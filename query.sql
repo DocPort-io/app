@@ -50,7 +50,8 @@ WHERE project_id = ?;
 SELECT *
 FROM versions
 WHERE project_id = ?
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?;
 
 -- name: GetVersion :one
 SELECT *
@@ -96,7 +97,8 @@ SELECT files.*
 FROM files
          INNER JOIN versions_files ON files.id = versions_files.file_id
 WHERE versions_files.version_id = ?
-ORDER BY files.created_at DESC;
+ORDER BY files.created_at DESC
+LIMIT ? OFFSET ?;
 
 -- name: GetFile :one
 SELECT *

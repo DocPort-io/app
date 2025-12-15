@@ -28,7 +28,11 @@ func NewVersionService(queries *database.Queries) VersionService {
 }
 
 func (s *versionServiceImpl) FindAllVersions(ctx context.Context, params *dto.FindAllVersionsParams) (*dto.FindAllVersionsResult, error) {
-	versions, err := s.queries.ListVersionsByProjectId(ctx, params.ProjectID)
+	versions, err := s.queries.ListVersionsByProjectId(ctx, &database.ListVersionsByProjectIdParams{
+		ProjectID: params.ProjectID,
+		Limit:     params.Limit,
+		Offset:    params.Offset,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +42,7 @@ func (s *versionServiceImpl) FindAllVersions(ctx context.Context, params *dto.Fi
 		return nil, err
 	}
 
-	return &dto.FindAllVersionsResult{Versions: versions, Total: count}, nil
+	return &dto.FindAllVersionsResult{Versions: versions, Total: count, Limit: params.Limit, Offset: params.Offset}, nil
 }
 
 func (s *versionServiceImpl) FindVersionById(ctx context.Context, params *dto.FindVersionByIdParams) (*dto.FindVersionByIdResult, error) {
