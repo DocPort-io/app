@@ -84,11 +84,11 @@ func (c *VersionController) FindAllVersions(w http.ResponseWriter, r *http.Reque
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		id	path		uint	true	"Version identifier"
-//	@success	200	{object}	dto.VersionResponseDto
-//	@failure	400	{object}	apperrors.ErrResponse
-//	@failure	404	{object}	apperrors.ErrResponse
-//	@failure	500	{object}	apperrors.ErrResponse
+//	@param		versionId	path		uint	true	"Version identifier"
+//	@success	200			{object}	dto.VersionResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	404			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId} [get]
 func (c *VersionController) GetVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -129,12 +129,12 @@ func (c *VersionController) CreateVersion(w http.ResponseWriter, r *http.Request
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		id		path		uint					true	"Version identifier"
-//	@param		request	body		dto.UpdateVersionDto	true	"Update a version"
-//	@success	200		{object}	dto.VersionResponseDto
-//	@failure	400		{object}	apperrors.ErrResponse
-//	@failure	404		{object}	apperrors.ErrResponse
-//	@failure	500		{object}	apperrors.ErrResponse
+//	@param		versionId	path		uint					true	"Version identifier"
+//	@param		request		body		dto.UpdateVersionDto	true	"Update a version"
+//	@success	200			{object}	dto.VersionResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	404			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/versions/{versionId} [put]
 func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request) {
 	version := getVersion(r.Context())
@@ -168,7 +168,7 @@ func (c *VersionController) UpdateVersion(w http.ResponseWriter, r *http.Request
 //	@summary	Delete a version
 //	@tags		versions
 //	@accept		json
-//	@param		id	path	uint	true	"Version identifier"
+//	@param		versionId	path	uint	true	"Version identifier"
 //	@success	204
 //	@failure	404	{object}	apperrors.ErrResponse
 //	@failure	500	{object}	apperrors.ErrResponse
@@ -190,8 +190,8 @@ func (c *VersionController) DeleteVersion(w http.ResponseWriter, r *http.Request
 //	@summary	Attaches a file to a version
 //	@tags		versions
 //	@accept		json
-//	@param		id		path	uint						true	"Version identifier"
-//	@param		request	body	dto.AttachFileToVersionDto	true	"File to attach"
+//	@param		versionId	path	uint						true	"Version identifier"
+//	@param		request		body	dto.AttachFileToVersionDto	true	"File to attach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@failure	404	{object}	apperrors.ErrResponse
@@ -220,8 +220,8 @@ func (c *VersionController) AttachFileToVersion(w http.ResponseWriter, r *http.R
 //	@summary	Detach a file from a version
 //	@tags		versions
 //	@accept		json
-//	@param		id		path	uint							true	"Version identifier"
-//	@param		request	body	dto.DetachFileFromVersionDto	true	"File to detach"
+//	@param		versionId	path	uint							true	"Version identifier"
+//	@param		request		body	dto.DetachFileFromVersionDto	true	"File to detach"
 //	@success	204
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@failure	404	{object}	apperrors.ErrResponse

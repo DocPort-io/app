@@ -6,6 +6,53 @@ import (
 	"time"
 )
 
+type PaginationParams struct {
+	Limit  int64
+	Offset int64
+}
+
+type FindAllProjectsParams struct {
+	*PaginationParams
+}
+
+type FindAllProjectsResult struct {
+	Projects []*database.ListProjectsWithLocationsRow
+	Total    int64
+	Limit    int64
+	Offset   int64
+}
+
+type FindProjectByIdParams struct {
+	ID int64
+}
+
+type FindProjectByIdResult struct {
+	Project *database.Project
+}
+
+type CreateProjectParams struct {
+	Slug string
+	Name string
+}
+
+type CreateProjectResult struct {
+	Project *database.Project
+}
+
+type UpdateProjectParams struct {
+	Slug string
+	Name string
+	ID   int64
+}
+
+type UpdateProjectResult struct {
+	Project *database.Project
+}
+
+type DeleteProjectParams struct {
+	ID int64
+}
+
 type CreateProjectDto struct {
 	Slug string `json:"slug" binding:"required" example:"project-x"`
 	Name string `json:"name" binding:"required" example:"Project X"`
@@ -87,19 +134,23 @@ func ToListProjectsResponseProject(project *database.ListProjectsWithLocationsRo
 type ListProjectsResponseDto struct {
 	Projects []ListProjectsResponseProjectDto `json:"projects"`
 	Total    int64                            `json:"total" example:"1"`
+	Limit    int64                            `json:"limit" example:"100"`
+	Offset   int64                            `json:"offset" example:"0"`
 }
 
 func (l *ListProjectsResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListProjectsResponse(projects []*database.ListProjectsWithLocationsRow, total int64) *ListProjectsResponseDto {
-	projectResponseProjectDtos := make([]ListProjectsResponseProjectDto, len(projects))
-	for i, project := range projects {
+func ToListProjectsResponse(result *FindAllProjectsResult) *ListProjectsResponseDto {
+	projectResponseProjectDtos := make([]ListProjectsResponseProjectDto, len(result.Projects))
+	for i, project := range result.Projects {
 		projectResponseProjectDtos[i] = *ToListProjectsResponseProject(project)
 	}
 	return &ListProjectsResponseDto{
 		Projects: projectResponseProjectDtos,
-		Total:    total,
+		Total:    result.Total,
+		Limit:    result.Limit,
+		Offset:   result.Offset,
 	}
 }

@@ -74,7 +74,7 @@ func (s *filesystemStorage) Save(_ context.Context, relativePath string, data io
 	return nil
 }
 
-func (s *filesystemStorage) Retrieve(ctx context.Context, relativePath string) (io.ReadCloser, error) {
+func (s *filesystemStorage) Retrieve(ctx context.Context, relativePath string) (io.ReadSeekCloser, error) {
 	relativePath = filepath.FromSlash(relativePath)
 
 	file, err := s.root.Open(relativePath)

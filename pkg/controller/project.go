@@ -31,7 +31,7 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		project, err := c.projectService.FindProjectById(r.Context(), projectId)
+		projectResult, err := c.projectService.FindProjectById(r.Context(), &dto.FindProjectByIdParams{ID: projectId})
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNotFound) {
 				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
@@ -42,7 +42,7 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ProjectCtxKey, project)
+		ctx := context.WithValue(r.Context(), ProjectCtxKey, projectResult.Project)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -57,18 +57,38 @@ func getProject(ctx context.Context) *database.Project {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@success	200	{object}	dto.ListProjectsResponseDto
-//	@failure	400	{object}	apperrors.ErrResponse
-//	@failure	500	{object}	apperrors.ErrResponse
+//	@param		limit	query		int64	false	"Amount of results to return"
+//	@param		offset	query		int64	false	"Offset of results to return"
+//	@success	200		{object}	dto.ListProjectsResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
-	projects, total, err := c.projectService.FindAllProjects(r.Context())
+	limit, err := httputil.QueryParamInt64(r, "limit", false)
+	if err != nil {
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		return
+	}
+
+	offset, err := httputil.QueryParamInt64(r, "offset", false)
+	if err != nil {
+		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		return
+	}
+
+	if limit == 0 || limit > 100 {
+		limit = 100
+	}
+
+	projectsResult, err := c.projectService.FindAllProjects(r.Context(), &dto.FindAllProjectsParams{
+		PaginationParams: &dto.PaginationParams{Limit: limit, Offset: offset},
+	})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListProjectsResponse(projects, total))
+	httputil.Render(w, r, dto.ToListProjectsResponse(projectsResult))
 }
 
 // GetProject godoc
@@ -77,11 +97,11 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		id	path		uint	true	"Project identifier"
-//	@success	200	{object}	dto.ProjectResponseDto
-//	@failure	400	{object}	apperrors.ErrResponse
-//	@failure	404	{object}	apperrors.ErrResponse
-//	@failure	500	{object}	apperrors.ErrResponse
+//	@param		projectId	path		uint	true	"Project identifier"
+//	@success	200			{object}	dto.ProjectResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	404			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
@@ -106,14 +126,17 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	project, err := c.projectService.CreateProject(r.Context(), input)
+	projectResult, err := c.projectService.CreateProject(r.Context(), &dto.CreateProjectParams{
+		Name: input.Name,
+		Slug: input.Slug,
+	})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
 	render.Status(r, http.StatusCreated)
-	httputil.Render(w, r, dto.ToProjectResponse(project))
+	httputil.Render(w, r, dto.ToProjectResponse(projectResult.Project))
 }
 
 // UpdateProject godoc
@@ -122,12 +145,12 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		id		path		uint					true	"Project identifier"
-//	@param		request	body		dto.UpdateProjectDto	true	"Update a project"
-//	@success	200		{object}	dto.ProjectResponseDto
-//	@failure	400		{object}	apperrors.ErrResponse
-//	@failure	404		{object}	apperrors.ErrResponse
-//	@failure	500		{object}	apperrors.ErrResponse
+//	@param		projectId	path		uint					true	"Project identifier"
+//	@param		request		body		dto.UpdateProjectDto	true	"Update a project"
+//	@success	200			{object}	dto.ProjectResponseDto
+//	@failure	400			{object}	apperrors.ErrResponse
+//	@failure	404			{object}	apperrors.ErrResponse
+//	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [put]
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
@@ -141,13 +164,17 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	project, err := c.projectService.UpdateProject(r.Context(), project.ID, input)
+	projectResult, err := c.projectService.UpdateProject(r.Context(), &dto.UpdateProjectParams{
+		Slug: input.Slug,
+		Name: input.Name,
+		ID:   project.ID,
+	})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToProjectResponse(project))
+	httputil.Render(w, r, dto.ToProjectResponse(projectResult.Project))
 }
 
 // DeleteProject godoc
@@ -156,7 +183,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		id	path	uint	true	"Project identifier"
+//	@param		projectId	path	uint	true	"Project identifier"
 //	@success	204
 //	@failure	404	{object}	apperrors.ErrResponse
 //	@failure	500	{object}	apperrors.ErrResponse
@@ -164,7 +191,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
 
-	err := c.projectService.DeleteProject(r.Context(), project.ID)
+	err := c.projectService.DeleteProject(r.Context(), &dto.DeleteProjectParams{ID: project.ID})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return

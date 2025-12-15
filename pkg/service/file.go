@@ -10,11 +10,10 @@ import (
 	"errors"
 	"io"
 	"log"
-	"mime"
 	"mime/multipart"
 	"path"
-	"path/filepath"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )
 
@@ -28,7 +27,7 @@ type FileService interface {
 	FindFileById(ctx context.Context, id int64) (*database.File, error)
 	CreateFile(ctx context.Context, createFileDto *dto.CreateFileDto) (*database.File, error)
 	UploadFile(ctx context.Context, id int64, uploadFileDto *dto.UploadFileDto) (*database.File, error)
-	DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error)
+	DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadSeekCloser, error)
 	DeleteFile(ctx context.Context, id int64) error
 }
 
@@ -94,11 +93,14 @@ func (s *fileServiceImpl) UploadFile(ctx context.Context, id int64, uploadFileDt
 
 	assetPath := buildFileAssetPath("")
 
-	ext := filepath.Ext(uploadFileDto.FileHeader.Filename)
-	mimeType := mime.TypeByExtension(ext)
-	log.Printf("detected file type %s for file %s", mimeType, uploadFileDto.FileHeader.Filename)
-	if mimeType == "" {
-		mimeType = "application/octet-stream"
+	mimeType, err := mimetype.DetectReader(uploadFileDto.File)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = uploadFileDto.File.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
 	}
 
 	err = s.fileStorage.Save(ctx, assetPath, uploadFileDto.File)
@@ -106,11 +108,13 @@ func (s *fileServiceImpl) UploadFile(ctx context.Context, id int64, uploadFileDt
 		return nil, err
 	}
 
+	mimeTypeString := mimeType.String()
+
 	file, err = s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
 		ID:       id,
 		Size:     &uploadFileDto.FileHeader.Size,
 		Path:     &assetPath,
-		MimeType: &mimeType,
+		MimeType: &mimeTypeString,
 	})
 	if err != nil {
 		fileDeleteErr := s.fileStorage.Delete(ctx, assetPath)
@@ -123,7 +127,7 @@ func (s *fileServiceImpl) UploadFile(ctx context.Context, id int64, uploadFileDt
 	return file, nil
 }
 
-func (s *fileServiceImpl) DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadCloser, error) {
+func (s *fileServiceImpl) DownloadFile(ctx context.Context, id int64) (*database.File, io.ReadSeekCloser, error) {
 	file, err := s.FindFileById(ctx, id)
 	if err != nil {
 		return nil, nil, err

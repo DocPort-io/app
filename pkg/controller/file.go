@@ -87,11 +87,11 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 //	@tags		files
 //	@accept		json
 //	@produce	json
-//	@param		id	path		uint	true	"File identifier"
-//	@success	200	{object}	dto.FileResponseDto
-//	@failure	400	{object}	apperrors.ErrResponse
-//	@failure	404	{object}	apperrors.ErrResponse
-//	@failure	500	{object}	apperrors.ErrResponse
+//	@param		fileId	path		uint	true	"File identifier"
+//	@success	200		{object}	dto.FileResponseDto
+//	@failure	400		{object}	apperrors.ErrResponse
+//	@failure	404		{object}	apperrors.ErrResponse
+//	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/files/{fileId} [get]
 func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
@@ -132,7 +132,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 //	@tags		files
 //	@accept		multipart/form-data
 //	@produce	json
-//	@param		id		path		uint	true	"File identifier"
+//	@param		fileId	path		uint	true	"File identifier"
 //	@param		file	formData	file	true	"File to upload"
 //	@success	201		{object}	dto.FileResponseDto
 //	@failure	400		{object}	apperrors.ErrResponse
@@ -173,7 +173,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 //	@summary	Download a file
 //	@tags		files
 //	@accept		json
-//	@param		id	path	uint	true	"File identifier"
+//	@param		fileId	path	uint	true	"File identifier"
 //	@success	200
 //	@failure	400	{object}	apperrors.ErrResponse
 //	@failure	404	{object}	apperrors.ErrResponse
@@ -192,7 +192,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
-	defer func(reader io.ReadCloser) {
+	defer func(reader io.ReadSeekCloser) {
 		err := reader.Close()
 		if err != nil {
 			log.Printf("error closing file reader: %v", err)
@@ -213,11 +213,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
 
-	_, err = io.Copy(w, reader)
-	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
-		return
-	}
+	http.ServeContent(w, r, file.Name, file.UpdatedAt, reader)
 }
 
 // DeleteFile godoc
@@ -226,7 +222,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 //	@tags		files
 //	@accept		json
 //	@produce	json
-//	@param		id	path	uint	true	"File identifier"
+//	@param		fileId	path	uint	true	"File identifier"
 //	@success	204
 //	@failure	404	{object}	apperrors.ErrResponse
 //	@failure	500	{object}	apperrors.ErrResponse

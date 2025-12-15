@@ -21,7 +21,7 @@ type WalkFunc func(info ObjectInfo) error
 
 type FileStorage interface {
 	Save(ctx context.Context, relativePath string, data io.Reader) error
-	Retrieve(ctx context.Context, relativePath string) (io.ReadCloser, error)
+	Retrieve(ctx context.Context, relativePath string) (io.ReadSeekCloser, error)
 	Delete(ctx context.Context, relativePath string) error
 	List(ctx context.Context, root string) ([]ObjectInfo, error)
 	Walk(ctx context.Context, root string, walkFunc WalkFunc) error

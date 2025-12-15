@@ -17,7 +17,8 @@ SELECT projects.*,
        locations.lon  AS location_lon
 FROM projects
          LEFT JOIN locations ON locations.id = projects.location_id
-ORDER BY projects.created_at DESC;
+ORDER BY projects.created_at DESC
+LIMIT ? OFFSET ?;
 
 -- name: CreateProject :one
 INSERT INTO projects (slug, name, location_id)
