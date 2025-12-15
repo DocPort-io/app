@@ -27,7 +27,8 @@ RETURNING *;
 
 -- name: UpdateProject :one
 UPDATE projects
-SET slug        = ?,
+SET updated_at  = current_timestamp,
+    slug        = ?,
     name        = ?,
     location_id = ?
 WHERE id = ?
@@ -64,7 +65,8 @@ RETURNING *;
 
 -- name: UpdateVersion :one
 UPDATE versions
-SET name        = ?,
+SET updated_at  = current_timestamp,
+    name        = ?,
     description = ?
 WHERE id = ?
 RETURNING *;
@@ -109,7 +111,8 @@ RETURNING *;
 
 -- name: UpdateFileWithUploadedFile :one
 UPDATE files
-SET size        = ?,
+SET updated_at  = current_timestamp,
+    size        = ?,
     path        = ?,
     mime_type   = ?,
     is_complete = TRUE
