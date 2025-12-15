@@ -2,10 +2,63 @@ package dto
 
 import (
 	"app/pkg/database"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"time"
 )
+
+// Service layer
+
+type FindAllFilesParams struct {
+	VersionID int64
+}
+
+type FindAllFilesResult struct {
+	Files []*database.File
+	Total int64
+}
+
+type FindFileByIdParams struct {
+	ID int64
+}
+
+type FindFileByIdResult struct {
+	File *database.File
+}
+
+type CreateFileParams struct {
+	Name string
+}
+
+type CreateFileResult struct {
+	File *database.File
+}
+
+type UploadFileParams struct {
+	ID         int64
+	File       multipart.File
+	FileHeader *multipart.FileHeader
+}
+
+type UploadFileResult struct {
+	File *database.File
+}
+
+type DownloadFileParams struct {
+	ID int64
+}
+
+type DownloadFileResult struct {
+	File   *database.File
+	Reader io.ReadSeekCloser
+}
+
+type DeleteFileParams struct {
+	ID int64
+}
+
+// Controller layer
 
 type CreateFileDto struct {
 	Name string `json:"name" binding:"required" example:"example.pdf"`

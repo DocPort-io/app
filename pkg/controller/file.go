@@ -35,7 +35,7 @@ func (c *FileController) FileCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		file, err := c.fileService.FindFileById(r.Context(), fileId)
+		findRes, err := c.fileService.FindFileById(r.Context(), &dto.FindFileByIdParams{ID: fileId})
 		if err != nil {
 			if errors.Is(err, apperrors.ErrNotFound) {
 				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
@@ -46,7 +46,7 @@ func (c *FileController) FileCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), FileCtxKey, file)
+		ctx := context.WithValue(r.Context(), FileCtxKey, findRes.File)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -73,13 +73,13 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files, total, err := c.fileService.FindAllFiles(r.Context(), versionId)
+	result, err := c.fileService.FindAllFiles(r.Context(), &dto.FindAllFilesParams{VersionID: versionId})
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListFilesResponse(files, total))
+	httputil.Render(w, r, dto.ToListFilesResponse(result.Files, result.Total))
 }
 
 // GetFile godoc
@@ -117,14 +117,15 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := c.fileService.CreateFile(r.Context(), input)
+	createParams := &dto.CreateFileParams{Name: input.Name}
+	createResult, err := c.fileService.CreateFile(r.Context(), createParams)
 	if err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
 		return
 	}
 
 	render.Status(r, http.StatusCreated)
-	httputil.Render(w, r, dto.ToFileResponse(file))
+	httputil.Render(w, r, dto.ToFileResponse(createResult.File))
 }
 
 // UploadFile godoc
@@ -152,9 +153,8 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uploadFileDto := &dto.UploadFileDto{File: multipartFile, FileHeader: multipartFileHeader}
-
-	file, err = c.fileService.UploadFile(r.Context(), file.ID, uploadFileDto)
+	uploadParams := &dto.UploadFileParams{ID: file.ID, File: multipartFile, FileHeader: multipartFileHeader}
+	uploadResult, err := c.fileService.UploadFile(r.Context(), uploadParams)
 	if err != nil {
 		if errors.Is(err, service.ErrFileAlreadyExists) {
 			httputil.Render(w, r, apperrors.ErrHTTPConflictError(err))
@@ -166,7 +166,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.Status(r, http.StatusCreated)
-	httputil.Render(w, r, dto.ToFileResponse(file))
+	httputil.Render(w, r, dto.ToFileResponse(uploadResult.File))
 }
 
 // DownloadFile godoc
@@ -183,7 +183,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
 
-	file, reader, err := c.fileService.DownloadFile(r.Context(), file.ID)
+	downloadResult, err := c.fileService.DownloadFile(r.Context(), &dto.DownloadFileParams{ID: file.ID})
 	if err != nil {
 		if errors.Is(err, service.ErrIncompleteFile) {
 			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
@@ -198,23 +198,23 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error closing file reader: %v", err)
 		}
-	}(reader)
+	}(downloadResult.Reader)
 
 	contentType := "application/octet-stream"
-	if file.MimeType != nil {
-		contentType = *file.MimeType
+	if downloadResult.File.MimeType != nil {
+		contentType = *downloadResult.File.MimeType
 	}
 
 	contentLength := int64(0)
-	if file.Size != nil {
-		contentLength = *file.Size
+	if downloadResult.File.Size != nil {
+		contentLength = *downloadResult.File.Size
 	}
 
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", downloadResult.File.Name))
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
 
-	http.ServeContent(w, r, file.Name, file.UpdatedAt, reader)
+	http.ServeContent(w, r, downloadResult.File.Name, downloadResult.File.UpdatedAt, downloadResult.Reader)
 }
 
 // DeleteFile godoc
@@ -231,7 +231,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	file := getFile(r.Context())
 
-	err := c.fileService.DeleteFile(r.Context(), file.ID)
+	err := c.fileService.DeleteFile(r.Context(), &dto.DeleteFileParams{ID: file.ID})
 	if err != nil {
 		log.Printf("error deleting file: %v", err)
 		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
