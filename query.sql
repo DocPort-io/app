@@ -1,7 +1,12 @@
 -- Projects
 
 -- name: GetProject :one
-SELECT *
+SELECT id,
+       created_at,
+       updated_at,
+       slug,
+       name,
+       location_id
 FROM projects
 WHERE id = ?
 LIMIT 1;
@@ -11,7 +16,12 @@ SELECT count(projects.id)
 FROM projects;
 
 -- name: ListProjectsWithLocations :many
-SELECT projects.*,
+SELECT projects.id,
+       projects.created_at,
+       projects.updated_at,
+       projects.slug,
+       projects.name,
+       projects.location_id,
        locations.name AS location_name,
        locations.lat  AS location_lat,
        locations.lon  AS location_lon
@@ -54,7 +64,12 @@ ORDER BY created_at DESC
 LIMIT ? OFFSET ?;
 
 -- name: GetVersion :one
-SELECT *
+SELECT id,
+       created_at,
+       updated_at,
+       name,
+       description,
+       project_id
 FROM versions
 WHERE id = ?
 LIMIT 1;
@@ -80,7 +95,13 @@ WHERE id = ?;
 -- Locations
 
 -- name: ListLocations :many
-SELECT *
+SELECT id,
+       created_at,
+       updated_at,
+       name,
+       address,
+       lat,
+       lon
 FROM locations
 ORDER BY created_at DESC;
 
@@ -93,7 +114,14 @@ FROM files
 WHERE versions_files.version_id = ?;
 
 -- name: ListFilesByVersionId :many
-SELECT files.*
+SELECT files.id,
+       files.created_at,
+       files.updated_at,
+       files.name,
+       files.size,
+       files.path,
+       files.mime_type,
+       files.is_complete
 FROM files
          INNER JOIN versions_files ON files.id = versions_files.file_id
 WHERE versions_files.version_id = ?
@@ -101,7 +129,14 @@ ORDER BY files.created_at DESC
 LIMIT ? OFFSET ?;
 
 -- name: GetFile :one
-SELECT *
+SELECT id,
+       created_at,
+       updated_at,
+       name,
+       size,
+       path,
+       mime_type,
+       is_complete
 FROM files
 WHERE id = ?
 LIMIT 1;

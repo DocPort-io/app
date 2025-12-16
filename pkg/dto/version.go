@@ -124,7 +124,7 @@ func ToVersionResponse(version *database.Version) *VersionResponse {
 	}
 }
 
-type listVersionsResponseVersion struct {
+type ListVersionsResponseVersion struct {
 	ID        int64  `json:"id" example:"1"`
 	CreatedAt string `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -132,8 +132,8 @@ type listVersionsResponseVersion struct {
 	ProjectId int64  `json:"projectId" example:"1"`
 }
 
-func toListVersionsResponseVersion(version *database.Version) *listVersionsResponseVersion {
-	return &listVersionsResponseVersion{
+func ToListVersionsResponseVersion(version *database.Version) *ListVersionsResponseVersion {
+	return &ListVersionsResponseVersion{
 		ID:        version.ID,
 		CreatedAt: version.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: version.UpdatedAt.Format(time.RFC3339),
@@ -143,7 +143,7 @@ func toListVersionsResponseVersion(version *database.Version) *listVersionsRespo
 }
 
 type ListVersionsResponse struct {
-	Versions []listVersionsResponseVersion `json:"versions"`
+	Versions []ListVersionsResponseVersion `json:"versions"`
 	Total    int64                         `json:"total" example:"1"`
 	Limit    int64                         `json:"limit" example:"100"`
 	Offset   int64                         `json:"offset" example:"0"`
@@ -154,9 +154,9 @@ func (l *ListVersionsResponse) Render(w http.ResponseWriter, r *http.Request) er
 }
 
 func ToListVersionsResponse(result *FindAllVersionsResult) *ListVersionsResponse {
-	versionsResponseVersionDtos := make([]listVersionsResponseVersion, len(result.Versions))
+	versionsResponseVersionDtos := make([]ListVersionsResponseVersion, len(result.Versions))
 	for i, version := range result.Versions {
-		versionsResponseVersionDtos[i] = *toListVersionsResponseVersion(version)
+		versionsResponseVersionDtos[i] = *ToListVersionsResponseVersion(version)
 	}
 	return &ListVersionsResponse{
 		Versions: versionsResponseVersionDtos,

@@ -111,7 +111,7 @@ func ToListProjectsResponseProjectLocation(project *database.ListProjectsWithLoc
 	}
 }
 
-type listProjectsResponseProject struct {
+type ListProjectsResponseProject struct {
 	ID        int64                                `json:"id" example:"1"`
 	CreatedAt string                               `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt string                               `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -120,8 +120,8 @@ type listProjectsResponseProject struct {
 	Location  *ListProjectsResponseProjectLocation `json:"location"`
 }
 
-func toListProjectsResponseProject(project *database.ListProjectsWithLocationsRow) *listProjectsResponseProject {
-	return &listProjectsResponseProject{
+func ToListProjectsResponseProject(project *database.ListProjectsWithLocationsRow) *ListProjectsResponseProject {
+	return &ListProjectsResponseProject{
 		ID:        project.ID,
 		CreatedAt: project.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
@@ -132,7 +132,7 @@ func toListProjectsResponseProject(project *database.ListProjectsWithLocationsRo
 }
 
 type ListProjectsResponse struct {
-	Projects []listProjectsResponseProject `json:"projects"`
+	Projects []ListProjectsResponseProject `json:"projects"`
 	Total    int64                         `json:"total" example:"1"`
 	Limit    int64                         `json:"limit" example:"100"`
 	Offset   int64                         `json:"offset" example:"0"`
@@ -143,9 +143,9 @@ func (l *ListProjectsResponse) Render(w http.ResponseWriter, r *http.Request) er
 }
 
 func ToListProjectsResponse(result *FindAllProjectsResult) *ListProjectsResponse {
-	listProjectsResponseProjects := make([]listProjectsResponseProject, len(result.Projects))
+	listProjectsResponseProjects := make([]ListProjectsResponseProject, len(result.Projects))
 	for i, project := range result.Projects {
-		listProjectsResponseProjects[i] = *toListProjectsResponseProject(project)
+		listProjectsResponseProjects[i] = *ToListProjectsResponseProject(project)
 	}
 	return &ListProjectsResponse{
 		Projects: listProjectsResponseProjects,
