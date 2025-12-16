@@ -176,31 +176,54 @@ func TestVersionController_FindAllVersions(t *testing.T) {
 	versionService.AssertExpectations(t)
 }
 
-func TestVersionController_CreateUpdateDelete(t *testing.T) {
+func TestVersionController_CreateVersion(t *testing.T) {
+	// Arrange
 	r, svc := setupFixtures()
+	svc.On("CreateVersion", mock.Anything, mock.AnythingOfType("*dto.CreateVersionParams")).Return(
+		&dto.CreateVersionResult{Version: &database.Version{ID: 11, ProjectID: 5, Name: "v"}}, nil,
+	)
 
-	// Create
-	svc.On("CreateVersion", mock.Anything, mock.AnythingOfType("*dto.CreateVersionParams")).Return(&dto.CreateVersionResult{Version: &database.Version{ID: 11, ProjectID: 5, Name: "v"}}, nil)
-	reqC := newJSONRequest(t, http.MethodPost, "/", `{"name":"v","projectId":5}`)
-	wC := httptest.NewRecorder()
-	r.ServeHTTP(wC, reqC)
-	assert.Equal(t, http.StatusCreated, wC.Code)
+	// Act
+	req := newJSONRequest(t, http.MethodPost, "/", `{"name":"v","projectId":5}`)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
 
-	// Update
-	svc.ExpectedCalls = nil
-	svc.On("FindVersionById", mock.Anything, int64(7)).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 7, Name: "old"}}, nil)
-	svc.On("UpdateVersion", mock.Anything, mock.AnythingOfType("*dto.UpdateVersionParams")).Return(&dto.UpdateVersionResult{Version: &database.Version{ID: 7, Name: "new"}}, nil)
-	reqU := newJSONRequest(t, http.MethodPut, "/7", `{"name":"new"}`)
-	wU := httptest.NewRecorder()
-	r.ServeHTTP(wU, reqU)
-	assert.Equal(t, http.StatusOK, wU.Code)
+	// Assert
+	assert.Equal(t, http.StatusCreated, w.Code)
+}
 
-	// Delete
-	svc.ExpectedCalls = nil
-	svc.On("FindVersionById", mock.Anything, int64(8)).Return(&dto.FindVersionByIdResult{Version: &database.Version{ID: 8}}, nil)
+func TestVersionController_UpdateVersion(t *testing.T) {
+	// Arrange
+	r, svc := setupFixtures()
+	svc.On("FindVersionById", mock.Anything, int64(7)).Return(
+		&dto.FindVersionByIdResult{Version: &database.Version{ID: 7, Name: "old"}}, nil,
+	)
+	svc.On("UpdateVersion", mock.Anything, mock.AnythingOfType("*dto.UpdateVersionParams")).Return(
+		&dto.UpdateVersionResult{Version: &database.Version{ID: 7, Name: "new"}}, nil,
+	)
+
+	// Act
+	req := newJSONRequest(t, http.MethodPut, "/7", `{"name":"new"}`)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestVersionController_DeleteVersion(t *testing.T) {
+	// Arrange
+	r, svc := setupFixtures()
+	svc.On("FindVersionById", mock.Anything, int64(8)).Return(
+		&dto.FindVersionByIdResult{Version: &database.Version{ID: 8}}, nil,
+	)
 	svc.On("DeleteVersion", mock.Anything, mock.AnythingOfType("*dto.DeleteVersionParams")).Return(nil)
-	reqD := newJSONRequest(t, http.MethodDelete, "/8", "")
-	wD := httptest.NewRecorder()
-	r.ServeHTTP(wD, reqD)
-	assert.Equal(t, http.StatusNoContent, wD.Code)
+
+	// Act
+	req := newJSONRequest(t, http.MethodDelete, "/8", "")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }
