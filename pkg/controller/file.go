@@ -65,7 +65,7 @@ func getFile(ctx context.Context) *database.File {
 //	@param		versionId	query		uint	false	"Version identifier"
 //	@param		limit		query		uint	false	"Max items per page (1-100)"
 //	@param		offset		query		uint	false	"Items to skip before starting to collect the result set"
-//	@success	200			{object}	dto.ListFilesResponseDto
+//	@success	200			{object}	dto.ListFilesResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/files [get]
@@ -94,7 +94,7 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 //	@accept		json
 //	@produce	json
 //	@param		fileId	path		uint	true	"File identifier"
-//	@success	200		{object}	dto.FileResponseDto
+//	@success	200		{object}	dto.FileResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	404		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
@@ -110,13 +110,13 @@ func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 //	@tags		files
 //	@accept		json
 //	@produce	json
-//	@param		request	body		dto.CreateFileDto	true	"Create a file"
-//	@success	201		{object}	dto.FileResponseDto
+//	@param		request	body		dto.CreateFileRequest	true	"Create a file"
+//	@success	201		{object}	dto.FileResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/files [post]
 func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
-	input := &dto.CreateFileDto{}
+	input := &dto.CreateFileRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 		return
@@ -141,7 +141,7 @@ func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 //	@produce	json
 //	@param		fileId	path		uint	true	"File identifier"
 //	@param		file	formData	file	true	"File to upload"
-//	@success	201		{object}	dto.FileResponseDto
+//	@success	201		{object}	dto.FileResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	404		{object}	apperrors.ErrResponse
 //	@failure	409		{object}	apperrors.ErrResponse

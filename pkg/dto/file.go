@@ -64,20 +64,20 @@ type DeleteFileParams struct {
 
 // Controller layer
 
-type CreateFileDto struct {
+type CreateFileRequest struct {
 	Name string `json:"name" binding:"required" example:"example.pdf"`
 }
 
-func (c *CreateFileDto) Bind(r *http.Request) error {
+func (c *CreateFileRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-type UploadFileDto struct {
+type UploadFileRequest struct {
 	File       multipart.File
 	FileHeader *multipart.FileHeader
 }
 
-type FileResponseDto struct {
+type FileResponse struct {
 	ID         int64   `json:"id" example:"1"`
 	CreatedAt  string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt  string  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -87,12 +87,12 @@ type FileResponseDto struct {
 	IsComplete bool    `json:"isComplete" example:"false"`
 }
 
-func (f *FileResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (f *FileResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToFileResponse(file *database.File) *FileResponseDto {
-	return &FileResponseDto{
+func ToFileResponse(file *database.File) *FileResponse {
+	return &FileResponse{
 		ID:         file.ID,
 		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
@@ -103,7 +103,7 @@ func ToFileResponse(file *database.File) *FileResponseDto {
 	}
 }
 
-type ListFilesResponseFileDto struct {
+type listFilesResponseFile struct {
 	ID         int64   `json:"id" example:"1"`
 	CreatedAt  string  `json:"createdAt" example:"2026-01-01T00:00:00.000Z"`
 	UpdatedAt  string  `json:"updatedAt" example:"2026-01-01T00:00:00.000Z"`
@@ -113,8 +113,8 @@ type ListFilesResponseFileDto struct {
 	IsComplete bool    `json:"isComplete" example:"false"`
 }
 
-func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
-	return &ListFilesResponseFileDto{
+func toListFilesResponseFile(file *database.File) *listFilesResponseFile {
+	return &listFilesResponseFile{
 		ID:         file.ID,
 		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
@@ -125,23 +125,23 @@ func ToListFilesResponseFile(file *database.File) *ListFilesResponseFileDto {
 	}
 }
 
-type ListFilesResponseDto struct {
-	Files  []ListFilesResponseFileDto `json:"files"`
-	Total  int64                      `json:"total" example:"1"`
-	Limit  int64                      `json:"limit" example:"100"`
-	Offset int64                      `json:"offset" example:"0"`
+type ListFilesResponse struct {
+	Files  []listFilesResponseFile `json:"files"`
+	Total  int64                   `json:"total" example:"1"`
+	Limit  int64                   `json:"limit" example:"100"`
+	Offset int64                   `json:"offset" example:"0"`
 }
 
-func (l *ListFilesResponseDto) Render(w http.ResponseWriter, r *http.Request) error {
+func (l *ListFilesResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func ToListFilesResponse(result *FindAllFilesResult) *ListFilesResponseDto {
-	listFilesResponseFileDtos := make([]ListFilesResponseFileDto, len(result.Files))
+func ToListFilesResponse(result *FindAllFilesResult) *ListFilesResponse {
+	listFilesResponseFileDtos := make([]listFilesResponseFile, len(result.Files))
 	for i, file := range result.Files {
-		listFilesResponseFileDtos[i] = *ToListFilesResponseFile(file)
+		listFilesResponseFileDtos[i] = *toListFilesResponseFile(file)
 	}
-	return &ListFilesResponseDto{
+	return &ListFilesResponse{
 		Files:  listFilesResponseFileDtos,
 		Total:  result.Total,
 		Limit:  result.Limit,
