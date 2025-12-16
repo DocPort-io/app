@@ -5,7 +5,6 @@ import (
 	"app/pkg/database"
 	"app/pkg/service"
 	"app/pkg/storage"
-	"database/sql"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -13,7 +12,7 @@ import (
 	"github.com/go-chi/render"
 )
 
-func NewServer(db *sql.DB, queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
+func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Heartbeat("/heartbeat"))

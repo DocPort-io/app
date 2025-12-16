@@ -36,8 +36,8 @@ func run(ctx context.Context) error {
 	}
 
 	fileStorage := app.NewFileStorage(storage.Type(viper.GetString("storage.provider")))
-	db, queries := app.NewDatabase()
-	srv := app.NewServer(db, queries, fileStorage)
+	queries := app.NewDatabase()
+	srv := app.NewServer(queries, fileStorage)
 
 	httpServer := &http.Server{
 		Addr:    net.JoinHostPort(viper.GetString("server.bind"), viper.GetString("server.port")),

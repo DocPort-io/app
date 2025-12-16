@@ -20,7 +20,7 @@ import (
 	"app/pkg/database"
 )
 
-func NewDatabase() (*sql.DB, *database.Queries) {
+func NewDatabase() *database.Queries {
 	databaseDriver := viper.GetString("database.driver")
 	databaseUrl := viper.GetString("database.url")
 
@@ -57,5 +57,5 @@ func NewDatabase() (*sql.DB, *database.Queries) {
 
 	queries := database.New(db)
 
-	return db, queries
+	return queries
 }
