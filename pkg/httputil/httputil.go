@@ -16,15 +16,17 @@ var (
 	ErrParamInvalid  = errors.New("invalid parameter format")
 )
 
+const errorKeyFormat = "%w: %s"
+
 func URLParamInt64(request *http.Request, key string) (int64, error) {
 	value := chi.URLParam(request, key)
 	if value == "" {
-		return 0, fmt.Errorf("%w: %s", ErrParamRequired, key)
+		return 0, fmt.Errorf(errorKeyFormat, ErrParamRequired, key)
 	}
 
 	intValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %s", ErrParamInvalid, key)
+		return 0, fmt.Errorf(errorKeyFormat, ErrParamInvalid, key)
 	}
 
 	return intValue, nil
@@ -33,13 +35,13 @@ func URLParamInt64(request *http.Request, key string) (int64, error) {
 func QueryParamInt64(request *http.Request, key string) (int64, error) {
 	value := request.URL.Query().Get(key)
 	if value == "" {
-		return 0, fmt.Errorf("%w: %s", ErrParamRequired, key)
+		return 0, fmt.Errorf(errorKeyFormat, ErrParamRequired, key)
 
 	}
 
 	intValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %s", ErrParamInvalid, key)
+		return 0, fmt.Errorf(errorKeyFormat, ErrParamInvalid, key)
 	}
 
 	return intValue, nil
@@ -53,7 +55,7 @@ func QueryParamInt64WithDefault(request *http.Request, key string, defaultValue 
 
 	intValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %s", ErrParamInvalid, key)
+		return 0, fmt.Errorf(errorKeyFormat, ErrParamInvalid, key)
 	}
 
 	return intValue, nil
