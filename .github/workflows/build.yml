@@ -25,6 +25,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           go version
+          go generate ./...
           go test ./... -v -coverprofile=coverage.out
 
       - name: SonarQube Scan
