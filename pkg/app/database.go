@@ -12,7 +12,6 @@ import (
 	// Import for migration source "file" registration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/spf13/viper"
 
 	// Import for database driver "sqlite" registration
 	_ "modernc.org/sqlite"
@@ -20,9 +19,9 @@ import (
 	"app/pkg/database"
 )
 
-func NewDatabase() *database.Queries {
-	databaseDriver := viper.GetString("database.driver")
-	databaseUrl := viper.GetString("database.url")
+func NewDatabase(cfg *Config) *database.Queries {
+	databaseDriver := cfg.Database.Driver
+	databaseUrl := cfg.Database.URL
 
 	db, err := sql.Open(databaseDriver, databaseUrl)
 	if err != nil {

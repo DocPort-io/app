@@ -4,13 +4,12 @@ import (
 	"app/pkg/storage"
 	"fmt"
 	"log"
-
-	"github.com/spf13/viper"
 )
 
-func NewFileStorage(backend storage.Type) storage.FileStorage {
+func NewFileStorage(cfg *Config) storage.FileStorage {
+	backend := storage.Type(cfg.Storage.Provider)
 	if backend == storage.TypeFileSystem {
-		fileStorage, err := storage.NewFilesystemStorage(viper.GetString("storage.path"))
+		fileStorage, err := storage.NewFilesystemStorage(cfg.Storage.Path)
 		if err != nil {
 			log.Fatalf("failed to initialize file storage backend %s: %s\n", backend, err)
 		}
