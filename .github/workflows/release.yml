@@ -15,6 +15,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    env:
+      SQLC_VERSION: v1.30.0
+      SWAG_VERSION: v1.16.6
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -64,7 +67,7 @@ jobs:
       - name: Install Syft (for SBOM generation)
         shell: bash
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
+          curl --proto "=https" -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
             | sudo sh -s -- -b /usr/local/bin
 
       - name: Log in to GHCR
