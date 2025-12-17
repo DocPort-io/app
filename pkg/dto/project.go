@@ -5,6 +5,8 @@ import (
 	"app/pkg/paginate"
 	"net/http"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // Service layer
@@ -54,12 +56,13 @@ type DeleteProjectParams struct {
 // Controller layer
 
 type CreateProjectRequest struct {
-	Slug string `json:"slug" binding:"required" example:"project-x"`
-	Name string `json:"name" binding:"required" example:"Project X"`
+	Slug string `json:"slug" validate:"required" example:"project-x"`
+	Name string `json:"name" validate:"required" example:"Project X"`
 }
 
 func (c *CreateProjectRequest) Bind(r *http.Request) error {
-	return nil
+	v := validator.New(validator.WithRequiredStructEnabled())
+	return v.Struct(c)
 }
 
 type UpdateProjectRequest struct {
@@ -68,7 +71,9 @@ type UpdateProjectRequest struct {
 }
 
 func (u *UpdateProjectRequest) Bind(r *http.Request) error {
-	return nil
+	// No required constraints, but keep a validator call for consistency
+	v := validator.New(validator.WithRequiredStructEnabled())
+	return v.Struct(u)
 }
 
 type ProjectResponse struct {

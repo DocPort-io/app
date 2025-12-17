@@ -5,6 +5,8 @@ import (
 	"app/pkg/paginate"
 	"net/http"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // Service layer
@@ -66,13 +68,14 @@ type DetachFileFromVersionParams struct {
 // Controller layer
 
 type CreateVersionRequest struct {
-	Name        string  `json:"name" binding:"required" example:"v0.0.1"`
+	Name        string  `json:"name" validate:"required" example:"v0.0.1"`
 	Description *string `json:"description" example:"First version of the project"`
-	ProjectId   int64   `json:"projectId" example:"1"`
+	ProjectId   int64   `json:"projectId" validate:"required,gt=0" example:"1"`
 }
 
 func (v *CreateVersionRequest) Bind(r *http.Request) error {
-	return nil
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	return validate.Struct(v)
 }
 
 type UpdateVersionRequest struct {
@@ -81,23 +84,26 @@ type UpdateVersionRequest struct {
 }
 
 func (v *UpdateVersionRequest) Bind(r *http.Request) error {
-	return nil
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	return validate.Struct(v)
 }
 
 type AttachFileToVersionRequest struct {
-	FileId int64 `json:"fileId" example:"1"`
+	FileId int64 `json:"fileId" validate:"required,gt=0" example:"1"`
 }
 
 func (v *AttachFileToVersionRequest) Bind(r *http.Request) error {
-	return nil
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	return validate.Struct(v)
 }
 
 type DetachFileFromVersionRequest struct {
-	FileId int64 `json:"fileId" example:"1"`
+	FileId int64 `json:"fileId" validate:"required,gt=0" example:"1"`
 }
 
 func (v *DetachFileFromVersionRequest) Bind(r *http.Request) error {
-	return nil
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	return validate.Struct(v)
 }
 
 type VersionResponse struct {

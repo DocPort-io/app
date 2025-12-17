@@ -7,6 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // Service layer
@@ -65,11 +67,12 @@ type DeleteFileParams struct {
 // Controller layer
 
 type CreateFileRequest struct {
-	Name string `json:"name" binding:"required" example:"example.pdf"`
+	Name string `json:"name" validate:"required" example:"example.pdf"`
 }
 
 func (c *CreateFileRequest) Bind(r *http.Request) error {
-	return nil
+	v := validator.New(validator.WithRequiredStructEnabled())
+	return v.Struct(c)
 }
 
 type UploadFileRequest struct {
