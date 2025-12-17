@@ -77,6 +77,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute lowercase repo for image names
+        shell: bash
+        run: |
+          echo "IMAGE_REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a
         with:
@@ -85,12 +90,12 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          IMAGE_REPO_LC: ${{ toLower(github.repository) }}
+          IMAGE_REPO_LC: ${{ env.IMAGE_REPO_LC }}
 
       - name: Attest container image (provenance)
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/${{ toLower(github.repository) }}:${{ github.ref_name }}
+          subject-name: ghcr.io/${{ env.IMAGE_REPO_LC }}:${{ github.ref_name }}
           push-to-registry: true
 
       - name: Attest build artifacts (provenance)
