@@ -5,6 +5,7 @@ FROM cgr.dev/chainguard/static:latest AS runtime
 ARG TARGETPLATFORM
 
 ENV HOME /home/nonroot
+WORKDIR /home/nonroot
 
 COPY config.example.toml /etc/docport/config.toml
 
