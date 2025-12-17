@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -74,13 +72,6 @@ func validateConfig(cfg *Config) error {
 		return fmt.Errorf("server.port invalid: %w", err)
 	}
 
-	// Validate storage.path exists and is a directory (only for filesystem provider)
-	if cfg.Storage.Provider == "filesystem" {
-		if err := ensureDirExists(cfg.Storage.Path); err != nil {
-			return fmt.Errorf("storage.path invalid: %w", err)
-		}
-	}
-
 	// Validate database DSN by attempting to open and ping
 	if err := validateDatabaseDSN(cfg.Database.Driver, cfg.Database.URL); err != nil {
 		return fmt.Errorf("database URL invalid: %w", err)
@@ -99,29 +90,6 @@ func parsePort(p string) (int, error) {
 	}
 	// successful resolution implies numeric 1..65535; return dummy value
 	return 0, nil
-}
-
-func ensureDirExists(path string) error {
-	if path == "" {
-		return errors.New("path is empty")
-	}
-	abs := path
-	if !filepath.IsAbs(path) {
-		if a, err := filepath.Abs(path); err == nil {
-			abs = a
-		}
-	}
-	info, err := os.Stat(abs)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("directory does not exist: %s", abs)
-		}
-		return err
-	}
-	if !info.IsDir() {
-		return fmt.Errorf("not a directory: %s", abs)
-	}
-	return nil
 }
 
 func validateDatabaseDSN(driver, dsn string) error {
