@@ -88,12 +88,11 @@ jobs:
           IMAGE_REPO_LC: ${{ env.IMAGE_REPO_LC }}
 
       - name: Attest container image (provenance)
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
-          subject-path: 'dist/digests.txt'
-          push-to-registry: true
+          subject-checksums: './dist/digests.txt'
 
       - name: Attest build artifacts (provenance)
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
-          subject-path: 'dist/**'
+          subject-checksums: './dist/checksums.txt'

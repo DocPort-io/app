@@ -65,5 +65,8 @@ dockers_v2:
     extra_files:
       - config.example.toml
 
+checksum:
+  name_template: "checksums.txt"
+
 docker_digest:
   name_template: "digests.txt"
