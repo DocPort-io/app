@@ -7,8 +7,9 @@ ARG TARGETPLATFORM
 RUN apk add --no-cache ca-certificates tzdata \
     && adduser -D -s /sbin/nologin appuser \
     && mkdir /app \
+    && mkdir /app/storage \
     && chown appuser /app -R \
-    && mkdir /app/storage
+    && chmod u+rwx /app -R
 
 WORKDIR /app
 
