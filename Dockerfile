@@ -5,10 +5,12 @@ FROM alpine:3.20 AS runtime
 ARG TARGETPLATFORM
 
 RUN apk add --no-cache ca-certificates tzdata \
-    && adduser -D -s /sbin/nologin appuser
-WORKDIR /app
+    && adduser -D -s /sbin/nologin appuser \
+    && mkdir /app \
+    && chown appuser /app -R \
+    && mkdir /app/storage
 
-RUN mkdir /app/storage
+WORKDIR /app
 
 COPY config.example.toml /etc/docport/config.toml
 
