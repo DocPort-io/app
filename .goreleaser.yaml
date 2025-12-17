@@ -9,9 +9,13 @@ before:
     - go generate ./...
 
 builds:
-  - main: ./cmd/app
+  - id: app
+    main: ./cmd/app
     env:
       - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm64
     goos:
       - linux
       - windows
@@ -45,3 +49,37 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+sboms:
+  - id: default
+    artifacts: [archive, binary, source]
+    formats: [cyclonedx, spdx]
+
+dockers:
+  # Build architecture-specific images from the already-built goreleaser binaries.
+  - id: app-amd64
+    ids: [app]
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
+    dockerfile: Dockerfile
+    use: buildx
+  - id: app-arm64
+    ids: [app]
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
+    dockerfile: Dockerfile
+    use: buildx
+
+docker_manifests:
+  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
+  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
+      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
