@@ -5,6 +5,8 @@ RUN apk add --no-cache ca-certificates tzdata \
     && adduser -D -H -s /sbin/nologin appuser
 WORKDIR /app
 
+COPY config.example.toml /etc/docport
+
 # The GoReleaser docker pipe will provide the built binary named "app" in the build context.
 COPY app /app/app
 
