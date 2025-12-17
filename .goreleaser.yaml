@@ -50,35 +50,20 @@ release:
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
-dockers:
-  # Build architecture-specific images from the already-built goreleaser binaries.
-  - id: app-amd64
+dockers_v2:
+  - id: app
     ids: [app]
-    goos: linux
-    goarch: amd64
-    image_templates:
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
     dockerfile: Dockerfile
-    use: buildx
-    extra_files:
-      - config.example.toml
-  - id: app-arm64
-    ids: [app]
-    goos: linux
-    goarch: arm64
-    image_templates:
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
-    dockerfile: Dockerfile
-    use: buildx
+    images:
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}
+    tags:
+      - "{{ .Tag }}"
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
     extra_files:
       - config.example.toml
 
-docker_manifests:
-  - name_template: ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}
-    image_templates:
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
-  - name_template: ghcr.io/{{ .Env.IMAGE_REPO_LC }}:latest
-    image_templates:
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
-      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
+docker_digest:
+  name_template: "digests.txt"

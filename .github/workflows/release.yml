@@ -87,17 +87,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_REPO_LC: ${{ env.IMAGE_REPO_LC }}
 
-      - name: Get container image digest
-        id: get_digest
-        run: |
-          DIGEST=$(docker buildx imagetools inspect ghcr.io/${{ env.IMAGE_REPO_LC }}:${{ github.ref_name }} --format '{{json .}}' | jq -r '.manifest.digest')
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-
       - name: Attest container image (provenance)
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/${{ env.IMAGE_REPO_LC }}
-          subject-digest: ${{ steps.get_digest.outputs.digest }}
+          subject-path: 'dist/digests.txt'
           push-to-registry: true
 
       - name: Attest build artifacts (provenance)
