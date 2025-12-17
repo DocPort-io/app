@@ -3,7 +3,7 @@
 FROM alpine:3.20 AS runtime
 RUN apk add --no-cache ca-certificates tzdata \
     && adduser -D -H -s /sbin/nologin appuser \
-RUN mkdir /home/appuser
+    && mkdir /home/appuser
 WORKDIR /app
 
 COPY config.example.toml /etc/docport/config.toml
