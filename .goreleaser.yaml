@@ -51,9 +51,43 @@ release:
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
 sboms:
-  - id: default
-    artifacts: [archive, binary, source]
-    formats: [cyclonedx, spdx]
+  # SPDX for archives
+  - id: sbom-archive-spdx
+    artifacts: archive
+    documents:
+      - "${artifact}.spdx.json"
+    # syft is the default cmd; include explicit args to control format
+    args: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"]
+  # CycloneDX for archives
+  - id: sbom-archive-cdx
+    artifacts: archive
+    documents:
+      - "${artifact}.cdx.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document", "--enrich", "all"]
+  # SPDX for binaries
+  - id: sbom-binary-spdx
+    artifacts: binary
+    documents:
+      - "${artifact}.spdx.json"
+    args: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"]
+  # CycloneDX for binaries
+  - id: sbom-binary-cdx
+    artifacts: binary
+    documents:
+      - "${artifact}.cdx.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document", "--enrich", "all"]
+  # SPDX for source
+  - id: sbom-source-spdx
+    artifacts: source
+    documents:
+      - "${artifact}.spdx.json"
+    args: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"]
+  # CycloneDX for source
+  - id: sbom-source-cdx
+    artifacts: source
+    documents:
+      - "${artifact}.cdx.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document", "--enrich", "all"]
 
 dockers:
   # Build architecture-specific images from the already-built goreleaser binaries.
