@@ -26,6 +26,35 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Cache Go tools
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/go/bin/sqlc
+            ~/go/bin/swag
+          key: go-tools-${{ runner.os }}-sqlc-${{ env.SQLC_VERSION }}-swag-${{ env.SWAG_VERSION }}
+
+      - name: Install sqlc (if missing)
+        run: |
+          if ! command -v sqlc >/dev/null; then
+            echo "sqlc not found in PATH, installing ${SQLC_VERSION}..."
+            go install github.com/sqlc-dev/sqlc/cmd/sqlc@${SQLC_VERSION}
+          fi
+          sqlc version
+
+      - name: Install swag (if missing)
+        run: |
+          if ! command -v swag >/dev/null; then
+            echo "swag not found in PATH, installing ${SWAG_VERSION}..."
+            go install github.com/swaggo/swag/cmd/swag@${SWAG_VERSION}
+          fi
+          swag --version
+
+      - name: Run go generate
+        run: |
+          go version
+          go generate ./...
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
 
