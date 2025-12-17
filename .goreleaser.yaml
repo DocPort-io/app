@@ -60,6 +60,8 @@ dockers:
       - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
     dockerfile: Dockerfile
     use: buildx
+    extra_files:
+      - config.example.toml
   - id: app-arm64
     ids: [app]
     goos: linux
@@ -68,6 +70,8 @@ dockers:
       - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
     dockerfile: Dockerfile
     use: buildx
+    extra_files:
+      - config.example.toml
 
 docker_manifests:
   - name_template: ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}
