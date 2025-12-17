@@ -85,11 +85,12 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_REPO_LC: ${{ toLower(github.repository) }}
 
       - name: Attest container image (provenance)
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          subject-name: ghcr.io/${{ toLower(github.repository) }}:${{ github.ref_name }}
           push-to-registry: true
 
       - name: Attest build artifacts (provenance)

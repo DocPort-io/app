@@ -68,13 +68,13 @@ sboms:
   - id: sbom-binary-spdx
     artifacts: binary
     documents:
-      - "${artifact}.spdx.json"
+      - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.spdx.json"
     args: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"]
   # CycloneDX for binaries
   - id: sbom-binary-cdx
     artifacts: binary
     documents:
-      - "${artifact}.cdx.json"
+      - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.json"
     args: ["$artifact", "--output", "cyclonedx-json=$document", "--enrich", "all"]
   # SPDX for source
   - id: sbom-source-spdx
@@ -96,7 +96,7 @@ dockers:
     goos: linux
     goarch: amd64
     image_templates:
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
     dockerfile: Dockerfile
     use: buildx
   - id: app-arm64
@@ -104,16 +104,16 @@ dockers:
     goos: linux
     goarch: arm64
     image_templates:
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
     dockerfile: Dockerfile
     use: buildx
 
 docker_manifests:
-  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}
+  - name_template: ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}
     image_templates:
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
-  - name_template: ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
+  - name_template: ghcr.io/{{ .Env.IMAGE_REPO_LC }}:latest
     image_templates:
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-amd64
-      - ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}-arm64
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-amd64
+      - ghcr.io/{{ .Env.IMAGE_REPO_LC }}:{{ .Tag }}-arm64
