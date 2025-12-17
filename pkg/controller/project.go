@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"app/pkg/apperrors"
 	"app/pkg/database"
 	"app/pkg/dto"
 	"app/pkg/httputil"
 	"app/pkg/paginate"
 	"app/pkg/service"
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -28,18 +26,13 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		projectId, err := httputil.URLParamInt64(r, "projectId")
 		if err != nil {
-			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			httputil.RenderBadRequestError(w, r, err)
 			return
 		}
 
 		projectResult, err := c.projectService.FindProjectById(r.Context(), &dto.FindProjectByIdParams{ID: projectId})
 		if err != nil {
-			if errors.Is(err, apperrors.ErrNotFound) {
-				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
-				return
-			}
-
-			httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+			httputil.RenderServiceError(w, r, err)
 			return
 		}
 
@@ -71,7 +64,7 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 		Pagination: pagination,
 	})
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -109,7 +102,7 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateProjectRequest{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
@@ -118,7 +111,7 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 		Slug: input.Slug,
 	})
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -147,7 +140,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		Name: project.Name,
 	}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
@@ -157,7 +150,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		ID:   project.ID,
 	})
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -180,7 +173,7 @@ func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request
 
 	err := c.projectService.DeleteProject(r.Context(), &dto.DeleteProjectParams{ID: project.ID})
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 

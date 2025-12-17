@@ -32,18 +32,13 @@ func (c *FileController) FileCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fileId, err := httputil.URLParamInt64(r, "fileId")
 		if err != nil {
-			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			httputil.RenderBadRequestError(w, r, err)
 			return
 		}
 
 		findRes, err := c.fileService.FindFileById(r.Context(), &dto.FindFileByIdParams{ID: fileId})
 		if err != nil {
-			if errors.Is(err, apperrors.ErrNotFound) {
-				httputil.Render(w, r, apperrors.ErrHTTPNotFoundError())
-				return
-			}
-
-			httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+			httputil.RenderServiceError(w, r, err)
 			return
 		}
 
@@ -72,7 +67,7 @@ func getFile(ctx context.Context) *database.File {
 func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 	versionId, err := httputil.QueryParamInt64(r, "versionId")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
@@ -80,7 +75,7 @@ func (c *FileController) FindAllFiles(w http.ResponseWriter, r *http.Request) {
 
 	result, err := c.fileService.FindAllFiles(r.Context(), &dto.FindAllFilesParams{VersionID: versionId, Pagination: pagination})
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -118,14 +113,14 @@ func (c *FileController) GetFile(w http.ResponseWriter, r *http.Request) {
 func (c *FileController) CreateFile(w http.ResponseWriter, r *http.Request) {
 	input := &dto.CreateFileRequest{}
 	if err := render.Bind(r, input); err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
 	createParams := &dto.CreateFileParams{Name: input.Name}
 	createResult, err := c.fileService.CreateFile(r.Context(), createParams)
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -154,7 +149,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	multipartFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
-		httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
@@ -166,7 +161,7 @@ func (c *FileController) UploadFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 
@@ -191,11 +186,11 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	downloadResult, err := c.fileService.DownloadFile(r.Context(), &dto.DownloadFileParams{ID: file.ID})
 	if err != nil {
 		if errors.Is(err, service.ErrIncompleteFile) {
-			httputil.Render(w, r, apperrors.ErrHTTPBadRequestError(err))
+			httputil.RenderBadRequestError(w, r, err)
 			return
 		}
 
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 	defer func(reader io.ReadSeekCloser) {
@@ -239,7 +234,7 @@ func (c *FileController) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	err := c.fileService.DeleteFile(r.Context(), &dto.DeleteFileParams{ID: file.ID})
 	if err != nil {
 		log.Printf("error deleting file: %v", err)
-		httputil.Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+		httputil.RenderServiceError(w, r, err)
 		return
 	}
 

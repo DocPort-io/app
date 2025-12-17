@@ -1,6 +1,7 @@
 package httputil
 
 import (
+	"app/pkg/apperrors"
 	"errors"
 	"fmt"
 	"log"
@@ -66,4 +67,19 @@ func Render(w http.ResponseWriter, r *http.Request, v render.Renderer) {
 	if err != nil {
 		log.Printf("error rendering response: %v", err)
 	}
+}
+
+func RenderServiceError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == nil {
+		return
+	}
+	if errors.Is(err, apperrors.ErrNotFound) {
+		Render(w, r, apperrors.ErrHTTPNotFoundError())
+		return
+	}
+	Render(w, r, apperrors.ErrHTTPInternalServerError(err))
+}
+
+func RenderBadRequestError(w http.ResponseWriter, r *http.Request, err error) {
+	Render(w, r, apperrors.ErrHTTPBadRequestError(err))
 }
