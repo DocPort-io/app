@@ -1,0 +1,1 @@
+DROP INDEX idx_versions_files_file_id;
