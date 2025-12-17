@@ -1,0 +1,12 @@
+[database]
+driver = "sqlite"
+url = "file:/home/nonroot/docport.db?_pragma=foreign_keys(ON)"
+
+[server]
+host = "localhost:8080"
+bind = "127.0.0.1"
+port = "8080"
+
+[storage]
+provider = "filesystem"
+path = "/home/nonroot/storage"
