@@ -15,8 +15,9 @@ WORKDIR /app
 COPY config.example.toml /etc/docport/config.toml
 
 # The GoReleaser docker pipe will provide the built binary named "app" in the build context.
-COPY $TARGETPLATFORM/app /app/app
+COPY $TARGETPLATFORM/app /usr/bin/app
 
 EXPOSE 8080
 USER appuser
-ENTRYPOINT ["/app/app"]
+
+ENTRYPOINT ["/usr/bin/app"]
