@@ -53,11 +53,6 @@ jobs:
           fi
           swag --version
 
-      - name: Run go generate
-        run: |
-          go version
-          go generate ./...
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
 
@@ -95,7 +90,7 @@ jobs:
       - name: Get container image digest
         id: get_digest
         run: |
-          DIGEST=$(docker manifest inspect ghcr.io/${{ env.IMAGE_REPO_LC }}:${{ github.ref_name }} | jq -r '.config.digest')
+          DIGEST=$(docker buildx imagetools inspect ghcr.io/${{ env.IMAGE_REPO_LC }}:${{ github.ref_name }} --format '{{json .}}' | jq -r '.manifest.digest')
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Attest container image (provenance)
