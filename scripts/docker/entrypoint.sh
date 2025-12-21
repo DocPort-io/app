@@ -3,7 +3,8 @@
 # Ensure we are in the /app folder
 cd /app || exit
 
-if [ "$(id -u)" -ne 0 ]; then
+# If we aren't running as root, just exec the CMD
+if [ "$(id -u)" -ne 0 ] ; then
   exec "$@"
   exit 0
 fi
@@ -21,7 +22,7 @@ fi
 if ! id -u docport-io > /dev/null 2>&1; then
   if ! getent passwd "$DOCPORT_UID" > /dev/null 2>&1; then
     echo "creating user $DOCPORT_UID..."
-    adduser -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null 2>&1\
+    adduser -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null 2>&1
   else
     existing_user=$(getent passwd "$DOCPORT_UID" | cut -d: -f1)
     echo "using existing user: $existing_user"
