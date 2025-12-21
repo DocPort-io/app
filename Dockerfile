@@ -10,7 +10,7 @@ RUN apk add --no-cache ca-certificates curl su-exec tzdata
 
 # The GoReleaser docker pipe will provide the built binary named "app" in the build context.
 COPY $TARGETPLATFORM/app /usr/bin/app
-COPY ./scripts/docker /app/docker
+COPY scripts/docker /app/docker
 COPY ./config.docker.toml /etc/docport/config.toml
 
 RUN chmod +x /app/app \
