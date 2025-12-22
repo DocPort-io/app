@@ -35,7 +35,7 @@ fi
 if ! id -u docport-io > /dev/null 2>&1; then
   if ! getent passwd "$DOCPORT_UID" > /dev/null 2>&1; then
     echo "creating user $DOCPORT_UID..."
-    if ! adduser -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null; then
+    if ! adduser -D -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null; then
       echo "failed to create user with UID $DOCPORT_UID in group docport-io-group" >&2
       exit 1
     fi
