@@ -4,7 +4,7 @@ url = "file:/app/data/docport.db?_pragma=foreign_keys(ON)"
 
 [server]
 host = "localhost:8080"
-bind = "127.0.0.1"
+bind = "0.0.0.0"
 port = "8080"
 
 [storage]
