@@ -1,10 +1,7 @@
 package app
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	"net"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -58,48 +55,11 @@ func LoadConfig() (*Config, error) {
 	return &cfg, nil
 }
 
-//
-
-// validateConfig performs semantic validation beyond struct tags.
 func validateConfig(cfg *Config) error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	if err := validate.Struct(cfg); err != nil {
 		return fmt.Errorf("invalid configuration: %w", err)
 	}
 
-	// Validate server port is a valid TCP port number and non-empty
-	if _, err := parsePort(cfg.Server.Port); err != nil {
-		return fmt.Errorf("server.port invalid: %w", err)
-	}
-
-	// Validate database DSN by attempting to open and ping
-	if err := validateDatabaseDSN(cfg.Database.Driver, cfg.Database.URL); err != nil {
-		return fmt.Errorf("database URL invalid: %w", err)
-	}
-
 	return nil
-}
-
-func parsePort(p string) (int, error) {
-	if p == "" {
-		return 0, errors.New("empty port")
-	}
-	// net.JoinHostPort validates when combining, use that
-	if _, err := net.ResolveTCPAddr("tcp", net.JoinHostPort("127.0.0.1", p)); err != nil {
-		return 0, fmt.Errorf("not a valid port: %w", err)
-	}
-	// successful resolution implies numeric 1..65535; return dummy value
-	return 0, nil
-}
-
-func validateDatabaseDSN(driver, dsn string) error {
-	if driver == "" || dsn == "" {
-		return errors.New("driver or dsn is empty")
-	}
-	db, err := sql.Open(driver, dsn)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	return db.Ping()
 }
