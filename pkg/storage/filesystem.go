@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -97,11 +98,56 @@ func (s *filesystemStorage) Delete(ctx context.Context, relativePath string) err
 }
 
 func (s *filesystemStorage) List(ctx context.Context, root string) ([]ObjectInfo, error) {
-	//TODO implement me
-	panic("implement me")
+	root = filepath.FromSlash(root)
+
+	fsys := s.root.FS()
+	entries, err := fs.ReadDir(fsys, root)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read directory '%s': %w", root, err)
+	}
+
+	var objects []ObjectInfo
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		info, err := entry.Info()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get file info for '%s': %w", entry.Name(), err)
+		}
+
+		relativePath := filepath.Join(root, entry.Name())
+		objects = append(objects, ObjectInfo{
+			Path: filepath.ToSlash(relativePath),
+			Size: info.Size(),
+		})
+	}
+
+	return objects, nil
 }
 
 func (s *filesystemStorage) Walk(ctx context.Context, root string, walkFunc WalkFunc) error {
-	//TODO implement me
-	panic("implement me")
+	root = filepath.FromSlash(root)
+
+	fsys := s.root.FS()
+	return fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+
+		return walkFunc(ObjectInfo{
+			Path: filepath.ToSlash(path),
+			Size: info.Size(),
+		})
+	})
 }
