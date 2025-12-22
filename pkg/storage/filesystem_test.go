@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -527,7 +528,7 @@ func TestFilesystemStorage_Walk(t *testing.T) {
 
 		// Create multiple files
 		for i := 1; i <= 5; i++ {
-			path := filepath.Join("file" + string(rune('0'+i)) + ".txt")
+			path := filepath.Join(fmt.Sprintf("file%d.txt", i))
 			err := storage.Save(ctx, path, bytes.NewReader([]byte("content")))
 			if err != nil {
 				t.Fatalf("failed to save file: %v", err)
