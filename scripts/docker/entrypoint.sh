@@ -6,11 +6,24 @@ cd /app || exit
 # If we aren't running as root, just exec the CMD
 if [ "$(id -u)" -ne 0 ] ; then
   exec "$@"
-  exit 0
 fi
 
 DOCPORT_UID=${DOCPORT_UID:-1000}
 DOCPORT_GID=${DOCPORT_GID:-1000}
+
+# Validate that DOCPORT_UID and DOCPORT_GID are numeric
+case "$DOCPORT_UID" in
+  ''|*[!0-9]*)
+    echo "invalid DOCPORT_UID: must be a numeric UID" >&2
+    exit 1
+    ;;
+esac
+case "$DOCPORT_GID" in
+  ''|*[!0-9]*)
+    echo "invalid DOCPORT_GID: must be a numeric GID" >&2
+    exit 1
+    ;;
+esac
 
 # Check if the group exists; if not, create it
 if ! getent group docport-io-group > /dev/null 2>&1; then
@@ -22,7 +35,10 @@ fi
 if ! id -u docport-io > /dev/null 2>&1; then
   if ! getent passwd "$DOCPORT_UID" > /dev/null 2>&1; then
     echo "creating user $DOCPORT_UID..."
-    adduser -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null 2>&1
+    if ! adduser -u "$DOCPORT_UID" -G docport-io-group docport-io > /dev/null; then
+      echo "failed to create user with UID $DOCPORT_UID in group docport-io-group" >&2
+      exit 1
+    fi
   else
     existing_user=$(getent passwd "$DOCPORT_UID" | cut -d: -f1)
     echo "using existing user: $existing_user"
