@@ -17,11 +17,17 @@ case "$DOCPORT_UID" in
     echo "invalid DOCPORT_UID: must be a numeric UID" >&2
     exit 1
     ;;
+  *)
+    # UID is valid
+    ;;
 esac
 case "$DOCPORT_GID" in
   ''|*[!0-9]*)
     echo "invalid DOCPORT_GID: must be a numeric GID" >&2
     exit 1
+    ;;
+  *)
+    # GID is valid
     ;;
 esac
 
