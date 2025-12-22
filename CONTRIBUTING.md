@@ -93,7 +93,7 @@ go test ./...
 - [ ] Code formatted (go fmt), vet clean (go vet)
 - [ ] Tests added/updated and passing (go test ./...)
 - [ ] Migrations included (if schema changes) and sqlc generated
-- [ ] README/CONTRIBUTE updated if behavior or setup changed
+- [ ] README/CONTRIBUTING updated if behavior or setup changed
 - [ ] Swagger docs updated if API changed
 
 ### PR Review Guidelines
