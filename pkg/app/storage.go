@@ -17,11 +17,6 @@ func NewFileStorage(cfg *Config) storage.FileStorage {
 		return fileStorage
 	}
 
-	if backend == storage.TypeS3 {
-		//TODO implement me
-		panic("implement me")
-	}
-
 	log.Fatalf("failed to initialize file storage backend %s: %s\n", backend, fmt.Errorf("unsupported backend"))
 	return nil
 }
