@@ -91,8 +91,8 @@ func (p *ProjectResponse) Render(w http.ResponseWriter, r *http.Request) error {
 func ToProjectResponse(project *database.Project) *ProjectResponse {
 	return &ProjectResponse{
 		ID:        project.ID,
-		CreatedAt: project.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
+		CreatedAt: project.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt: project.UpdatedAt.Time.Format(time.RFC3339),
 		Slug:      project.Slug,
 		Name:      project.Name,
 	}
@@ -128,8 +128,8 @@ type ListProjectsResponseProject struct {
 func ToListProjectsResponseProject(project *database.ListProjectsWithLocationsRow) *ListProjectsResponseProject {
 	return &ListProjectsResponseProject{
 		ID:        project.ID,
-		CreatedAt: project.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
+		CreatedAt: project.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt: project.UpdatedAt.Time.Format(time.RFC3339),
 		Slug:      project.Slug,
 		Name:      project.Name,
 		Location:  ToListProjectsResponseProjectLocation(project),

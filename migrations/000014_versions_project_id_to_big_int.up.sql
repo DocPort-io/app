@@ -1,0 +1,1 @@
+ALTER TABLE versions ALTER COLUMN project_id TYPE BIGINT;

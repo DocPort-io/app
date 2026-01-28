@@ -97,8 +97,8 @@ func (f *FileResponse) Render(w http.ResponseWriter, r *http.Request) error {
 func ToFileResponse(file *database.File) *FileResponse {
 	return &FileResponse{
 		ID:         file.ID,
-		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
+		CreatedAt:  file.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:  file.UpdatedAt.Time.Format(time.RFC3339),
 		Name:       file.Name,
 		Size:       file.Size,
 		MimeType:   file.MimeType,
@@ -119,8 +119,8 @@ type ListFilesResponseFile struct {
 func ToListFilesResponseFile(file *database.File) *ListFilesResponseFile {
 	return &ListFilesResponseFile{
 		ID:         file.ID,
-		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
+		CreatedAt:  file.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:  file.UpdatedAt.Time.Format(time.RFC3339),
 		Name:       file.Name,
 		Size:       file.Size,
 		MimeType:   file.MimeType,

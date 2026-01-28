@@ -1,10 +1,10 @@
 CREATE TABLE versions
 (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at  DATETIME NOT NULL DEFAULT current_timestamp,
-    updated_at  DATETIME NOT NULL DEFAULT current_timestamp,
-    name        TEXT     NOT NULL,
+    id          BIGSERIAL PRIMARY KEY,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    name        TEXT      NOT NULL,
     description TEXT,
-    project_id  INTEGER  NOT NULL
+    project_id  INTEGER   NOT NULL
         CONSTRAINT fk_version_project REFERENCES projects (id) ON DELETE CASCADE
 );

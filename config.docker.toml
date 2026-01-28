@@ -1,6 +1,5 @@
 [database]
-driver = "sqlite"
-url = "file:/app/data/docport.db?_pragma=foreign_keys(ON)"
+url = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
 
 [server]
 host = "localhost:8080"

@@ -122,8 +122,8 @@ func (v *VersionResponse) Render(w http.ResponseWriter, r *http.Request) error {
 func ToVersionResponse(version *database.Version) *VersionResponse {
 	return &VersionResponse{
 		ID:          version.ID,
-		CreatedAt:   version.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   version.UpdatedAt.Format(time.RFC3339),
+		CreatedAt:   version.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:   version.UpdatedAt.Time.Format(time.RFC3339),
 		Name:        version.Name,
 		Description: version.Description,
 		ProjectId:   version.ProjectID,
@@ -141,8 +141,8 @@ type ListVersionsResponseVersion struct {
 func ToListVersionsResponseVersion(version *database.Version) *ListVersionsResponseVersion {
 	return &ListVersionsResponseVersion{
 		ID:        version.ID,
-		CreatedAt: version.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: version.UpdatedAt.Format(time.RFC3339),
+		CreatedAt: version.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt: version.UpdatedAt.Time.Format(time.RFC3339),
 		Name:      version.Name,
 		ProjectId: version.ProjectID,
 	}

@@ -1,9 +1,9 @@
 CREATE TABLE files
 (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at DATETIME NOT NULL DEFAULT current_timestamp,
-    updated_at DATETIME NOT NULL DEFAULT current_timestamp,
-    name       TEXT     NOT NULL,
-    size       INTEGER  NOT NULL,
-    path       TEXT     NOT NULL
+    id         BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    name       TEXT      NOT NULL,
+    size       INTEGER   NOT NULL,
+    path       TEXT      NOT NULL
 );

@@ -1,11 +1,12 @@
 version: "2"
 sql:
-  - engine: "sqlite"
+  - engine: "postgresql"
     queries: "query.sql"
     schema: "migrations"
     gen:
       go:
         out: "pkg/database"
+        sql_package: "pgx/v5"
         emit_params_struct_pointers: true
         emit_result_struct_pointers: true
         emit_pointers_for_null_types: true

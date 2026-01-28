@@ -11,8 +11,7 @@ import (
 // Config represents the application configuration loaded via Viper.
 type Config struct {
 	Database struct {
-		Driver string `mapstructure:"driver" validate:"required"`
-		URL    string `mapstructure:"url" validate:"required"`
+		URL string `mapstructure:"url" validate:"required"`
 	} `mapstructure:"database"`
 
 	Server struct {

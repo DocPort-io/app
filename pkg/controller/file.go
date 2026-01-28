@@ -214,7 +214,7 @@ func (c *FileController) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
 
-	http.ServeContent(w, r, downloadResult.File.Name, downloadResult.File.UpdatedAt, downloadResult.Reader)
+	http.ServeContent(w, r, downloadResult.File.Name, downloadResult.File.UpdatedAt.Time, downloadResult.Reader)
 }
 
 // DeleteFile godoc

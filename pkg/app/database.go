@@ -2,33 +2,33 @@ package app
 
 import (
 	appRoot "app"
+	"context"
 	"database/sql"
 	"errors"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	migratePgx "github.com/golang-migrate/migrate/v4/database/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	// Import for migration source "file" registration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
-	// Import for database driver "sqlite" registration
-	_ "modernc.org/sqlite"
-
 	"app/pkg/database"
 )
 
 func NewDatabase(cfg *Config) *database.Queries {
-	databaseDriver := cfg.Database.Driver
 	databaseUrl := cfg.Database.URL
+	ctx := context.Background()
 
-	db, err := sql.Open(databaseDriver, databaseUrl)
+	sqlDB, err := sql.Open("pgx", databaseUrl)
 	if err != nil {
 		log.Fatalf("failed to open database: %s\n", err)
 	}
 
-	driver, err := sqlite.WithInstance(db, &sqlite.Config{})
+	driver, err := migratePgx.WithInstance(sqlDB, &migratePgx.Config{})
 	if err != nil {
 		log.Fatalf("failed to create database driver: %s\n", err)
 	}
@@ -38,7 +38,7 @@ func NewDatabase(cfg *Config) *database.Queries {
 		log.Fatalf("failed to create migration source: %s\n", err)
 	}
 
-	migrations, err := migrate.NewWithInstance("iofs", iofsDriver, databaseDriver, driver)
+	migrations, err := migrate.NewWithInstance("iofs", iofsDriver, "pgx/v5", driver)
 	if err != nil {
 		log.Fatalf("failed to create migration source: %s\n", err)
 	}
@@ -54,7 +54,17 @@ func NewDatabase(cfg *Config) *database.Queries {
 		log.Println("migrations applied, database schema has been updated")
 	}
 
-	queries := database.New(db)
+	err = sqlDB.Close()
+	if err != nil {
+		log.Fatalf("failed to close database connection: %s\n", err)
+	}
+
+	pool, err := pgxpool.New(ctx, databaseUrl)
+	if err != nil {
+		log.Fatalf("failed to create database connection pool: %s\n", err)
+	}
+
+	queries := database.New(pool)
 
 	return queries
 }

@@ -8,7 +8,7 @@ SELECT id,
        name,
        location_id
 FROM projects
-WHERE id = ?
+WHERE id = $1
 LIMIT 1;
 
 -- name: CountProjects :one
@@ -28,40 +28,40 @@ SELECT projects.id,
 FROM projects
          LEFT JOIN locations ON locations.id = projects.location_id
 ORDER BY projects.created_at DESC
-LIMIT ? OFFSET ?;
+LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 
 -- name: CreateProject :one
 INSERT INTO projects (slug, name, location_id)
-VALUES (?, ?, ?)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: UpdateProject :one
 UPDATE projects
-SET updated_at  = current_timestamp,
-    slug        = ?,
-    name        = ?,
-    location_id = ?
-WHERE id = ?
+SET updated_at  = CURRENT_TIMESTAMP,
+    slug        = $2,
+    name        = $3,
+    location_id = $4
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteProject :exec
 DELETE
 FROM projects
-WHERE id = ?;
+WHERE id = $1;
 
 -- Versions
 
 -- name: CountVersionsByProjectId :one
 SELECT count(versions.id)
 FROM versions
-WHERE project_id = ?;
+WHERE project_id = $1;
 
 -- name: ListVersionsByProjectId :many
 SELECT *
 FROM versions
-WHERE project_id = ?
+WHERE project_id = $1
 ORDER BY created_at DESC
-LIMIT ? OFFSET ?;
+LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 
 -- name: GetVersion :one
 SELECT id,
@@ -71,26 +71,26 @@ SELECT id,
        description,
        project_id
 FROM versions
-WHERE id = ?
+WHERE id = $1
 LIMIT 1;
 
 -- name: CreateVersion :one
 INSERT INTO versions (name, description, project_id)
-VALUES (?, ?, ?)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: UpdateVersion :one
 UPDATE versions
-SET updated_at  = current_timestamp,
-    name        = ?,
-    description = ?
-WHERE id = ?
+SET updated_at  = CURRENT_TIMESTAMP,
+    name        = $2,
+    description = $3
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteVersion :exec
 DELETE
 FROM versions
-WHERE id = ?;
+WHERE id = $1;
 
 -- Locations
 
@@ -111,7 +111,7 @@ ORDER BY created_at DESC;
 SELECT count(files.id)
 FROM files
          INNER JOIN versions_files ON files.id = versions_files.file_id
-WHERE versions_files.version_id = ?;
+WHERE versions_files.version_id = $1;
 
 -- name: ListFilesByVersionId :many
 SELECT files.id,
@@ -124,9 +124,9 @@ SELECT files.id,
        files.is_complete
 FROM files
          INNER JOIN versions_files ON files.id = versions_files.file_id
-WHERE versions_files.version_id = ?
+WHERE versions_files.version_id = $1
 ORDER BY files.created_at DESC
-LIMIT ? OFFSET ?;
+LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 
 -- name: GetFile :one
 SELECT id,
@@ -138,36 +138,36 @@ SELECT id,
        mime_type,
        is_complete
 FROM files
-WHERE id = ?
+WHERE id = $1
 LIMIT 1;
 
 -- name: CreateFile :one
 INSERT INTO files (name)
-VALUES (?)
+VALUES ($1)
 RETURNING *;
 
 -- name: UpdateFileWithUploadedFile :one
 UPDATE files
 SET updated_at  = current_timestamp,
-    size        = ?,
-    path        = ?,
-    mime_type   = ?,
+    size        = $2,
+    path        = $3,
+    mime_type   = $4,
     is_complete = TRUE
-WHERE id = ?
+WHERE id = $1
   AND is_complete = FALSE
 RETURNING *;
 
 -- name: DeleteFile :exec
 DELETE
 FROM files
-WHERE id = ?;
+WHERE id = $1;
 
 -- name: AttachFileToVersion :exec
 INSERT INTO versions_files (version_id, file_id)
-VALUES (?, ?);
+VALUES ($1, $2);
 
 -- name: DetachFileFromVersion :exec
 DELETE
 FROM versions_files
-WHERE version_id = ?
-  AND file_id = ?;
+WHERE version_id = $1
+  AND file_id = $2;

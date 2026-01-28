@@ -1,0 +1,3 @@
+ALTER TABLE locations
+    ALTER COLUMN lat TYPE REAL,
+    ALTER COLUMN lon TYPE REAL;
