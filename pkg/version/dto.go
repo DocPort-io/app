@@ -1,4 +1,4 @@
-package dto
+package version
 
 import (
 	"app/pkg/database"

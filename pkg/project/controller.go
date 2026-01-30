@@ -1,11 +1,9 @@
-package controller
+package project
 
 import (
 	"app/pkg/database"
-	"app/pkg/dto"
 	"app/pkg/httputil"
 	"app/pkg/paginate"
-	"app/pkg/service"
 	"context"
 	"net/http"
 
@@ -15,10 +13,10 @@ import (
 const ProjectCtxKey = "project"
 
 type ProjectController struct {
-	projectService service.ProjectService
+	projectService ProjectService
 }
 
-func NewProjectController(projectService service.ProjectService) *ProjectController {
+func NewProjectController(projectService ProjectService) *ProjectController {
 	return &ProjectController{projectService: projectService}
 }
 
@@ -30,7 +28,7 @@ func (c *ProjectController) ProjectCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		projectResult, err := c.projectService.FindProjectById(r.Context(), &dto.FindProjectByIdParams{ID: projectId})
+		projectResult, err := c.projectService.FindProjectById(r.Context(), &FindProjectByIdParams{ID: projectId})
 		if err != nil {
 			httputil.RenderServiceError(w, r, err)
 			return
@@ -53,14 +51,14 @@ func getProject(ctx context.Context) *database.Project {
 //	@produce	json
 //	@param		limit	query		uint	false	"Max items per page (1-100)"
 //	@param		offset	query		uint	false	"Items to skip before starting to collect the result set"
-//	@success	200		{object}	dto.ListProjectsResponse
+//	@success	200		{object}	ListProjectsResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [get]
 func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Request) {
 	pagination := paginate.GetPagination(r.Context())
 
-	projectsResult, err := c.projectService.FindAllProjects(r.Context(), &dto.FindAllProjectsParams{
+	projectsResult, err := c.projectService.FindAllProjects(r.Context(), &FindAllProjectsParams{
 		Pagination: pagination,
 	})
 	if err != nil {
@@ -68,7 +66,7 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	httputil.Render(w, r, dto.ToListProjectsResponse(projectsResult))
+	httputil.Render(w, r, ToListProjectsResponse(projectsResult))
 }
 
 // GetProject godoc
@@ -78,14 +76,14 @@ func (c *ProjectController) FindAllProjects(w http.ResponseWriter, r *http.Reque
 //	@accept		json
 //	@produce	json
 //	@param		projectId	path		uint	true	"Project identifier"
-//	@success	200			{object}	dto.ProjectResponse
+//	@success	200			{object}	ProjectResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects/{projectId} [get]
 func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
-	httputil.Render(w, r, dto.ToProjectResponse(project))
+	httputil.Render(w, r, ToProjectResponse(project))
 }
 
 // CreateProject godoc
@@ -94,19 +92,19 @@ func (c *ProjectController) GetProject(w http.ResponseWriter, r *http.Request) {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		request	body		dto.CreateProjectRequest	true	"Create a project"
-//	@success	201		{object}	dto.ProjectResponse
+//	@param		request	body		CreateProjectRequest	true	"Create a project"
+//	@success	201		{object}	ProjectResponse
 //	@failure	400		{object}	apperrors.ErrResponse
 //	@failure	500		{object}	apperrors.ErrResponse
 //	@router		/api/v1/projects [post]
 func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request) {
-	input := &dto.CreateProjectRequest{}
+	input := &CreateProjectRequest{}
 	if err := render.Bind(r, input); err != nil {
 		httputil.RenderBadRequestError(w, r, err)
 		return
 	}
 
-	projectResult, err := c.projectService.CreateProject(r.Context(), &dto.CreateProjectParams{
+	projectResult, err := c.projectService.CreateProject(r.Context(), &CreateProjectParams{
 		Name: input.Name,
 		Slug: input.Slug,
 	})
@@ -116,7 +114,7 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 	}
 
 	render.Status(r, http.StatusCreated)
-	httputil.Render(w, r, dto.ToProjectResponse(projectResult.Project))
+	httputil.Render(w, r, ToProjectResponse(projectResult.Project))
 }
 
 // UpdateProject godoc
@@ -126,8 +124,8 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 //	@accept		json
 //	@produce	json
 //	@param		projectId	path		uint						true	"Project identifier"
-//	@param		request		body		dto.UpdateProjectRequest	true	"Update a project"
-//	@success	200			{object}	dto.ProjectResponse
+//	@param		request		body		UpdateProjectRequest	true	"Update a project"
+//	@success	200			{object}	ProjectResponse
 //	@failure	400			{object}	apperrors.ErrResponse
 //	@failure	404			{object}	apperrors.ErrResponse
 //	@failure	500			{object}	apperrors.ErrResponse
@@ -135,7 +133,7 @@ func (c *ProjectController) CreateProject(w http.ResponseWriter, r *http.Request
 func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
 
-	input := &dto.UpdateProjectRequest{
+	input := &UpdateProjectRequest{
 		Slug: project.Slug,
 		Name: project.Name,
 	}
@@ -144,7 +142,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	projectResult, err := c.projectService.UpdateProject(r.Context(), &dto.UpdateProjectParams{
+	projectResult, err := c.projectService.UpdateProject(r.Context(), &UpdateProjectParams{
 		Slug: input.Slug,
 		Name: input.Name,
 		ID:   project.ID,
@@ -154,7 +152,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	httputil.Render(w, r, dto.ToProjectResponse(projectResult.Project))
+	httputil.Render(w, r, ToProjectResponse(projectResult.Project))
 }
 
 // DeleteProject godoc
@@ -171,7 +169,7 @@ func (c *ProjectController) UpdateProject(w http.ResponseWriter, r *http.Request
 func (c *ProjectController) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	project := getProject(r.Context())
 
-	err := c.projectService.DeleteProject(r.Context(), &dto.DeleteProjectParams{ID: project.ID})
+	err := c.projectService.DeleteProject(r.Context(), &DeleteProjectParams{ID: project.ID})
 	if err != nil {
 		httputil.RenderServiceError(w, r, err)
 		return

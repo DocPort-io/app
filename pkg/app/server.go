@@ -1,10 +1,11 @@
 package app
 
 import (
-	"app/pkg/controller"
 	"app/pkg/database"
-	"app/pkg/service"
+	"app/pkg/file"
+	"app/pkg/project"
 	"app/pkg/storage"
+	"app/pkg/version"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -21,13 +22,13 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 	router.Use(middleware.Recoverer)
 	router.Use(render.SetContentType(render.ContentTypeJSON))
 
-	projectService := service.NewProjectService(queries)
-	versionService := service.NewVersionService(queries)
-	fileService := service.NewFileService(queries, fileStorage)
+	projectService := project.NewProjectService(queries)
+	versionService := version.NewVersionService(queries)
+	fileService := file.NewFileService(queries, fileStorage)
 
-	projectController := controller.NewProjectController(projectService)
-	versionController := controller.NewVersionController(versionService)
-	fileController := controller.NewFileController(fileService)
+	projectController := project.NewProjectController(projectService)
+	versionController := version.NewVersionController(versionService)
+	fileController := file.NewFileController(fileService)
 
 	registerRoutes(router, projectController, versionController, fileController)
 

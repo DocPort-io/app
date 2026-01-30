@@ -1,9 +1,8 @@
-package service
+package file
 
 import (
 	"app/pkg/apperrors"
 	"app/pkg/database"
-	"app/pkg/dto"
 	"app/pkg/storage"
 	"context"
 	"database/sql"
@@ -23,12 +22,12 @@ var (
 )
 
 type FileService interface {
-	FindAllFiles(ctx context.Context, params *dto.FindAllFilesParams) (*dto.FindAllFilesResult, error)
-	FindFileById(ctx context.Context, params *dto.FindFileByIdParams) (*dto.FindFileByIdResult, error)
-	CreateFile(ctx context.Context, params *dto.CreateFileParams) (*dto.CreateFileResult, error)
-	UploadFile(ctx context.Context, params *dto.UploadFileParams) (*dto.UploadFileResult, error)
-	DownloadFile(ctx context.Context, params *dto.DownloadFileParams) (*dto.DownloadFileResult, error)
-	DeleteFile(ctx context.Context, params *dto.DeleteFileParams) error
+	FindAllFiles(ctx context.Context, params *FindAllFilesParams) (*FindAllFilesResult, error)
+	FindFileById(ctx context.Context, params *FindFileByIdParams) (*FindFileByIdResult, error)
+	CreateFile(ctx context.Context, params *CreateFileParams) (*CreateFileResult, error)
+	UploadFile(ctx context.Context, params *UploadFileParams) (*UploadFileResult, error)
+	DownloadFile(ctx context.Context, params *DownloadFileParams) (*DownloadFileResult, error)
+	DeleteFile(ctx context.Context, params *DeleteFileParams) error
 }
 
 type fileServiceImpl struct {
@@ -40,7 +39,7 @@ func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) 
 	return &fileServiceImpl{queries: queries, fileStorage: fileStorage}
 }
 
-func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *dto.FindAllFilesParams) (*dto.FindAllFilesResult, error) {
+func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *FindAllFilesParams) (*FindAllFilesResult, error) {
 	files, err := s.queries.ListFilesByVersionId(ctx, &database.ListFilesByVersionIdParams{
 		VersionID: params.VersionID,
 		Limit:     params.Limit,
@@ -55,10 +54,10 @@ func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *dto.FindAllF
 		return nil, err
 	}
 
-	return &dto.FindAllFilesResult{Files: files, Total: count, Limit: params.Limit, Offset: params.Offset}, nil
+	return &FindAllFilesResult{Files: files, Total: count, Limit: params.Limit, Offset: params.Offset}, nil
 }
 
-func (s *fileServiceImpl) FindFileById(ctx context.Context, params *dto.FindFileByIdParams) (*dto.FindFileByIdResult, error) {
+func (s *fileServiceImpl) FindFileById(ctx context.Context, params *FindFileByIdParams) (*FindFileByIdResult, error) {
 	file, err := s.queries.GetFile(ctx, params.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -66,19 +65,19 @@ func (s *fileServiceImpl) FindFileById(ctx context.Context, params *dto.FindFile
 		}
 		return nil, err
 	}
-	return &dto.FindFileByIdResult{File: file}, nil
+	return &FindFileByIdResult{File: file}, nil
 }
 
-func (s *fileServiceImpl) CreateFile(ctx context.Context, params *dto.CreateFileParams) (*dto.CreateFileResult, error) {
+func (s *fileServiceImpl) CreateFile(ctx context.Context, params *CreateFileParams) (*CreateFileResult, error) {
 	file, err := s.queries.CreateFile(ctx, params.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dto.CreateFileResult{File: file}, nil
+	return &CreateFileResult{File: file}, nil
 }
 
-func (s *fileServiceImpl) UploadFile(ctx context.Context, params *dto.UploadFileParams) (*dto.UploadFileResult, error) {
+func (s *fileServiceImpl) UploadFile(ctx context.Context, params *UploadFileParams) (*UploadFileResult, error) {
 	defer func(File multipart.File) {
 		err := File.Close()
 		if err != nil {
@@ -128,11 +127,11 @@ func (s *fileServiceImpl) UploadFile(ctx context.Context, params *dto.UploadFile
 		return nil, err
 	}
 
-	return &dto.UploadFileResult{File: file}, nil
+	return &UploadFileResult{File: file}, nil
 }
 
-func (s *fileServiceImpl) DownloadFile(ctx context.Context, params *dto.DownloadFileParams) (*dto.DownloadFileResult, error) {
-	findRes, err := s.FindFileById(ctx, &dto.FindFileByIdParams{ID: params.ID})
+func (s *fileServiceImpl) DownloadFile(ctx context.Context, params *DownloadFileParams) (*DownloadFileResult, error) {
+	findRes, err := s.FindFileById(ctx, &FindFileByIdParams{ID: params.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -147,11 +146,11 @@ func (s *fileServiceImpl) DownloadFile(ctx context.Context, params *dto.Download
 		return nil, err
 	}
 
-	return &dto.DownloadFileResult{File: file, Reader: reader}, nil
+	return &DownloadFileResult{File: file, Reader: reader}, nil
 }
 
-func (s *fileServiceImpl) DeleteFile(ctx context.Context, params *dto.DeleteFileParams) error {
-	findRes, err := s.FindFileById(ctx, &dto.FindFileByIdParams{ID: params.ID})
+func (s *fileServiceImpl) DeleteFile(ctx context.Context, params *DeleteFileParams) error {
+	findRes, err := s.FindFileById(ctx, &FindFileByIdParams{ID: params.ID})
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package dto
+package file
 
 import (
 	"app/pkg/database"

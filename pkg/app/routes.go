@@ -1,8 +1,10 @@
 package app
 
 import (
-	"app/pkg/controller"
+	"app/pkg/file"
 	"app/pkg/paginate"
+	"app/pkg/project"
+	"app/pkg/version"
 
 	"app/pkg/docs"
 
@@ -16,7 +18,7 @@ import (
 
 // @host		localhost:8080
 // @basepath	/
-func registerRoutes(router *chi.Mux, projectController *controller.ProjectController, versionController *controller.VersionController, fileController *controller.FileController) {
+func registerRoutes(router *chi.Mux, projectController *project.ProjectController, versionController *version.VersionController, fileController *file.FileController) {
 	router.Route("/api/v1", func(r chi.Router) {
 
 		r.Route("/projects", func(r chi.Router) {
