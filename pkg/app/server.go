@@ -24,14 +24,15 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 
 	projectRepository := project.NewRepository(queries)
 	versionRepository := version.NewRepository(queries)
+	fileRepository := file.NewRepository(queries)
 
 	projectService := project.NewService(projectRepository)
 	versionService := version.NewVersionService(versionRepository)
-	fileService := file.NewFileService(queries, fileStorage)
+	fileService := file.NewFileService(fileRepository, fileStorage)
 
 	projectController := project.NewHandler(projectService)
 	versionController := version.NewHandler(versionService)
-	fileController := file.NewFileController(fileService)
+	fileController := file.NewHandler(fileService)
 
 	registerRoutes(router, projectController, versionController, fileController)
 

@@ -1,11 +1,8 @@
 package file
 
 import (
-	"app/pkg/apperrors"
-	"app/pkg/database"
 	"app/pkg/storage"
 	"context"
-	"database/sql"
 	"errors"
 	"io"
 	"log"
@@ -17,146 +14,121 @@ import (
 )
 
 var (
-	ErrFileAlreadyExists = errors.New("file already exists")
-	ErrIncompleteFile    = errors.New("file not complete")
+	ErrFileNotComplete     = errors.New("file not complete")
+	ErrFileAlreadyComplete = errors.New("file already complete")
 )
 
-type FileService interface {
-	FindAllFiles(ctx context.Context, params *FindAllFilesParams) (*FindAllFilesResult, error)
-	FindFileById(ctx context.Context, params *FindFileByIdParams) (*FindFileByIdResult, error)
-	CreateFile(ctx context.Context, params *CreateFileParams) (*CreateFileResult, error)
-	UploadFile(ctx context.Context, params *UploadFileParams) (*UploadFileResult, error)
-	DownloadFile(ctx context.Context, params *DownloadFileParams) (*DownloadFileResult, error)
-	DeleteFile(ctx context.Context, params *DeleteFileParams) error
+type Service interface {
+	GetById(ctx context.Context, id int64) (File, error)
+	List(ctx context.Context, versionId *int64, limit, offset int64) ([]File, error)
+	Create(ctx context.Context, req CreateFileRequest) (File, error)
+	UploadFile(ctx context.Context, id int64, req UploadFileRequest) (File, error)
+	Download(ctx context.Context, id int64) (File, io.ReadSeekCloser, error)
+	Delete(ctx context.Context, id int64) error
 }
 
-type fileServiceImpl struct {
-	queries     *database.Queries
+type service struct {
+	repository  Repository
 	fileStorage storage.FileStorage
 }
 
-func NewFileService(queries *database.Queries, fileStorage storage.FileStorage) FileService {
-	return &fileServiceImpl{queries: queries, fileStorage: fileStorage}
+func NewFileService(repository Repository, fileStorage storage.FileStorage) Service {
+	return &service{repository: repository, fileStorage: fileStorage}
 }
 
-func (s *fileServiceImpl) FindAllFiles(ctx context.Context, params *FindAllFilesParams) (*FindAllFilesResult, error) {
-	files, err := s.queries.ListFilesByVersionId(ctx, &database.ListFilesByVersionIdParams{
-		VersionID: params.VersionID,
-		Limit:     params.Limit,
-		Offset:    params.Offset,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	count, err := s.queries.CountFilesByVersionId(ctx, params.VersionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &FindAllFilesResult{Files: files, Total: count, Limit: params.Limit, Offset: params.Offset}, nil
+func (s *service) GetById(ctx context.Context, id int64) (File, error) {
+	return s.repository.GetById(ctx, id)
 }
 
-func (s *fileServiceImpl) FindFileById(ctx context.Context, params *FindFileByIdParams) (*FindFileByIdResult, error) {
-	file, err := s.queries.GetFile(ctx, params.ID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, apperrors.ErrNotFound
-		}
-		return nil, err
-	}
-	return &FindFileByIdResult{File: file}, nil
+func (s *service) List(ctx context.Context, versionId *int64, limit, offset int64) ([]File, error) {
+	return s.repository.List(ctx, versionId, limit, offset)
 }
 
-func (s *fileServiceImpl) CreateFile(ctx context.Context, params *CreateFileParams) (*CreateFileResult, error) {
-	file, err := s.queries.CreateFile(ctx, params.Name)
-	if err != nil {
-		return nil, err
+func (s *service) Create(ctx context.Context, req CreateFileRequest) (File, error) {
+	file := File{
+		Name: req.Name,
 	}
-
-	return &CreateFileResult{File: file}, nil
+	return s.repository.Create(ctx, file)
 }
 
-func (s *fileServiceImpl) UploadFile(ctx context.Context, params *UploadFileParams) (*UploadFileResult, error) {
+func (s *service) UploadFile(ctx context.Context, id int64, req UploadFileRequest) (File, error) {
 	defer func(File multipart.File) {
 		err := File.Close()
 		if err != nil {
 			log.Printf("error closing uploaded file: %v", err)
 		}
-	}(params.File)
+	}(req.File)
 
-	file, err := s.queries.GetFile(ctx, params.ID)
+	file, err := s.repository.GetById(ctx, id)
 	if err != nil {
-		return nil, err
+		return File{}, err
 	}
 
 	if file.IsComplete {
-		return nil, ErrFileAlreadyExists
+		return File{}, ErrFileAlreadyComplete
 	}
 
-	assetPath := buildFileAssetPath("")
+	assetPath := buildFileAssetPath(uuid.NewString())
 
-	mimeType, err := mimetype.DetectReader(params.File)
+	mimeType, err := mimetype.DetectReader(req.File)
 	if err != nil {
-		return nil, err
+		return File{}, err
 	}
 
-	_, err = params.File.Seek(0, io.SeekStart)
+	_, err = req.File.Seek(0, io.SeekStart)
 	if err != nil {
-		return nil, err
+		return File{}, err
 	}
 
-	err = s.fileStorage.Save(ctx, assetPath, params.File)
+	err = s.fileStorage.Save(ctx, assetPath, req.File)
 	if err != nil {
-		return nil, err
+		return File{}, err
 	}
 
 	mimeTypeString := mimeType.String()
 
-	file, err = s.queries.UpdateFileWithUploadedFile(ctx, &database.UpdateFileWithUploadedFileParams{
-		ID:       params.ID,
-		Size:     &params.FileHeader.Size,
-		Path:     &assetPath,
-		MimeType: &mimeTypeString,
-	})
+	file.Size = &req.FileHeader.Size
+	file.Path = &assetPath
+	file.MimeType = &mimeTypeString
+	file.IsComplete = true
+
+	file, err = s.repository.Update(ctx, file)
 	if err != nil {
 		fileDeleteErr := s.fileStorage.Delete(ctx, assetPath)
 		if fileDeleteErr != nil {
 			log.Printf("error deleting file during upload: %v", fileDeleteErr)
 		}
-		return nil, err
+		return File{}, err
 	}
 
-	return &UploadFileResult{File: file}, nil
+	return file, nil
 }
 
-func (s *fileServiceImpl) DownloadFile(ctx context.Context, params *DownloadFileParams) (*DownloadFileResult, error) {
-	findRes, err := s.FindFileById(ctx, &FindFileByIdParams{ID: params.ID})
+func (s *service) Download(ctx context.Context, id int64) (File, io.ReadSeekCloser, error) {
+	file, err := s.repository.GetById(ctx, id)
 	if err != nil {
-		return nil, err
+		return File{}, nil, err
 	}
-	file := findRes.File
 
 	if !file.IsComplete {
-		return nil, ErrIncompleteFile
+		return File{}, nil, ErrFileNotComplete
 	}
 
 	reader, err := s.fileStorage.Retrieve(ctx, *file.Path)
 	if err != nil {
-		return nil, err
+		return File{}, nil, err
 	}
 
-	return &DownloadFileResult{File: file, Reader: reader}, nil
+	return file, reader, nil
 }
 
-func (s *fileServiceImpl) DeleteFile(ctx context.Context, params *DeleteFileParams) error {
-	findRes, err := s.FindFileById(ctx, &FindFileByIdParams{ID: params.ID})
+func (s *service) Delete(ctx context.Context, id int64) error {
+	file, err := s.repository.GetById(ctx, id)
 	if err != nil {
 		return err
 	}
-	file := findRes.File
 
-	err = s.queries.DeleteFile(ctx, file.ID)
+	err = s.repository.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -172,9 +144,5 @@ func (s *fileServiceImpl) DeleteFile(ctx context.Context, params *DeleteFilePara
 }
 
 func buildFileAssetPath(fileUuid string) string {
-	if fileUuid == "" {
-		fileUuid = uuid.NewString()
-	}
-
 	return path.Join("files", fileUuid)
 }

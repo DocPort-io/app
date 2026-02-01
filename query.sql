@@ -109,7 +109,7 @@ FROM files
          INNER JOIN versions_files ON files.id = versions_files.file_id
 WHERE versions_files.version_id = $1;
 
--- name: ListFilesByVersionId :many
+-- name: ListFiles :many
 SELECT files.id,
        files.created_at,
        files.updated_at,
@@ -119,8 +119,8 @@ SELECT files.id,
        files.mime_type,
        files.is_complete
 FROM files
-         INNER JOIN versions_files ON files.id = versions_files.file_id
-WHERE versions_files.version_id = $1
+         LEFT JOIN versions_files ON files.id = versions_files.file_id
+WHERE (sqlc.narg('versionId')::BIGINT IS NULL OR versions_files.version_id = sqlc.narg('versionId'))
 ORDER BY files.created_at DESC
 LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 
@@ -138,19 +138,19 @@ WHERE id = $1
 LIMIT 1;
 
 -- name: CreateFile :one
-INSERT INTO files (name)
-VALUES ($1)
+INSERT INTO files (name, size, path, mime_type, is_complete)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
--- name: UpdateFileWithUploadedFile :one
+-- name: UpdateFile :one
 UPDATE files
 SET updated_at  = current_timestamp,
-    size        = $2,
-    path        = $3,
-    mime_type   = $4,
-    is_complete = TRUE
+    name        = $2,
+    size        = $3,
+    path        = $4,
+    mime_type   = $5,
+    is_complete = $6
 WHERE id = $1
-  AND is_complete = FALSE
 RETURNING *;
 
 -- name: DeleteFile :exec
