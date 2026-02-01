@@ -52,10 +52,10 @@ SELECT count(versions.id)
 FROM versions
 WHERE project_id = $1;
 
--- name: ListVersionsByProjectId :many
+-- name: ListVersions :many
 SELECT *
 FROM versions
-WHERE project_id = $1
+WHERE (sqlc.narg('projectId')::BIGINT IS NULL OR project_id = sqlc.narg('projectId'))
 ORDER BY created_at DESC
 LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 

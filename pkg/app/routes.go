@@ -18,23 +18,10 @@ import (
 
 // @host		localhost:8080
 // @basepath	/
-func registerRoutes(router *chi.Mux, projectController *project.Handler, versionController *version.VersionController, fileController *file.FileController) {
+func registerRoutes(router *chi.Mux, projectController *project.Handler, versionController *version.Handler, fileController *file.FileController) {
 	router.Route("/api/v1", func(r chi.Router) {
 		projectController.RegisterRoutes(r)
-
-		r.Route("/versions", func(r chi.Router) {
-			r.With(paginate.Paginate).Get("/", versionController.FindAllVersions)
-			r.Post("/", versionController.CreateVersion)
-
-			r.Route("/{versionId}", func(r chi.Router) {
-				r.Use(versionController.VersionCtx)
-				r.Get("/", versionController.GetVersion)
-				r.Put("/", versionController.UpdateVersion)
-				r.Delete("/", versionController.DeleteVersion)
-				r.Post("/attach-file", versionController.AttachFileToVersion)
-				r.Post("/detach-file", versionController.DetachFileFromVersion)
-			})
-		})
+		versionController.RegisterRoutes(r)
 
 		r.Route("/files", func(r chi.Router) {
 			r.With(paginate.Paginate).Get("/", fileController.FindAllFiles)
