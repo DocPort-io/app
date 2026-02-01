@@ -15,19 +15,15 @@ LIMIT 1;
 SELECT count(projects.id)
 FROM projects;
 
--- name: ListProjectsWithLocations :many
-SELECT projects.id,
-       projects.created_at,
-       projects.updated_at,
-       projects.slug,
-       projects.name,
-       projects.location_id,
-       locations.name AS location_name,
-       locations.lat  AS location_lat,
-       locations.lon  AS location_lon
+-- name: ListProjects :many
+SELECT id,
+       created_at,
+       updated_at,
+       slug,
+       name,
+       location_id
 FROM projects
-         LEFT JOIN locations ON locations.id = projects.location_id
-ORDER BY projects.created_at DESC
+ORDER BY created_at DESC
 LIMIT sqlc.arg('limit')::BIGINT OFFSET sqlc.arg('offset')::BIGINT;
 
 -- name: CreateProject :one

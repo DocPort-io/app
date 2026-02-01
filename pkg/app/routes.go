@@ -18,20 +18,9 @@ import (
 
 // @host		localhost:8080
 // @basepath	/
-func registerRoutes(router *chi.Mux, projectController *project.ProjectController, versionController *version.VersionController, fileController *file.FileController) {
+func registerRoutes(router *chi.Mux, projectController *project.Handler, versionController *version.VersionController, fileController *file.FileController) {
 	router.Route("/api/v1", func(r chi.Router) {
-
-		r.Route("/projects", func(r chi.Router) {
-			r.With(paginate.Paginate).Get("/", projectController.FindAllProjects)
-			r.Post("/", projectController.CreateProject)
-
-			r.Route("/{projectId}", func(r chi.Router) {
-				r.Use(projectController.ProjectCtx)
-				r.Get("/", projectController.GetProject)
-				r.Put("/", projectController.UpdateProject)
-				r.Delete("/", projectController.DeleteProject)
-			})
-		})
+		projectController.RegisterRoutes(r)
 
 		r.Route("/versions", func(r chi.Router) {
 			r.With(paginate.Paginate).Get("/", versionController.FindAllVersions)

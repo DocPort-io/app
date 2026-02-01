@@ -22,11 +22,13 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 	router.Use(middleware.Recoverer)
 	router.Use(render.SetContentType(render.ContentTypeJSON))
 
-	projectService := project.NewProjectService(queries)
+	projectRepository := project.NewRepository(queries)
+
+	projectService := project.NewService(projectRepository)
 	versionService := version.NewVersionService(queries)
 	fileService := file.NewFileService(queries, fileStorage)
 
-	projectController := project.NewProjectController(projectService)
+	projectController := project.NewHandler(projectService)
 	versionController := version.NewVersionController(versionService)
 	fileController := file.NewFileController(fileService)
 
