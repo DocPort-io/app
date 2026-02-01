@@ -131,7 +131,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 //	@tags		projects
 //	@accept		json
 //	@produce	json
-//	@param		projectId	path		uint						true	"Project identifier"
+//	@param		projectId	path		uint					true	"Project identifier"
 //	@param		request		body		UpdateProjectRequest	true	"Update a project"
 //	@success	200			{object}	ProjectResponse
 //	@failure	400			{object}	handler.ErrorResponse
