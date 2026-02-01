@@ -140,7 +140,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 //	@tags		versions
 //	@accept		json
 //	@produce	json
-//	@param		versionId	path		uint						true	"Version identifier"
+//	@param		versionId	path		uint					true	"Version identifier"
 //	@param		request		body		UpdateVersionRequest	true	"Update a version"
 //	@success	200			{object}	VersionResponse
 //	@failure	400			{object}	handler.ErrorResponse
@@ -213,7 +213,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 //	@summary	Attaches a file to a version
 //	@tags		versions
 //	@accept		json
-//	@param		versionId	path	uint							true	"Version identifier"
+//	@param		versionId	path	uint				true	"Version identifier"
 //	@param		request		body	AttachFileRequest	true	"File to attach"
 //	@success	204
 //	@failure	400	{object}	handler.ErrorResponse
@@ -256,7 +256,7 @@ func (h *Handler) AttachFile(w http.ResponseWriter, r *http.Request) {
 //	@summary	Detach a file from a version
 //	@tags		versions
 //	@accept		json
-//	@param		versionId	path	uint								true	"Version identifier"
+//	@param		versionId	path	uint				true	"Version identifier"
 //	@param		request		body	DetachFileRequest	true	"File to detach"
 //	@success	204
 //	@failure	400	{object}	handler.ErrorResponse
