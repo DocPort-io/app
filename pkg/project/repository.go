@@ -23,7 +23,7 @@ type Repository interface {
 }
 
 type repository struct {
-	queries *database.Queries // db or any other dependencies
+	queries *database.Queries
 }
 
 func NewRepository(queries *database.Queries) Repository {

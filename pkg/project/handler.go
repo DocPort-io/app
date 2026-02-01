@@ -46,7 +46,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 //	@failure	500			{object}	handler.ErrorResponse
 //	@router		/api/v1/projects/{projectId} [get]
 func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "projectId"), 10, 64)
+	id, err := parseProjectId(r)
 	if err != nil {
 		writeInvalidProjectIdError(w)
 		return
@@ -112,7 +112,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.CreateProject(r.Context(), req)
+	project, err := h.service.Create(r.Context(), req)
 	if errors.Is(err, ErrProjectAlreadyExists) {
 		writeProjectAlreadyExistsError(w)
 		return
@@ -139,7 +139,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 //	@failure	500			{object}	handler.ErrorResponse
 //	@router		/api/v1/projects/{projectId} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "projectId"), 10, 64)
+	id, err := parseProjectId(r)
 	if err != nil {
 		writeInvalidProjectIdError(w)
 		return
@@ -156,7 +156,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.UpdateProject(r.Context(), id, req)
+	project, err := h.service.Update(r.Context(), id, req)
 	if errors.Is(err, ErrProjectNotFound) {
 		writeProjectNotFoundError(w)
 		return
@@ -181,13 +181,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 //	@failure	500	{object}	handler.ErrorResponse
 //	@router		/api/v1/projects/{projectId} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "projectId"), 10, 64)
+	id, err := parseProjectId(r)
 	if err != nil {
 		writeInvalidProjectIdError(w)
 		return
 	}
 
-	err = h.service.DeleteProject(r.Context(), id)
+	err = h.service.Delete(r.Context(), id)
 	if errors.Is(err, ErrProjectNotFound) {
 		writeProjectNotFoundError(w)
 		return
@@ -210,4 +210,8 @@ func writeProjectNotFoundError(w http.ResponseWriter) {
 
 func writeProjectAlreadyExistsError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusConflict, "project already exists")
+}
+
+func parseProjectId(r *http.Request) (int64, error) {
+	return strconv.ParseInt(chi.URLParam(r, "projectId"), 10, 64)
 }

@@ -7,9 +7,9 @@ import (
 type Service interface {
 	GetById(ctx context.Context, id int64) (Project, error)
 	List(ctx context.Context, limit, offset int64) ([]Project, error)
-	CreateProject(ctx context.Context, req CreateProjectRequest) (Project, error)
-	UpdateProject(ctx context.Context, id int64, req UpdateProjectRequest) (Project, error)
-	DeleteProject(ctx context.Context, id int64) error
+	Create(ctx context.Context, req CreateProjectRequest) (Project, error)
+	Update(ctx context.Context, id int64, req UpdateProjectRequest) (Project, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type service struct {
@@ -28,7 +28,7 @@ func (s *service) List(ctx context.Context, limit, offset int64) ([]Project, err
 	return s.repository.List(ctx, limit, offset)
 }
 
-func (s *service) CreateProject(ctx context.Context, req CreateProjectRequest) (Project, error) {
+func (s *service) Create(ctx context.Context, req CreateProjectRequest) (Project, error) {
 	project := Project{
 		Slug: req.Slug,
 		Name: req.Name,
@@ -36,7 +36,7 @@ func (s *service) CreateProject(ctx context.Context, req CreateProjectRequest) (
 	return s.repository.Create(ctx, project)
 }
 
-func (s *service) UpdateProject(ctx context.Context, id int64, req UpdateProjectRequest) (Project, error) {
+func (s *service) Update(ctx context.Context, id int64, req UpdateProjectRequest) (Project, error) {
 	project := Project{
 		ID:   id,
 		Slug: req.Slug,
@@ -45,6 +45,6 @@ func (s *service) UpdateProject(ctx context.Context, id int64, req UpdateProject
 	return s.repository.Update(ctx, project)
 }
 
-func (s *service) DeleteProject(ctx context.Context, id int64) error {
+func (s *service) Delete(ctx context.Context, id int64) error {
 	return s.repository.Delete(ctx, id)
 }
