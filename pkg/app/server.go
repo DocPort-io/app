@@ -42,7 +42,7 @@ func NewServer() http.Server {
 	router.Use(middleware.Recoverer)
 	router.Use(render.SetContentType(render.ContentTypeJSON))
 
-	authMiddleware, err := platformMiddleware.NewAuthMiddleware()
+	authMiddleware, err := platformMiddleware.NewAuthMiddleware(cfg)
 	if err != nil {
 		log.Fatalf("creating auth middleware failed: %v", err)
 	}

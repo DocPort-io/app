@@ -8,6 +8,8 @@ dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
 
 [auth]
 issuer = ""
+clientId = ""
+clientSecret = ""
 
 [storage]
 provider = "filesystem"

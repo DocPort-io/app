@@ -1,29 +1,26 @@
 package middleware
 
 import (
+	"app/pkg/platform/config"
 	"app/pkg/platform/handler"
 	"context"
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/zitadel/oidc/v3/pkg/client/rs"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 )
-
-const JWKS_URI = `https://keycloak.docport.io/realms/docport-dev`
 
 type AuthMiddleware struct {
 	provider rs.ResourceServer
 }
 
-func NewAuthMiddleware() (*AuthMiddleware, error) {
+func NewAuthMiddleware(cfg config.Config) (*AuthMiddleware, error) {
 	ctx := context.Background()
 
-	provider, err := rs.NewResourceServerClientCredentials(ctx, JWKS_URI, "docport-dev", "cH0rHPr1w4hFaQCj44Rtxtv5uOWHfmA3")
+	provider, err := rs.NewResourceServerClientCredentials(ctx, cfg.Auth.Issuer, cfg.Auth.ClientId, cfg.Auth.ClientSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -47,24 +44,19 @@ func (am *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Printf(resp.PreferredUsername)
+		if resp.Active == false {
+			handler.WriteError(w, http.StatusUnauthorized, "token is not active")
+			return
+		}
 
-		//verifiedToken, err := jwt.ParseRequest(r, jwt.WithHeaderKey("Authorization"), jwt.WithKeySet(jwkSet))
-		//if err != nil {
-		//	log.Printf("failed to parse JWT token: %v", err)
-		//	handler.WriteError(w, http.StatusUnauthorized, "invalid token")
-		//	return
-		//}
-		//
-		//var preferredUsername string
-		//err = verifiedToken.Get("preferred_username", &preferredUsername)
-		//if err != nil {
-		//	log.Printf("failed to get preferred username: %v", err)
-		//	handler.WriteError(w, http.StatusUnauthorized, "missing preferred_username in token")
-		//	return
-		//}
+		data, err := json.Marshal(resp)
+		if err != nil {
+			log.Printf("error marshalling response: %v", err)
+			handler.WriteError(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
 
-		ctx := context.WithValue(r.Context(), "AUTH_PREFERRED_USERNAME", resp.PreferredUsername)
+		ctx := context.WithValue(r.Context(), "BEARER_AUTH_JSON", data)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
@@ -83,15 +75,4 @@ func checkToken(w http.ResponseWriter, r *http.Request) (bool, string) {
 		return false, ""
 	}
 	return true, strings.TrimPrefix(auth, oidc.PrefixBearer)
-}
-
-func fetchJwkSet() (jwk.Set, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	jwkSet, err := jwk.Fetch(ctx, JWKS_URI)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load JWK set: %w", err)
-	}
-	return jwkSet, nil
 }

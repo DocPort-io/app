@@ -26,7 +26,9 @@ type DatabaseConfig struct {
 }
 
 type AuthConfig struct {
-	Issuer string `mapstructure:"issuer" validate:"required"`
+	Issuer       string `mapstructure:"issuer" validate:"required"`
+	ClientId     string `mapstructure:"clientId" validate:"required"`
+	ClientSecret string `mapstructure:"clientSecret" validate:"required"`
 }
 
 type StorageConfig struct {
