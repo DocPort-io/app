@@ -1,12 +1,13 @@
 package app
 
 import (
+	"app/pkg/platform/config"
 	"app/pkg/storage"
 	"fmt"
 	"log"
 )
 
-func NewFileStorage(cfg *Config) storage.FileStorage {
+func NewFileStorage(cfg config.Config) storage.FileStorage {
 	backend := storage.Type(cfg.Storage.Provider)
 	if backend == storage.TypeFileSystem {
 		fileStorage, err := storage.NewFilesystemStorage(cfg.Storage.Path)

@@ -1,10 +1,13 @@
-[database]
-url = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
-
 [server]
 host = "localhost:8080"
 bind = "127.0.0.1"
 port = "8080"
+
+[database]
+dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
+
+[auth]
+issuer = "https://keycloak.docport.io/realms/docport-dev"
 
 [storage]
 provider = "filesystem"

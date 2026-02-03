@@ -1,12 +1,14 @@
 package app
 
 import (
-	"app/pkg/database"
 	"app/pkg/file"
+	"app/pkg/platform/config"
+	platformMiddleware "app/pkg/platform/middleware"
 	"app/pkg/project"
-	"app/pkg/storage"
 	"app/pkg/user"
 	"app/pkg/version"
+	"log"
+	"net"
 	"net/http"
 
 	"app/pkg/docs"
@@ -23,7 +25,15 @@ import (
 
 // @host		localhost:8080
 // @basepath	/
-func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.Handler {
+func NewServer() http.Server {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("load config failed: %v", err)
+	}
+
+	fileStorage := NewFileStorage(cfg)
+	queries := NewDatabase(cfg)
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.Heartbeat("/heartbeat"))
@@ -31,6 +41,11 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(render.SetContentType(render.ContentTypeJSON))
+
+	authMiddleware, err := platformMiddleware.NewAuthMiddleware()
+	if err != nil {
+		log.Fatalf("creating auth middleware failed: %v", err)
+	}
 
 	projectRepository := project.NewRepository(queries)
 	versionRepository := version.NewRepository(queries)
@@ -43,7 +58,7 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 	projectHandler := project.NewHandler(projectService)
 	versionHandler := version.NewHandler(versionService)
 	fileHandler := file.NewHandler(fileService)
-	userHandler := user.NewHandler()
+	userHandler := user.NewHandler(authMiddleware)
 
 	router.Route("/api/v1", func(r chi.Router) {
 		projectHandler.RegisterRoutes(r)
@@ -56,5 +71,8 @@ func NewServer(queries *database.Queries, fileStorage storage.FileStorage) http.
 
 	router.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 
-	return router
+	return http.Server{
+		Addr:    net.JoinHostPort(cfg.Server.Bind, cfg.Server.Port),
+		Handler: router,
+	}
 }

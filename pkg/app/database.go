@@ -2,6 +2,7 @@ package app
 
 import (
 	appRoot "app"
+	"app/pkg/platform/config"
 	"context"
 	"database/sql"
 	"errors"
@@ -19,8 +20,8 @@ import (
 	"app/pkg/database"
 )
 
-func NewDatabase(cfg *Config) *database.Queries {
-	databaseUrl := cfg.Database.URL
+func NewDatabase(cfg config.Config) *database.Queries {
+	databaseUrl := cfg.Database.DSN
 	ctx := context.Background()
 
 	sqlDB, err := sql.Open("pgx", databaseUrl)
