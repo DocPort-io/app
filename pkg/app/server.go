@@ -25,6 +25,13 @@ import (
 
 // @host		localhost:8080
 // @basepath	/
+
+// @securitydefinitions.oauth2.application OAuth2ClientCredentials
+// @tokenUrl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
+
+// @securitydefinitions.oauth2.accessCode OAuth2AccessCode
+// @authorizationurl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/auth
+// @tokenUrl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
 func NewServer() http.Server {
 	cfg, err := config.Load()
 	if err != nil {

@@ -4,59 +4,71 @@ import (
 	"app/pkg/platform/config"
 	"app/pkg/platform/handler"
 	"context"
-	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/zitadel/oidc/v3/pkg/client/rs"
-	"github.com/zitadel/oidc/v3/pkg/oidc"
+	"github.com/lestrrat-go/httprc/v3"
+	"github.com/lestrrat-go/jwx/v3/jwk"
+	"github.com/lestrrat-go/jwx/v3/jwt"
 )
 
 type AuthMiddleware struct {
-	provider rs.ResourceServer
+	config config.Config
+	cache  *jwk.Cache
 }
 
-func NewAuthMiddleware(cfg config.Config) (*AuthMiddleware, error) {
+func NewAuthMiddleware(config config.Config) (*AuthMiddleware, error) {
 	ctx := context.Background()
 
-	provider, err := rs.NewResourceServerClientCredentials(ctx, cfg.Auth.Issuer, cfg.Auth.ClientId, cfg.Auth.ClientSecret)
+	httpClient := httprc.NewClient()
+
+	cache, err := jwk.NewCache(ctx, httpClient)
 	if err != nil {
+		log.Printf("error creating jwk cache: %v", err)
 		return nil, err
 	}
 
-	return &AuthMiddleware{provider: provider}, nil
+	if err := cache.Register(ctx, config.Auth.JWKSUrl); err != nil {
+		log.Printf("error registering JWKS: %v", err)
+		return nil, err
+	}
+
+	return &AuthMiddleware{config: config, cache: cache}, nil
 }
 
-func (am *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
+func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		ok, token := checkToken(w, r)
+		ok, unverifiedToken := checkToken(w, r)
 		if !ok {
 			return
 		}
 
-		log.Printf("token: %s", token)
+		log.Printf("token: %s", unverifiedToken)
 
-		resp, err := rs.Introspect[*oidc.IntrospectionResponse](r.Context(), am.provider, token)
+		keySet, err := m.cache.Lookup(r.Context(), m.config.Auth.JWKSUrl)
 		if err != nil {
-			log.Printf("error in introspection: %v", err)
-			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
-			return
-		}
-
-		if resp.Active == false {
-			handler.WriteError(w, http.StatusUnauthorized, "token is not active")
-			return
-		}
-
-		data, err := json.Marshal(resp)
-		if err != nil {
-			log.Printf("error marshalling response: %v", err)
+			log.Printf("error looking up jwk set: %v", err)
 			handler.WriteError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "BEARER_AUTH_JSON", data)
+		token, err := jwt.ParseString(unverifiedToken, jwt.WithKeySet(keySet))
+		if errors.Is(err, jwt.TokenExpiredError()) {
+			handler.WriteError(w, http.StatusUnauthorized, "token expired")
+			return
+		}
+		if err != nil {
+			log.Printf("error parsing token: %v", err)
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		iss, _ := token.Issuer()
+		log.Printf("iss: %v", iss)
+
+		ctx := context.WithValue(r.Context(), "BEARER_AUTH_JSON", "test")
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
@@ -70,9 +82,9 @@ func checkToken(w http.ResponseWriter, r *http.Request) (bool, string) {
 		handler.WriteError(w, http.StatusUnauthorized, "missing authorization header")
 		return false, ""
 	}
-	if !strings.HasPrefix(auth, oidc.PrefixBearer) {
+	if !strings.HasPrefix(auth, "Bearer ") {
 		handler.WriteError(w, http.StatusUnauthorized, "invalid authorization header")
 		return false, ""
 	}
-	return true, strings.TrimPrefix(auth, oidc.PrefixBearer)
+	return true, strings.TrimPrefix(auth, "Bearer ")
 }
