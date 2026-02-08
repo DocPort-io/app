@@ -45,8 +45,6 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Printf("token: %s", unverifiedToken)
-
 		keySet, err := m.cache.Lookup(r.Context(), m.config.Auth.JWKSUrl)
 		if err != nil {
 			log.Printf("error looking up jwk set: %v", err)
@@ -54,7 +52,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := jwt.ParseString(unverifiedToken, jwt.WithKeySet(keySet))
+		_, err = jwt.ParseString(unverifiedToken, jwt.WithKeySet(keySet))
 		if errors.Is(err, jwt.TokenExpiredError()) {
 			handler.WriteError(w, http.StatusUnauthorized, "token expired")
 			return
@@ -65,12 +63,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		iss, _ := token.Issuer()
-		log.Printf("iss: %v", iss)
-
-		ctx := context.WithValue(r.Context(), "BEARER_AUTH_JSON", "test")
-
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	}
 
 	return http.HandlerFunc(fn)
