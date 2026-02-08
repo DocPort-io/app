@@ -1,6 +1,7 @@
 package user
 
 import (
+	"app/pkg/platform/handler"
 	"app/pkg/platform/middleware"
 	"net/http"
 
@@ -30,13 +31,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 //	@tags		users
 //	@accept		json
 //	@produce	json
-//	@success	200
-//	@security	OAuth2ClientCredentials
+//	@success	200 {object} UserInfoResponse
 //	@security	OAuth2AccessCode
 //	@router		/api/v1/users/me [get]
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
-	data := r.Context().Value("BEARER_AUTH_JSON").(string)
-
-	//handler.WriteJson(w, http.StatusOK, data)
-	w.Write([]byte(data))
+	tokenContext := r.Context().Value(middleware.TokenContextKey).(middleware.TokenContext)
+	handler.WriteJson(w, http.StatusOK, ToUserInfoResponse(tokenContext))
 }

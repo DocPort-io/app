@@ -14,6 +14,10 @@ import (
 	"github.com/lestrrat-go/jwx/v3/jwt"
 )
 
+type contextKey string
+
+const TokenContextKey contextKey = "token_context"
+
 type AuthMiddleware struct {
 	config config.Config
 	cache  *jwk.Cache
@@ -52,7 +56,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = jwt.ParseString(unverifiedToken, jwt.WithKeySet(keySet))
+		token, err := jwt.ParseString(unverifiedToken, jwt.WithKeySet(keySet))
 		if errors.Is(err, jwt.TokenExpiredError()) {
 			handler.WriteError(w, http.StatusUnauthorized, "token expired")
 			return
@@ -63,10 +67,82 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		var name string
+		err = token.Get("name", &name)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var givenName string
+		err = token.Get("given_name", &givenName)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var familyName string
+		err = token.Get("family_name", &familyName)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var email string
+		err = token.Get("email", &email)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var emailVerified bool
+		err = token.Get("email_verified", &emailVerified)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var preferredUsername string
+		err = token.Get("preferred_username", &preferredUsername)
+		if err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		var scopeString string
+		if err := token.Get("scope", &scopeString); err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid scope")
+			return
+		}
+
+		scopes := strings.Split(scopeString, " ")
+
+		tokenContext := TokenContext{
+			Name:              name,
+			GivenName:         givenName,
+			FamilyName:        familyName,
+			Email:             email,
+			EmailVerified:     emailVerified,
+			PreferredUsername: preferredUsername,
+			Scopes:            scopes,
+		}
+
+		ctx := context.WithValue(r.Context(), TokenContextKey, tokenContext)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 
 	return http.HandlerFunc(fn)
+}
+
+type TokenContext struct {
+	Name              string
+	GivenName         string
+	FamilyName        string
+	Email             string
+	EmailVerified     bool
+	PreferredUsername string
+	Scopes            []string
 }
 
 func checkToken(w http.ResponseWriter, r *http.Request) (bool, string) {
