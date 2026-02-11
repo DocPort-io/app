@@ -8,6 +8,7 @@ dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
 
 [auth]
 jwksUrl = ""
+scopes = [] # Add required token scopes here. Leave empty if you don't want to validate scopes.
 
 [storage]
 provider = "filesystem"

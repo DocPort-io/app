@@ -167,3 +167,38 @@ DELETE
 FROM versions_files
 WHERE version_id = $1
   AND file_id = $2;
+
+-- Users
+-- name: GetUserById :one
+SELECT id,
+       created_at,
+       updated_at,
+       name,
+       email,
+       email_verified
+FROM users
+WHERE id = $1
+LIMIT 1;
+
+-- name: GetUserByProvider :one
+SELECT users.id,
+       users.created_at,
+       users.updated_at,
+       users.name,
+       users.email,
+       users.email_verified
+FROM users
+    JOIN public.external_auth ea on users.id = ea.user_id
+WHERE ea.provider = $1 AND ea.provider_id = $2
+LIMIT 1;
+
+-- name: ListExternalAuthsByUserId :many
+SELECT
+    id,
+    created_at,
+    updated_at,
+    user_id,
+    provider,
+    provider_id
+FROM external_auth
+WHERE user_id = $1;

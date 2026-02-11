@@ -23,15 +23,15 @@ import (
 //	@title		DocPort.io API
 //	@version	0.0.1
 
-// @host		localhost:8080
-// @basepath	/
+//	@host		localhost:8080
+//	@basepath	/
 
-// @securitydefinitions.oauth2.application OAuth2ClientCredentials
-// @tokenUrl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
+//	@securitydefinitions.oauth2.application	OAuth2ClientCredentials
+//	@tokenUrl								https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
 
-// @securitydefinitions.oauth2.accessCode OAuth2AccessCode
-// @authorizationurl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/auth
-// @tokenUrl https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
+//	@securitydefinitions.oauth2.accessCode	OAuth2AccessCode
+//	@authorizationurl						https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/auth
+//	@tokenUrl								https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/token
 
 func NewServer() http.Server {
 	cfg, err := config.Load()
@@ -58,15 +58,17 @@ func NewServer() http.Server {
 	projectRepository := project.NewRepository(queries)
 	versionRepository := version.NewRepository(queries)
 	fileRepository := file.NewRepository(queries)
+	userRepository := user.NewRepository(queries)
 
 	projectService := project.NewService(projectRepository)
 	versionService := version.NewVersionService(versionRepository)
 	fileService := file.NewFileService(fileRepository, fileStorage)
+	userService := user.NewService(userRepository)
 
 	projectHandler := project.NewHandler(projectService)
 	versionHandler := version.NewHandler(versionService)
 	fileHandler := file.NewHandler(fileService)
-	userHandler := user.NewHandler(authMiddleware)
+	userHandler := user.NewHandler(userService, authMiddleware)
 
 	router.Route("/api/v1", func(r chi.Router) {
 		projectHandler.RegisterRoutes(r)

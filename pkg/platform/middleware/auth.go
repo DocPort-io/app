@@ -5,8 +5,10 @@ import (
 	"app/pkg/platform/handler"
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/lestrrat-go/httprc/v3"
@@ -16,7 +18,7 @@ import (
 
 type contextKey string
 
-const TokenContextKey contextKey = "token_context"
+const tokenContextKey contextKey = "token_context"
 
 type AuthMiddleware struct {
 	config config.Config
@@ -67,6 +69,35 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
+		var scopeString string
+		if err := token.Get("scope", &scopeString); err != nil {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid scope")
+			return
+		}
+
+		scopes := strings.Split(scopeString, " ")
+
+		if len(m.config.Auth.Scopes) > 0 {
+			for _, scope := range m.config.Auth.Scopes {
+				if !slices.Contains(scopes, scope) {
+					handler.WriteError(w, http.StatusUnauthorized, fmt.Sprintf("missing scope %s", scope))
+					return
+				}
+			}
+		}
+
+		subject, ok := token.Subject()
+		if !ok {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		issuer, ok := token.Issuer()
+		if !ok {
+			handler.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
 		var name string
 		err = token.Get("name", &name)
 		if err != nil {
@@ -109,15 +140,9 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		var scopeString string
-		if err := token.Get("scope", &scopeString); err != nil {
-			handler.WriteError(w, http.StatusUnauthorized, "invalid scope")
-			return
-		}
-
-		scopes := strings.Split(scopeString, " ")
-
 		tokenContext := TokenContext{
+			Subject:           subject,
+			Issuer:            issuer,
 			Name:              name,
 			GivenName:         givenName,
 			FamilyName:        familyName,
@@ -127,7 +152,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 			Scopes:            scopes,
 		}
 
-		ctx := context.WithValue(r.Context(), TokenContextKey, tokenContext)
+		ctx := context.WithValue(r.Context(), tokenContextKey, tokenContext)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
@@ -135,7 +160,17 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+func GetTokenContextFromContext(ctx context.Context) TokenContext {
+	tokenContext := ctx.Value(tokenContextKey)
+	if tokenContext == nil {
+		log.Fatalf("token context not found in context")
+	}
+	return tokenContext.(TokenContext)
+}
+
 type TokenContext struct {
+	Subject           string
+	Issuer            string
 	Name              string
 	GivenName         string
 	FamilyName        string

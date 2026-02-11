@@ -26,7 +26,8 @@ type DatabaseConfig struct {
 }
 
 type AuthConfig struct {
-	JWKSUrl string `mapstructure:"jwksUrl" validate:"required"`
+	JWKSUrl string   `mapstructure:"jwksUrl" validate:"required"`
+	Scopes  []string `mapstructure:"scopes"`
 }
 
 type StorageConfig struct {
