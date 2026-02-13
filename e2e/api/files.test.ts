@@ -7,6 +7,29 @@ test.describe("Files", () => {
 
       expect(response.status()).toBe(200);
     });
+
+    test("should return 200 for version id", async ({ createProject, createVersion, request }) => {
+      const project = await createProject();
+      const version = await createVersion({ projectId: project.id });
+
+      const response = await request.get("/api/v1/files", {
+        params: {
+          versionId: version.id,
+        }
+      });
+
+      expect(response.status()).toBe(200);
+    });
+
+    test("should return 400 for invalid version id", async ({ request }) => {
+      const response = await request.get("/api/v1/files", {
+        params: {
+          versionId: 'invalid-id',
+        }
+      });
+
+      expect(response.status()).toBe(400);
+    });
   });
 
   test.describe("Create files", () => {

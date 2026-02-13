@@ -215,7 +215,7 @@ test.describe("Versions", () => {
       expect(secondResponse.status()).toBe(409);
     });
 
-    test("should return 404 for non-existing file", async ({ createVersion, request }) => {
+    test("should return 400 for non-existing file", async ({ createVersion, request }) => {
       const version = await createVersion({ projectId: project.id });
 
       const response = await request.patch(`/api/v1/versions/${version.id}/attach-file`, {
@@ -227,7 +227,7 @@ test.describe("Versions", () => {
       expect(response.status()).toBe(400);
     });
 
-    test("should return 404 for invalid file", async ({ createVersion, request }) => {
+    test("should return 400 for invalid file", async ({ createVersion, request }) => {
       const version = await createVersion({ projectId: project.id });
 
       const response = await request.patch(`/api/v1/versions/${version.id}/attach-file`, {
@@ -255,7 +255,7 @@ test.describe("Versions", () => {
       expect(response.status()).toBe(500);
     });
 
-    test("should return 404 for invalid version", async ({ createFile, request }) => {
+    test("should return 400 for invalid version", async ({ createFile, request }) => {
       const file = await createFile({
         name: "example.txt",
         mimeType: "text/plain",
@@ -298,7 +298,7 @@ test.describe("Versions", () => {
       expect(detachResponse.status()).toBe(204);
     });
 
-    test("should return 404 for non-existing file", async ({ createVersion, request }) => {
+    test("should return 400 for non-existing file", async ({ createVersion, request }) => {
       const version = await createVersion({ projectId: project.id });
 
       const response = await request.patch(`/api/v1/versions/${version.id}/detach-file`, {
@@ -310,7 +310,7 @@ test.describe("Versions", () => {
       expect(response.status()).toBe(400);
     });
 
-    test("should return 404 for invalid file", async ({ createVersion, request }) => {
+    test("should return 400 for invalid file", async ({ createVersion, request }) => {
       const version = await createVersion({ projectId: project.id });
 
       const response = await request.patch(`/api/v1/versions/${version.id}/detach-file`, {
@@ -338,14 +338,14 @@ test.describe("Versions", () => {
       expect(response.status()).toBe(204);
     });
 
-    test("should return 404 for invalid version", async ({ createFile, request }) => {
+    test("should return 400 for invalid version", async ({ createFile, request }) => {
       const file = await createFile({
         name: "example.txt",
         mimeType: "text/plain",
         buffer: Buffer.from("Hello, world!")
       });
 
-      const response = await request.patch(`/api/v1/versions/invalid-id/attach-file`, {
+      const response = await request.patch(`/api/v1/versions/invalid-id/detach-file`, {
         data: {
           fileId: file.id,
         },
