@@ -16,7 +16,7 @@ export type CreateProjectParams = {
 };
 
 export const createCreateProjectFixture = (request: APIRequestContext) => {
-  const createProject = async (params: CreateProjectParams = {}) => {
+  const createProject = async (params: CreateProjectParams = {}): Promise<CreateProjectResult> => {
     const response = await request.post("/api/v1/projects", {
       data: {
         slug: params.slug ?? uuid.v4(),

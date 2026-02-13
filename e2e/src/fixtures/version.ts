@@ -18,7 +18,7 @@ export type CreateVersionParams = {
 };
 
 export const createCreateVersionFixture = (request: APIRequestContext) => {
-  const createVersion = async (params: CreateVersionParams) => {
+  const createVersion = async (params: CreateVersionParams): Promise<CreateVersionResult> => {
     const response = await request.post("/api/v1/versions", {
       data: {
         name: params.name ?? "Test version",
