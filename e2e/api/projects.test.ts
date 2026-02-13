@@ -1,4 +1,4 @@
-import { test, expect } from "../src/fixtures";
+import { expect, test } from "../src/fixtures";
 import * as uuid from "uuid";
 
 test.describe("Projects", () => {
@@ -42,7 +42,7 @@ test.describe("Projects", () => {
       expect(response.status()).toBe(400);
     });
 
-    test("should return 400 for duplicate slug", async ({ createProject, request }) => {
+    test("should return 409 for duplicate slug", async ({ createProject, request }) => {
       const project = await createProject();
 
       const response = await request.post("/api/v1/projects", {
