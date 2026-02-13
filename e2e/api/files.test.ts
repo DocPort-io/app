@@ -94,13 +94,13 @@ test.describe("Files", () => {
       expect(secondResponse.status()).toBe(409);
     });
 
-    test("should return 400 for invalid file ID", async ({  request }) => {
+    test("should return 400 for invalid file ID", async ({ request }) => {
       const response = await request.post(`/api/v1/files/invalid-id/upload`);
 
       expect(response.status()).toBe(400);
     });
 
-    test("should return 400 for non-existing file", async ({  request }) => {
+    test("should return 400 for non-existing file", async ({ request }) => {
       const response = await request.post(`/api/v1/files/-1/upload`);
 
       expect(response.status()).toBe(400);
@@ -109,25 +109,17 @@ test.describe("Files", () => {
 
   test.describe("Download file", () => {
     test("should return 200", async ({ createFile, request }) => {
-      const file = await createFile({ name: "example.txt" });
-
-      const response = await request.post(`/api/v1/files/${file.id}/upload`, {
-        multipart: {
-          file: {
-            name: "example.txt",
-            mimeType: "text/plain",
-            buffer: Buffer.from("Hello, world!")
-          }
-        }
+      const file = await createFile({
+        name: "example.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("Hello, world!")
       });
 
-      expect(response.status()).toBe(201);
+      const response = await request.get(`/api/v1/files/${file.id}/download`);
 
-      const downloadFileResponse = await request.get(`/api/v1/files/${file.id}/download`);
-
-      expect(downloadFileResponse.status()).toBe(200);
-      expect(downloadFileResponse.headers()['content-type']).toBe('text/plain; charset=utf-8');
-      await expect(downloadFileResponse.text()).resolves.toBe('Hello, world!');
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toBe('text/plain; charset=utf-8');
+      await expect(response.text()).resolves.toBe('Hello, world!');
     });
 
     test("should return 404 for incomplete file", async ({ createFile, request }) => {
@@ -138,13 +130,13 @@ test.describe("Files", () => {
       expect(response.status()).toBe(404);
     });
 
-    test("should return 400 for invalid file ID", async ({  request }) => {
+    test("should return 400 for invalid file ID", async ({ request }) => {
       const response = await request.get(`/api/v1/files/invalid-id/download`);
 
       expect(response.status()).toBe(400);
     });
 
-    test("should return 404 for non-existing file", async ({  request }) => {
+    test("should return 404 for non-existing file", async ({ request }) => {
       const response = await request.get(`/api/v1/files/-1/download`);
 
       expect(response.status()).toBe(404);

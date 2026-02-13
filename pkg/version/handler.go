@@ -243,6 +243,10 @@ func (h *Handler) AttachFile(w http.ResponseWriter, r *http.Request) {
 		writeVersionNotFoundError(w)
 		return
 	}
+	if errors.Is(err, ErrVersionFileAlreadyAttached) {
+		writeVersionFileAlreadyAttachedError(w)
+		return
+	}
 	if err != nil {
 		handler.WriteInternalServerError(w)
 		return
@@ -325,4 +329,8 @@ func parseProjectId(r *http.Request) (*int64, error) {
 
 func writeInvalidProjectIdError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusBadRequest, "invalid project id")
+}
+
+func writeVersionFileAlreadyAttachedError(w http.ResponseWriter) {
+	handler.WriteError(w, http.StatusConflict, "version file already attached")
 }
