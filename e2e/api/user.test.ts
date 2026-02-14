@@ -110,10 +110,10 @@ test.describe("Users", () => {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           }
-        })
+        });
 
         expect(response.status()).toBe(200);
-      })
+      });
 
       test.fail("should return 404 for unknown user id", async ({ request, defaultToken }) => {
         const response = await request.get("/api/v1/users/-1/external-auths", {
@@ -133,6 +133,35 @@ test.describe("Users", () => {
         });
 
         expect(response.status()).toBe(400);
+      });
+    });
+
+    test.describe("External Auths - Create", () => {
+      test("should return 201", async ({ request, defaultToken }) => {
+        const createResponse = await request.post("/api/v1/users/", {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          },
+          data: {
+            name: `John - ${uuid.v4()}`,
+            email: `john-${uuid.v4()}@example.com`,
+            emailVerified: true
+          }
+        });
+
+        const createBody = await createResponse.json();
+
+        const response = await request.post(`/api/v1/users/${createBody.id}/external-auths`, {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          },
+          data: {
+            provider: "example",
+            providerId: uuid.v4()
+          }
+        });
+
+        expect(response.status()).toBe(201);
       });
     });
   });
