@@ -88,6 +88,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
+          mkdir cover
           pnpm playwright test
 
       - name: SonarQube Scan

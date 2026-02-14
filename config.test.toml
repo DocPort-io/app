@@ -7,7 +7,7 @@ port = "8080"
 dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
 
 [auth]
-jwksUrl = ""
+jwksUrl = "https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/certs"
 scopes = [] # Add required token scopes here. Leave empty if you don't want to validate scopes.
 
 [storage]
