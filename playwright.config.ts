@@ -43,7 +43,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'GOCOVERDIR=cover go run -cover ./cmd/app/main.go',
+    command: 'go run -cover ./cmd/app/main.go',
+    env: {
+      GOCOVERDIR: 'cover'
+    },
     url: 'http://localhost:8080/heartbeat',
     reuseExistingServer: !process.env.CI,
     gracefulShutdown: {

@@ -17,6 +17,18 @@ jobs:
     env:
       SQLC_VERSION: v1.30.0
       SWAG_VERSION: v1.16.6
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: docport-dev
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v6
         with:
@@ -27,6 +39,15 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: 'pnpm'
 
       - name: Cache Go tools
         uses: actions/cache@v5
@@ -52,14 +73,21 @@ jobs:
           fi
           swag --version
 
+      - name: Install Node.js dependencies
+        run: pnpm install
+
       - name: Run go generate
         run: |
           go version
           go generate ./...
 
+      - name: Setup config file
+        run: |
+          cp config.test.toml config.toml
+
       - name: Run tests with coverage
         run: |
-          go test ./... -v -coverprofile=coverage.out
+          pnpm playwright test
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
