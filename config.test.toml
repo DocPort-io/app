@@ -4,7 +4,7 @@ bind = "0.0.0.0"
 port = "8080"
 
 [database]
-dsn = "postgres://postgres:postgres@postgres:5432/docport-dev?sslmode=disable"
+dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
 
 [auth]
 jwksUrl = "https://keycloak.docport.io/realms/docport-dev/protocol/openid-connect/certs"
