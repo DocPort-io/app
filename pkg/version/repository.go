@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ErrVersionNotFound      = errors.New("version not found")
-	ErrVersionAlreadyExists = errors.New("version already exists")
+	ErrVersionNotFound            = errors.New("version not found")
+	ErrVersionAlreadyExists       = errors.New("version already exists")
+	ErrVersionFileAlreadyAttached = errors.New("version file already attached")
 )
 
 type Repository interface {
@@ -109,6 +110,9 @@ func (r *repository) AttachFile(ctx context.Context, id int64, fileId int64) err
 		return ErrVersionNotFound
 	}
 	if err != nil {
+		if isPgUniqueViolation(err) {
+			return ErrVersionFileAlreadyAttached
+		}
 		return err
 	}
 	return nil

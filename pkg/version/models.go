@@ -18,7 +18,7 @@ type CreateVersionRequest struct {
 }
 
 type UpdateVersionRequest struct {
-	Name        string  `json:"name" example:"v0.0.1"`
+	Name        string  `json:"name" validate:"required" example:"v0.0.1"`
 	Description *string `json:"description,omitempty" validate:"omitempty" example:"First version of the project"`
 }
 
