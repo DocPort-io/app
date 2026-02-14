@@ -91,7 +91,36 @@ test.describe("Users", () => {
       });
     });
 
-    test.describe("External Auths", () => {
+    test.describe("External Auths - Create", () => {
+      test("should return 201", async ({ request, defaultToken }) => {
+        const createResponse = await request.post("/api/v1/users/", {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          },
+          data: {
+            name: `John - ${uuid.v4()}`,
+            email: `john-${uuid.v4()}@example.com`,
+            emailVerified: true
+          }
+        });
+
+        const createBody = await createResponse.json();
+
+        const response = await request.post(`/api/v1/users/${createBody.id}/external-auths`, {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          },
+          data: {
+            provider: "example",
+            providerId: uuid.v4()
+          }
+        });
+
+        expect(response.status()).toBe(201);
+      });
+    });
+
+    test.describe("External Auths - List", () => {
       test("should return 200 for valid user", async ({ request, defaultToken }) => {
         const createResponse = await request.post("/api/v1/users/", {
           headers: {
@@ -105,6 +134,16 @@ test.describe("Users", () => {
         });
 
         const createBody = await createResponse.json();
+
+        await request.post(`/api/v1/users/${createBody.id}/external-auths`, {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          },
+          data: {
+            provider: "example",
+            providerId: uuid.v4()
+          }
+        });
 
         const response = await request.get(`/api/v1/users/${createBody.id}/external-auths`, {
           headers: {
@@ -133,35 +172,6 @@ test.describe("Users", () => {
         });
 
         expect(response.status()).toBe(400);
-      });
-    });
-
-    test.describe("External Auths - Create", () => {
-      test("should return 201", async ({ request, defaultToken }) => {
-        const createResponse = await request.post("/api/v1/users/", {
-          headers: {
-            "Authorization": `Bearer ${defaultToken}`
-          },
-          data: {
-            name: `John - ${uuid.v4()}`,
-            email: `john-${uuid.v4()}@example.com`,
-            emailVerified: true
-          }
-        });
-
-        const createBody = await createResponse.json();
-
-        const response = await request.post(`/api/v1/users/${createBody.id}/external-auths`, {
-          headers: {
-            "Authorization": `Bearer ${defaultToken}`
-          },
-          data: {
-            provider: "example",
-            providerId: uuid.v4()
-          }
-        });
-
-        expect(response.status()).toBe(201);
       });
     });
   });
