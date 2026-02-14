@@ -29,6 +29,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Route("/me", func(r chi.Router) {
 			r.Get("/", h.GetMe)
 			r.Get("/external-auths", h.ListMyExternalAuths)
+			r.Get("/token-info", h.GetMyTokenInfo)
 		})
 
 		r.Route("/{userId}", func(r chi.Router) {
@@ -63,6 +64,11 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJson(w, http.StatusOK, user.ToResponse())
+}
+
+func (h *Handler) GetMyTokenInfo(w http.ResponseWriter, r *http.Request) {
+	tokenContext := middleware.GetTokenContextFromContext(r.Context())
+	handler.WriteJson(w, http.StatusOK, toTokenInfoResponse(tokenContext))
 }
 
 // ListMyExternalAuths godoc
@@ -174,4 +180,14 @@ func writeUserNotFoundError(w http.ResponseWriter) {
 
 func parseUserId(r *http.Request) (int64, error) {
 	return strconv.ParseInt(chi.URLParam(r, "userId"), 10, 64)
+}
+
+type TokenInfoResponse struct {
+	Subject string `json:"sub"`
+}
+
+func toTokenInfoResponse(tokenContext middleware.TokenContext) TokenInfoResponse {
+	return TokenInfoResponse{
+		Subject: tokenContext.Subject,
+	}
 }

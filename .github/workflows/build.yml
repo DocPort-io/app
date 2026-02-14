@@ -91,6 +91,11 @@ jobs:
 
       - name: Run tests with coverage
         run: pnpm playwright test
+        env:
+          KEYCLOAK_TOKEN_URL: ${{ vars.KEYCLOAK_TOKEN_URL }}
+          KEYCLOAK_CLIENT_ID: ${{ vars.KEYCLOAK_CLIENT_ID }}
+          KEYCLOAK_USERNAME: ${{ vars.KEYCLOAK_USERNAME }}
+          KEYCLOAK_PASSWORD: ${{ secrets.KEYCLOAK_PASSWORD }}
 
       - name: Process coverage
         run: go tool covdata textfmt -i cover -o coverage.out
