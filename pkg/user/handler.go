@@ -3,21 +3,25 @@ package user
 import (
 	"app/pkg/platform/handler"
 	"app/pkg/platform/middleware"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 type Handler struct {
 	service        Service
+	validate       *validator.Validate
 	authMiddleware *middleware.AuthMiddleware
 }
 
 func NewHandler(service Service, authMiddleware *middleware.AuthMiddleware) *Handler {
 	return &Handler{
 		service:        service,
+		validate:       validator.New(),
 		authMiddleware: authMiddleware,
 	}
 }
@@ -25,6 +29,7 @@ func NewHandler(service Service, authMiddleware *middleware.AuthMiddleware) *Han
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Route("/users", func(r chi.Router) {
 		r.Use(h.authMiddleware.Authenticate)
+		r.Post("/", h.CreateUser)
 
 		r.Route("/me", func(r chi.Router) {
 			r.Get("/", h.GetMe)
@@ -35,6 +40,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Route("/{userId}", func(r chi.Router) {
 			r.Get("/", h.GetUser)
 			r.Get("/external-auths", h.ListUserExternalAuths)
+			r.Post("/external-auths", h.CreateUserExternalAuth)
 		})
 	})
 }
@@ -170,12 +176,100 @@ func (h *Handler) ListUserExternalAuths(w http.ResponseWriter, r *http.Request) 
 	handler.WriteJson(w, http.StatusOK, ToListExternalAuthResponse(externalAuths))
 }
 
+// CreateUser godoc
+//
+//	@summary	Create a user
+//	@tags		users
+//	@accept		json
+//	@produce	json
+//	@param		request	body		CreateUserRequest	true	"Create a user"
+//	@success	201		{object}	UserResponse
+//	@failure	400		{object}	handler.ErrorResponse
+//	@failure	409		{object}	handler.ErrorResponse
+//	@failure	500		{object}	handler.ErrorResponse
+//	@router		/api/v1/users [post]
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var req CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteInvalidRequestPayloadError(w)
+		return
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		handler.WriteValidationError(w, err)
+		return
+	}
+
+	user, err := h.service.CreateUser(r.Context(), req)
+	if errors.Is(err, ErrUserAlreadyExists) {
+		writeUserAlreadyExistsError(w)
+		return
+	}
+	if err != nil {
+		handler.WriteInternalServerError(w)
+		return
+	}
+
+	handler.WriteJson(w, http.StatusOK, user.ToResponse())
+}
+
+// CreateUserExternalAuth godoc
+//
+//	@summary	Create a user external auth
+//	@tags		users
+//	@accept		json
+//	@produce	json
+//	@param		request	body		CreateUserRequest	true	"Create a user"
+//	@success	201		{object}	UserResponse
+//	@failure	400		{object}	handler.ErrorResponse
+//	@failure	409		{object}	handler.ErrorResponse
+//	@failure	500		{object}	handler.ErrorResponse
+//	@router		/api/v1/users/{userId}/external-auths [post]
+func (h *Handler) CreateUserExternalAuth(w http.ResponseWriter, r *http.Request) {
+	id, err := parseUserId(r)
+	if err != nil {
+		writeInvalidUserIdError(w)
+		return
+	}
+
+	var req CreateExternalAuthRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteInvalidRequestPayloadError(w)
+		return
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		handler.WriteValidationError(w, err)
+		return
+	}
+
+	externalAuth, err := h.service.CreateExternalAuth(r.Context(), id, req)
+	if errors.Is(err, ErrExternalAuthAlreadyExists) {
+		writeExternalAuthAlreadyExistsError(w)
+		return
+	}
+	if err != nil {
+		handler.WriteInternalServerError(w)
+		return
+	}
+
+	handler.WriteJson(w, http.StatusCreated, externalAuth.ToResponse())
+}
+
 func writeInvalidUserIdError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusBadRequest, "invalid user id")
 }
 
 func writeUserNotFoundError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusNotFound, "user not found")
+}
+
+func writeUserAlreadyExistsError(w http.ResponseWriter) {
+	handler.WriteError(w, http.StatusConflict, "user already exists")
+}
+
+func writeExternalAuthAlreadyExistsError(w http.ResponseWriter) {
+	handler.WriteError(w, http.StatusConflict, "external auth already exists")
 }
 
 func parseUserId(r *http.Request) (int64, error) {

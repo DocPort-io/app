@@ -192,6 +192,12 @@ FROM users
 WHERE ea.provider = $1 AND ea.provider_id = $2
 LIMIT 1;
 
+-- name: CreateUser :one
+INSERT INTO users (name, email, email_verified)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- ExternalAuths
 -- name: ListExternalAuthsByUserId :many
 SELECT
     id,
@@ -202,3 +208,8 @@ SELECT
     provider_id
 FROM external_auth
 WHERE user_id = $1;
+
+-- name: CreateExternalAuth :one
+INSERT INTO external_auth (user_id, provider, provider_id)
+VALUES ($1, $2, $3)
+RETURNING *;
