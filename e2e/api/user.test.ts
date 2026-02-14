@@ -29,7 +29,7 @@ test.describe("Users", () => {
 
   test.describe("User", () => {
     test.describe("Information", () => {
-      test("should return 404 for unknown user", async ({ request, defaultToken }) => {
+      test("should return 404 for unknown user id", async ({ request, defaultToken }) => {
         const response = await request.get("/api/v1/users/-1", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
@@ -38,10 +38,20 @@ test.describe("Users", () => {
 
         expect(response.status()).toBe(404);
       });
+
+      test("should return 404 for invalid user id", async ({ request, defaultToken }) => {
+        const response = await request.get("/api/v1/users/invalid-id", {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          }
+        });
+
+        expect(response.status()).toBe(400);
+      });
     });
 
     test.describe("External Auths", () => {
-      test.fail("should return 404 for unknown user", async ({ request, defaultToken }) => {
+      test.fail("should return 404 for unknown user id", async ({ request, defaultToken }) => {
         const response = await request.get("/api/v1/users/-1/external-auths", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
@@ -50,6 +60,16 @@ test.describe("Users", () => {
 
         expect(response.status()).toBe(404);
       });
+
+      test("should return 404 for invalid user id", async ({ request, defaultToken }) => {
+        const response = await request.get("/api/v1/users/invalid-id/external-auths", {
+          headers: {
+            "Authorization": `Bearer ${defaultToken}`
+          }
+        });
+
+        expect(response.status()).toBe(400);
+      });
     });
-  })
+  });
 });
