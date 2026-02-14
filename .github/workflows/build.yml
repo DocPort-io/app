@@ -84,14 +84,16 @@ jobs:
           go version
           go generate ./...
 
-      - name: Setup config file
+      - name: Setup files and directories
         run: |
           cp config.test.toml config.toml
+          mkdir -p cover
 
       - name: Run tests with coverage
-        run: |
-          mkdir cover
-          pnpm playwright test
+        run: pnpm playwright test
+
+      - name: Process coverage
+        run: go tool covdata textfmt -i cover -o coverage.out
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -106,4 +108,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >-
-            -Dsonar.go.coverage.reportPaths=cover
+            -Dsonar.go.coverage.reportPaths=coverage.out
