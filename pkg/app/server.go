@@ -40,7 +40,7 @@ func NewServer() http.Server {
 	}
 
 	fileStorage := NewFileStorage(cfg)
-	queries := NewDatabase(cfg)
+	queries := NewDatabase(cfg.Database.DSN)
 
 	router := chi.NewRouter()
 
