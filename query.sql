@@ -175,21 +175,22 @@ SELECT id,
        updated_at,
        name,
        email,
-       email_verified
+       email_verified,
+       keycloak_reference
 FROM users
 WHERE id = $1
 LIMIT 1;
 
--- name: GetUserByProvider :one
-SELECT users.id,
-       users.created_at,
-       users.updated_at,
-       users.name,
-       users.email,
-       users.email_verified
+-- name: GetUserByKeycloakReference :one
+SELECT id,
+       created_at,
+       updated_at,
+       name,
+       email,
+       email_verified,
+       keycloak_reference
 FROM users
-    JOIN public.external_auth ea on users.id = ea.user_id
-WHERE ea.provider = $1 AND ea.provider_id = $2
+WHERE keycloak_reference = $1
 LIMIT 1;
 
 -- name: CreateUser :one

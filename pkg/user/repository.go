@@ -16,7 +16,7 @@ var (
 
 type Repository interface {
 	GetById(ctx context.Context, id int64) (User, error)
-	GetByProvider(ctx context.Context, provider string, providerId string) (User, error)
+	GetByKeycloakReference(ctx context.Context, keycloakReference string) (User, error)
 	Create(ctx context.Context, user User) (User, error)
 }
 
@@ -39,11 +39,8 @@ func (r *repository) GetById(ctx context.Context, id int64) (User, error) {
 	return toUser(row), nil
 }
 
-func (r *repository) GetByProvider(ctx context.Context, provider string, providerId string) (User, error) {
-	row, err := r.queries.GetUserByProvider(ctx, &database.GetUserByProviderParams{
-		Provider:   provider,
-		ProviderID: providerId,
-	})
+func (r *repository) GetByKeycloakReference(ctx context.Context, keycloakReference string) (User, error) {
+	row, err := r.queries.GetUserByKeycloakReference(ctx, &keycloakReference)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return User{}, ErrUserNotFound
 	}

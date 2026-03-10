@@ -56,7 +56,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 	tokenContext := middleware.GetTokenContextFromContext(r.Context())
 
-	user, err := h.service.GetByProvider(r.Context(), tokenContext.Issuer, tokenContext.Subject)
+	user, err := h.service.GetByKeycloakReference(r.Context(), tokenContext.Subject)
 	if errors.Is(err, ErrUserNotFound) {
 		writeUserNotFoundError(w)
 		return
