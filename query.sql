@@ -196,20 +196,3 @@ LIMIT 1;
 INSERT INTO users (name, email, email_verified)
 VALUES ($1, $2, $3)
 RETURNING *;
-
--- ExternalAuths
--- name: ListExternalAuthsByUserId :many
-SELECT
-    id,
-    created_at,
-    updated_at,
-    user_id,
-    provider,
-    provider_id
-FROM external_auth
-WHERE user_id = $1;
-
--- name: CreateExternalAuth :one
-INSERT INTO external_auth (user_id, provider, provider_id)
-VALUES ($1, $2, $3)
-RETURNING *;
