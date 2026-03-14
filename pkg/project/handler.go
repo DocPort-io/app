@@ -34,18 +34,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	})
 }
 
-// GetById godoc
-//
-//	@summary	Get a project
-//	@tags		projects
-//	@accept		json
-//	@produce	json
-//	@param		projectId	path		uint	true	"Project identifier"
-//	@success	200			{object}	ProjectResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	404			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/projects/{projectId} [get]
 func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 	id, err := parseProjectId(r)
 	if err != nil {
@@ -66,18 +54,6 @@ func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJson(w, http.StatusOK, toProjectResponse(project))
 }
 
-// List godoc
-//
-//	@summary	Find all projects
-//	@tags		projects
-//	@accept		json
-//	@produce	json
-//	@param		limit	query		uint	false	"Max items per page (1-100)"
-//	@param		offset	query		uint	false	"Items to skip before starting to collect the result set"
-//	@success	200		{object}	ListProjectsResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/projects [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := handler.ParsePagination(r)
 
@@ -90,17 +66,6 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJson(w, http.StatusOK, toListProjectsResponse(projects, limit, offset))
 }
 
-// Create godoc
-//
-//	@summary	Create a project
-//	@tags		projects
-//	@accept		json
-//	@produce	json
-//	@param		request	body		CreateProjectRequest	true	"Create a project"
-//	@success	201		{object}	ProjectResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/projects [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req api.CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -129,19 +94,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJson(w, http.StatusCreated, toProjectResponse(project))
 }
 
-// Update godoc
-//
-//	@summary	Update a project
-//	@tags		projects
-//	@accept		json
-//	@produce	json
-//	@param		projectId	path		uint					true	"Project identifier"
-//	@param		request		body		UpdateProjectRequest	true	"Update a project"
-//	@success	200			{object}	ProjectResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	404			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/projects/{projectId} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseProjectId(r)
 	if err != nil {
@@ -149,7 +101,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateProjectRequest
+	var req api.UpdateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
@@ -160,7 +112,10 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.Update(r.Context(), id, req)
+	project, err := h.service.Update(r.Context(), id, UpdateProjectRequest{
+		Slug: req.Slug,
+		Name: req.Name,
+	})
 	if errors.Is(err, ErrProjectNotFound) {
 		writeProjectNotFoundError(w)
 		return
@@ -173,17 +128,6 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJson(w, http.StatusOK, toProjectResponse(project))
 }
 
-// Delete godoc
-//
-//	@summary	Delete a project
-//	@tags		projects
-//	@accept		json
-//	@produce	json
-//	@param		projectId	path	uint	true	"Project identifier"
-//	@success	204
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/projects/{projectId} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseProjectId(r)
 	if err != nil {

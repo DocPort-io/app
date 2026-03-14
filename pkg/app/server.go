@@ -4,6 +4,7 @@ import (
 	"app/pkg/api"
 	"app/pkg/file"
 	"app/pkg/platform/config"
+	"app/pkg/platform/handler"
 	platformMiddleware "app/pkg/platform/middleware"
 	"app/pkg/platform/swagger"
 	"app/pkg/project"
@@ -16,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 func NewServer() *http.Server {
@@ -47,6 +49,13 @@ func NewServer() *http.Server {
 		log.Fatalf("creating auth middleware failed: %v", err)
 	}
 
+	oapiMiddleware := nethttpmiddleware.OapiRequestValidatorWithOptions(openapi, &nethttpmiddleware.Options{
+		DoNotValidateServers: true,
+		ErrorHandler: func(w http.ResponseWriter, message string, statusCode int) {
+			handler.WriteError(w, statusCode, message)
+		},
+	})
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.Heartbeat("/heartbeat"))
@@ -61,6 +70,7 @@ func NewServer() *http.Server {
 	userHandler := user.NewHandler(userService, authMiddleware)
 
 	router.Route("/api", func(r chi.Router) {
+		r.Use(oapiMiddleware)
 		projectHandler.RegisterRoutes(r)
 		versionHandler.RegisterRoutes(r)
 		fileHandler.RegisterRoutes(r)
