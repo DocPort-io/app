@@ -16,10 +16,27 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+// AttachFileToVersionRequest defines model for AttachFileToVersionRequest.
+type AttachFileToVersionRequest struct {
+	FileId int64 `json:"fileId"`
+}
+
 // CreateProjectRequest defines model for CreateProjectRequest.
 type CreateProjectRequest struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
+}
+
+// CreateVersionRequest defines model for CreateVersionRequest.
+type CreateVersionRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        string  `json:"name"`
+	ProjectId   int64   `json:"projectId"`
+}
+
+// DetachFileFromVersionRequest defines model for DetachFileFromVersionRequest.
+type DetachFileFromVersionRequest struct {
+	FileId int64 `json:"fileId"`
 }
 
 // ErrorResponse defines model for ErrorResponse.
@@ -32,6 +49,13 @@ type ListProjectsResponse struct {
 	Limit    int64             `json:"limit"`
 	Offset   int64             `json:"offset"`
 	Projects []ProjectResponse `json:"projects"`
+}
+
+// ListVersionsResponse defines model for ListVersionsResponse.
+type ListVersionsResponse struct {
+	Limit    int64             `json:"limit"`
+	Offset   int64             `json:"offset"`
+	Versions []VersionResponse `json:"versions"`
 }
 
 // ProjectResponse defines model for ProjectResponse.
@@ -49,14 +73,36 @@ type UpdateProjectRequest struct {
 	Slug string `json:"slug"`
 }
 
-// Limit defines model for Limit.
-type Limit = int64
+// UpdateVersionRequest defines model for UpdateVersionRequest.
+type UpdateVersionRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        string  `json:"name"`
+}
 
-// Offset defines model for Offset.
-type Offset = int64
+// VersionResponse defines model for VersionResponse.
+type VersionResponse struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description *string   `json:"description"`
+	Id          int64     `json:"id"`
+	Name        string    `json:"name"`
+	ProjectId   int64     `json:"projectId"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
 
-// ProjectId defines model for ProjectId.
-type ProjectId = int64
+// PathProjectId defines model for PathProjectId.
+type PathProjectId = int64
+
+// PathVersionId defines model for PathVersionId.
+type PathVersionId = int64
+
+// QueryLimit defines model for QueryLimit.
+type QueryLimit = int64
+
+// QueryOffset defines model for QueryOffset.
+type QueryOffset = int64
+
+// QueryProjectId defines model for QueryProjectId.
+type QueryProjectId = int64
 
 // BadRequest defines model for BadRequest.
 type BadRequest = ErrorResponse
@@ -70,10 +116,22 @@ type NotFound = ErrorResponse
 // ListProjectsParams defines parameters for ListProjects.
 type ListProjectsParams struct {
 	// Limit Maximum of items to return per page
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+	Limit *QueryLimit `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Offset of items to skip
-	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *QueryOffset `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListVersionsParams defines parameters for ListVersions.
+type ListVersionsParams struct {
+	// Limit Maximum of items to return per page
+	Limit *QueryLimit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Offset of items to skip
+	Offset *QueryOffset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// ProjectId Project ID
+	ProjectId *QueryProjectId `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
@@ -82,25 +140,44 @@ type CreateProjectJSONRequestBody = CreateProjectRequest
 // UpdateProjectByIdJSONRequestBody defines body for UpdateProjectById for application/json ContentType.
 type UpdateProjectByIdJSONRequestBody = UpdateProjectRequest
 
+// CreateVersionJSONRequestBody defines body for CreateVersion for application/json ContentType.
+type CreateVersionJSONRequestBody = CreateVersionRequest
+
+// UpdateVersionByIdJSONRequestBody defines body for UpdateVersionById for application/json ContentType.
+type UpdateVersionByIdJSONRequestBody = UpdateVersionRequest
+
+// AttachFileToVersionJSONRequestBody defines body for AttachFileToVersion for application/json ContentType.
+type AttachFileToVersionJSONRequestBody = AttachFileToVersionRequest
+
+// DetachFileFromVersionJSONRequestBody defines body for DetachFileFromVersion for application/json ContentType.
+type DetachFileFromVersionJSONRequestBody = DetachFileFromVersionRequest
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"H4sIAAAAAAAC/+xZXW/bNhf+KwTf3r2yJbdZ0emuaZYiWJtmXbeLBdnASMc2O0lkSCqrZ+i/DyT1adGx",
+	"nNpOshXoRWNR5xw+z3M+SC1xxFLOMsiUxOEScyJICgqE+euCqPmFYJ8hUmex/oFmOMScqDn2cEZS0H/V",
+	"zz0s4CanAmIcKpGDh2U0h5ToF6dMpEThENNMvTzCHlYLDvZPmIHAReEZb7+CkJRla73d1s+/1ttPOYjF",
+	"O5pSpd+IQUaCckWZ9vmefKFpniI2RVRBKpFiSIDKRYY4CMTJDLBnw7vRZpr4EmOwHQt8ISlPAIeTIPCG",
+	"R/ZhOpXgCM3+3olM/kn5mnCYteKMZ5toOiLoBlQ+Qmcna2JoC2QbigrNsOQsk2DEeEzij3CTgzSoRCxT",
+	"kJn/Es4TGhEdj/9Z6qCWLUfPBExxiP/nN0L37VPp/yAEEx9LJ9Zld3PHJEaV08LDZ5kCkZHkZxC3IMzb",
+	"h4ulco6sd2TdFx4+Z+qU5Vl8uFDOmULWpX5WvqatvlaKRPNTmsAnVqZyizMuGAehqOVzShOwgmpSZJgk",
+	"m8S/rKxc1QvZtVabxuWNAKKg1OfaMKxKW0Hg9wtUvtS4l0rQbKatyiSfddenixGv13OiNE04xL9fktHf",
+	"wej70R9X/3/Wt7SyD2O2zJn1m9mEaYemdoynVEiFyuqpq4eaA2qizvIkIdd6pS2lvV33USpDQZNx4IKJ",
+	"tyvG1xBsPLftudA5gUp3p4KlD668bgL1/KcgpW4h4XKDKKqFLh/vqFSlTOV6V0nV4LZsQ17VOrbtGDVT",
+	"xr3pUZvKTZ2hVcGprRIhyKKHStVj6+ZWe1yHUymIx4VTmYzDcaplfV+cao8unFZZ6EEUmQoUv+7uFT8P",
+	"nr8cBZNRMPkUBKH5Nw6C4DfcAiEmCkaKmkTuVQq6fSZ6D1a1PZzzeA8wrFBH9bDUAN726m1sFb+Ytf+S",
+	"vmc381T6nqt3uXa1msoHS7a9AbWjLN7bVPEYErccZdoc3D3YaOs0m7L+qeuERRdMqDFl6PXFGYpZlKeQ",
+	"KVIaVVSZzXWXNS0AhzgYB+OJaWAcMsIpDvGLcTB+YXN5blToE07924nfbukz2+y0WI03zUVnGDEGmluE",
+	"S3dTa5b4rZN44Q1bXZ6Oi6uVM+LzINjZKcg5YDkOQx9+1CgeWc8ug3WEfusIW3j4uyGvuI6c5tCVpykR",
+	"C5O5WYxIkiDeEKDITEPfmox08jDpoK5zSipvVUCqYxYvdgal8yRWdHNH15WiR+dkZzH0psw+kzbM+GHp",
+	"tEEggjL4q1WAHYwWXi9B/WVdTgpbNBJQ0Cf9xPxeQnK8MHcz2yVt92rQkYhH/aJ1ztCbkkoD8dFmvOq7",
+	"jd0BbPeOSAUuul7Yyytn0jjL3VtQe8UuOKTq712/HorAt6CGssdzB3ud+XhnBO6+ajrn+EFV85t+7tKP",
+	"xXWYhFo1tn1eXzsEVTcNhxyCBi4/UMVx3rc85rHptqGsEkBzUbJhbCo3utexaeXse+CxqXfp9BTGptua",
+	"FgejjpT2l/V3xQFjUwnJvTtH843zSY5N1R3BatXsJM26sWmv2AWHVP0THZsGsXfH2LRrAvc1Nt2nan7T",
+	"z6CxaYCENtRYn5jvxKMpTezdJ1HRvK84x9fkR6q5O757D1LegKr/ZHRisUAEaXaRYo1i7qeVGIZoxfkF",
+	"+JGq5c6v1f85vVg0Kr1MBUs3Kka/b+xZUnOR4BDPleKh7ycsIsmcSRW+Cl4FuLgq/gkAAP//y1UGJeQm",
+	"AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

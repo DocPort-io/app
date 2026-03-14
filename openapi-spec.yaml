@@ -13,8 +13,8 @@ paths:
       tags:
         - projects
       parameters:
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
       responses:
         200:
           description: OK
@@ -55,7 +55,7 @@ paths:
       tags:
         - projects
       parameters:
-        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/PathProjectId'
       responses:
         200:
           description: OK
@@ -75,7 +75,7 @@ paths:
       tags:
         - projects
       parameters:
-        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/PathProjectId'
       requestBody:
         required: true
         content:
@@ -101,7 +101,7 @@ paths:
       tags:
         - projects
       parameters:
-        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/PathProjectId'
       responses:
         204:
           description: No Content
@@ -109,10 +109,160 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions:
+    get:
+      operationId: listVersions
+      summary: Find all versions
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+        - $ref: '#/components/parameters/QueryProjectId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVersionsResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createVersion
+      summary: Create a new version
+      tags:
+        - versions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVersionRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}:
+    get:
+      operationId: getVersionById
+      summary: Get a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      operationId: updateVersionById
+      summary: Update a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVersionRequest'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteVersionById
+      summary: Delete a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}/attach-file:
+    patch:
+      operationId: attachFileToVersion
+      summary: Attach a file to a version
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachFileToVersionRequest'
+      responses:
+        204:
+          description: No Content
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}/detach-file:
+    patch:
+      operationId: detachFileFromVersion
+      summary: Detach a file from a version
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetachFileFromVersionRequest'
+      responses:
+        204:
+          description: No Content
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   parameters:
-    Limit:
+    QueryLimit:
       name: limit
       in: query
       description: Maximum of items to return per page
@@ -122,7 +272,7 @@ components:
         format: int64
         example: 100
 
-    Offset:
+    QueryOffset:
       name: offset
       in: query
       description: Offset of items to skip
@@ -132,8 +282,25 @@ components:
         format: int64
         example: 0
 
-    ProjectId:
+    QueryProjectId:
       name: projectId
+      in: query
+      description: Project ID
+      required: false
+      schema:
+        type: integer
+        format: int64
+
+    PathProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    PathVersionId:
+      name: versionId
       in: path
       required: true
       schema:
@@ -181,9 +348,11 @@ components:
         limit:
           type: integer
           format: int64
+          example: 100
         offset:
           type: integer
           format: int64
+          example: 0
         projects:
           type: array
           items:
@@ -245,3 +414,108 @@ components:
         name:
           type: string
           example: My Project
+
+    ListVersionsResponse:
+      type: object
+      required:
+        - limit
+        - offset
+        - versions
+      properties:
+        limit:
+          type: integer
+          format: int64
+          example: 100
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionResponse'
+
+    VersionResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - description
+        - projectId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          example: 1
+
+    CreateVersionRequest:
+      type: object
+      required:
+        - name
+        - projectId
+      properties:
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          example: 1
+
+    UpdateVersionRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+
+    AttachFileToVersionRequest:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          format: int64
+          example: 1
+
+    DetachFileFromVersionRequest:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          format: int64
+          example: 1
