@@ -15,6 +15,7 @@ require (
 	github.com/lestrrat-go/httprc/v3 v3.0.2
 	github.com/lestrrat-go/jwx/v3 v3.0.13
 	github.com/oapi-codegen/nethttp-middleware v1.1.2
+	github.com/oapi-codegen/runtime v1.2.0
 	github.com/spf13/viper v1.21.0
 	go.yaml.in/yaml/v4 v4.0.0-rc.4
 )
@@ -82,7 +83,6 @@ require (
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
-	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/fastjson v1.6.7 // indirect
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07 // indirect

@@ -259,6 +259,141 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
+  /api/v1/files:
+    get:
+      operationId: listFiles
+      summary: Find all files
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+        - $ref: '#/components/parameters/QueryVersionId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createFile
+      summary: Create a new file
+      tags:
+        - files
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFileRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}:
+    get:
+      operationId: getFileById
+      summary: Get a file by ID
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteFileById
+      summary: Delete a file by ID
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}/upload:
+    post:
+      operationId: uploadFile
+      summary: Upload a file
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}/download:
+    get:
+      operationId: downloadFile
+      summary: Download a file
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   parameters:
@@ -291,6 +426,16 @@ components:
         type: integer
         format: int64
 
+    QueryVersionId:
+      name: versionId
+      in: query
+      description: Version ID
+      required: false
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
     PathProjectId:
       name: projectId
       in: path
@@ -307,6 +452,14 @@ components:
         type: integer
         format: int64
 
+    PathFileId:
+      name: fileId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
   responses:
     NotFound:
       description: Not Found
@@ -317,6 +470,13 @@ components:
 
     BadRequest:
       description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Conflict:
+      description: Conflict
       content:
         application/json:
           schema:
@@ -519,3 +679,71 @@ components:
           type: integer
           format: int64
           example: 1
+
+    ListFilesResponse:
+      type: object
+      required:
+        - limit
+        - offset
+        - files
+      properties:
+        limit:
+          type: integer
+          format: int64
+          example: 100
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileResponse'
+
+    FileResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - size
+        - mimeType
+        - isComplete
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: my-file.txt
+        size:
+          type: integer
+          format: int64
+          example: 1024
+          nullable: true
+        mimeType:
+          type: string
+          example: text/plain
+          nullable: true
+        isComplete:
+          type: boolean
+          example: true
+
+    CreateFileRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: my-file.txt

@@ -14,11 +14,17 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // AttachFileToVersionRequest defines model for AttachFileToVersionRequest.
 type AttachFileToVersionRequest struct {
 	FileId int64 `json:"fileId"`
+}
+
+// CreateFileRequest defines model for CreateFileRequest.
+type CreateFileRequest struct {
+	Name string `json:"name"`
 }
 
 // CreateProjectRequest defines model for CreateProjectRequest.
@@ -42,6 +48,24 @@ type DetachFileFromVersionRequest struct {
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	Message string `json:"message"`
+}
+
+// FileResponse defines model for FileResponse.
+type FileResponse struct {
+	CreatedAt  time.Time `json:"createdAt"`
+	Id         int64     `json:"id"`
+	IsComplete bool      `json:"isComplete"`
+	MimeType   *string   `json:"mimeType"`
+	Name       string    `json:"name"`
+	Size       *int64    `json:"size"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+}
+
+// ListFilesResponse defines model for ListFilesResponse.
+type ListFilesResponse struct {
+	Files  []FileResponse `json:"files"`
+	Limit  int64          `json:"limit"`
+	Offset int64          `json:"offset"`
 }
 
 // ListProjectsResponse defines model for ListProjectsResponse.
@@ -89,6 +113,9 @@ type VersionResponse struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+// PathFileId defines model for PathFileId.
+type PathFileId = int64
+
 // PathProjectId defines model for PathProjectId.
 type PathProjectId = int64
 
@@ -104,14 +131,37 @@ type QueryOffset = int64
 // QueryProjectId defines model for QueryProjectId.
 type QueryProjectId = int64
 
+// QueryVersionId defines model for QueryVersionId.
+type QueryVersionId = int64
+
 // BadRequest defines model for BadRequest.
 type BadRequest = ErrorResponse
+
+// Conflict defines model for Conflict.
+type Conflict = ErrorResponse
 
 // InternalServerError defines model for InternalServerError.
 type InternalServerError = ErrorResponse
 
 // NotFound defines model for NotFound.
 type NotFound = ErrorResponse
+
+// ListFilesParams defines parameters for ListFiles.
+type ListFilesParams struct {
+	// Limit Maximum of items to return per page
+	Limit *QueryLimit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Offset of items to skip
+	Offset *QueryOffset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// VersionId Version ID
+	VersionId *QueryVersionId `form:"versionId,omitempty" json:"versionId,omitempty"`
+}
+
+// UploadFileMultipartBody defines parameters for UploadFile.
+type UploadFileMultipartBody struct {
+	File openapi_types.File `json:"file"`
+}
 
 // ListProjectsParams defines parameters for ListProjects.
 type ListProjectsParams struct {
@@ -134,6 +184,12 @@ type ListVersionsParams struct {
 	ProjectId *QueryProjectId `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
+// CreateFileJSONRequestBody defines body for CreateFile for application/json ContentType.
+type CreateFileJSONRequestBody = CreateFileRequest
+
+// UploadFileMultipartRequestBody defines body for UploadFile for multipart/form-data ContentType.
+type UploadFileMultipartRequestBody UploadFileMultipartBody
+
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
 type CreateProjectJSONRequestBody = CreateProjectRequest
 
@@ -155,29 +211,34 @@ type DetachFileFromVersionJSONRequestBody = DetachFileFromVersionRequest
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xZXW/bNhf+KwTf3r2yJbdZ0emuaZYiWJtmXbeLBdnASMc2O0lkSCqrZ+i/DyT1adGx",
-	"nNpOshXoRWNR5xw+z3M+SC1xxFLOMsiUxOEScyJICgqE+euCqPmFYJ8hUmex/oFmOMScqDn2cEZS0H/V",
-	"zz0s4CanAmIcKpGDh2U0h5ToF6dMpEThENNMvTzCHlYLDvZPmIHAReEZb7+CkJRla73d1s+/1ttPOYjF",
-	"O5pSpd+IQUaCckWZ9vmefKFpniI2RVRBKpFiSIDKRYY4CMTJDLBnw7vRZpr4EmOwHQt8ISlPAIeTIPCG",
-	"R/ZhOpXgCM3+3olM/kn5mnCYteKMZ5toOiLoBlQ+Qmcna2JoC2QbigrNsOQsk2DEeEzij3CTgzSoRCxT",
-	"kJn/Es4TGhEdj/9Z6qCWLUfPBExxiP/nN0L37VPp/yAEEx9LJ9Zld3PHJEaV08LDZ5kCkZHkZxC3IMzb",
-	"h4ulco6sd2TdFx4+Z+qU5Vl8uFDOmULWpX5WvqatvlaKRPNTmsAnVqZyizMuGAehqOVzShOwgmpSZJgk",
-	"m8S/rKxc1QvZtVabxuWNAKKg1OfaMKxKW0Hg9wtUvtS4l0rQbKatyiSfddenixGv13OiNE04xL9fktHf",
-	"wej70R9X/3/Wt7SyD2O2zJn1m9mEaYemdoynVEiFyuqpq4eaA2qizvIkIdd6pS2lvV33USpDQZNx4IKJ",
-	"tyvG1xBsPLftudA5gUp3p4KlD668bgL1/KcgpW4h4XKDKKqFLh/vqFSlTOV6V0nV4LZsQ17VOrbtGDVT",
-	"xr3pUZvKTZ2hVcGprRIhyKKHStVj6+ZWe1yHUymIx4VTmYzDcaplfV+cao8unFZZ6EEUmQoUv+7uFT8P",
-	"nr8cBZNRMPkUBKH5Nw6C4DfcAiEmCkaKmkTuVQq6fSZ6D1a1PZzzeA8wrFBH9bDUAN726m1sFb+Ytf+S",
-	"vmc381T6nqt3uXa1msoHS7a9AbWjLN7bVPEYErccZdoc3D3YaOs0m7L+qeuERRdMqDFl6PXFGYpZlKeQ",
-	"KVIaVVSZzXWXNS0AhzgYB+OJaWAcMsIpDvGLcTB+YXN5blToE07924nfbukz2+y0WI03zUVnGDEGmluE",
-	"S3dTa5b4rZN44Q1bXZ6Oi6uVM+LzINjZKcg5YDkOQx9+1CgeWc8ug3WEfusIW3j4uyGvuI6c5tCVpykR",
-	"C5O5WYxIkiDeEKDITEPfmox08jDpoK5zSipvVUCqYxYvdgal8yRWdHNH15WiR+dkZzH0psw+kzbM+GHp",
-	"tEEggjL4q1WAHYwWXi9B/WVdTgpbNBJQ0Cf9xPxeQnK8MHcz2yVt92rQkYhH/aJ1ztCbkkoD8dFmvOq7",
-	"jd0BbPeOSAUuul7Yyytn0jjL3VtQe8UuOKTq712/HorAt6CGssdzB3ud+XhnBO6+ajrn+EFV85t+7tKP",
-	"xXWYhFo1tn1eXzsEVTcNhxyCBi4/UMVx3rc85rHptqGsEkBzUbJhbCo3utexaeXse+CxqXfp9BTGptua",
-	"FgejjpT2l/V3xQFjUwnJvTtH843zSY5N1R3BatXsJM26sWmv2AWHVP0THZsGsXfH2LRrAvc1Nt2nan7T",
-	"z6CxaYCENtRYn5jvxKMpTezdJ1HRvK84x9fkR6q5O757D1LegKr/ZHRisUAEaXaRYo1i7qeVGIZoxfkF",
-	"+JGq5c6v1f85vVg0Kr1MBUs3Kka/b+xZUnOR4BDPleKh7ycsIsmcSRW+Cl4FuLgq/gkAAP//y1UGJeQm",
-	"AAA=",
+	"H4sIAAAAAAAC/+xaTXPbNhD9Kxw0t1Ii5biZhLc4rjOe5sNNkx6acTswCVlISQIBl44VDf97BwA/RVCk",
+	"FEmW0szkEJkAdrHv7eJxwQXyWcRZTGJIkLdAHAscESBC/brCMLugIbkM5C8aIw9xDDNkoxhHBHloqh/a",
+	"SJDPKRUkQB6IlNgo8WckwnLWlIkIA/IQjeHJKbIRzDnRP8ktESjLbGXnSrBPxIdOU7x8vg1rfxKRUBZ3",
+	"Wrsrn3+rtd9TIuavaERBzghI4gvKgTJp8zW+p1EaWWxqUSBRYgGzBIFUxBYnwuL4liBbu/dZLlP5F6oF",
+	"676QexzxkCBv4rr2cM/eTqcJMbim/97wLPmX8g53mF7F6M863jRI0HQof2Rdnnf4UCfIBhA1GNE0nT/q",
+	"Nl1niwmRIRHIJNESzuKEqNw7w8E78jkliQLHZzGQWP0Xcx5SH0vfnE+JdHBRM/pIkCny0E9OldeOfpo4",
+	"vwrBxLvciDbZ3OgZDqzCaGajFyyehtTfowOlxcxGlzEQEePwDyLuiFBT9+dIYdzS1i1tPrPRGwYXLI2D",
+	"/bnyhoGlTcpn+TS56nMA7Kv6/J7lFK0xhgvGiQCq2TQtq/h6rKxXv4/FKtflQHYjU05xRRAMRDrT6YNO",
+	"lpoHKJqP5JJjuIfKeAKCxrct22p2t+W8PKxh/PXcyie1bdsoCdPblrO8HM8xSIIgD/39EY++uqNno3+u",
+	"f37Uuwu1rN23mT40GwSp+3hBRQJWXo5k8YYZsSqv4zQM8Y0cqU+y1q7bUSpq32TsmsLE6wX7W6ilLNfX",
+	"M0XnnBSMvxAsenDON1O3ZT8iSSJPcG/RQ4pioMmGzqguE76iS/AcmqCduCdPRu5k5E7eu66n/o1d1/0L",
+	"1bYfYCAjoCrqLVjp+mGzEU1eMDkemhRqUO2GsZDgWA6PaETeq7/WXQdyDw4PMY034+vKkmKjhH4lS2rp",
+	"5NSwuw7Ltd2mPNhB6JeYQaWiqECuW7WLlFFbqoWzAYSJUq9oApJWSTevZAjVf5T46zvCGhzNSotYCDyX",
+	"v8NC/a6pUe1CV24gJ+tRLMRyqVL19rpik58KK8Kz9w2VhXE4KOWB2IVLX5BKi11xyuvvYcUpP/uGx6k8",
+	"RTaNU2nRFKdlFA67gj+USDqEatqnzD6osd+JzNSbORaZOfRNYDmV95ZsOwvUlrJ4ZyL+gGRQHYPV7xFy",
+	"dRpPWbvRc878KyZgTJn1/OrSCpifRiQGnC8KFNTmmsOqIwB5yB2744k6wDiJMafIQ4/H7vixzuWZYqGD",
+	"OXXuJk4psm71SSeZqkxJICqVpqZWXdmP5uOsGuLUOo6ZPWx03gUcOrzqlWXXS22rE9fdWmukLVQN7ZG3",
+	"v8lwn2qzptVK95xaSy2z0S9DppiaUKoNk0YRFnOV4nFg4TC0pjlYgG+T4sUxQdcyv1hiALjqmOQ9ZpLA",
+	"GQvmWwtfuyWTNRNLFp2shd9kaw403wsM3T6d0Q+Ln3bCwlZMvigMDRBmdjNpnYXuCmS6hBSvvE18z9Xf",
+	"ZQzO5qozvF4W1+5eDEl22i5eb5j1IkdNBfS0PzplM3N74dS7trAKpXUz103zdk4Ya95LAjuKl7s3Um9c",
+	"jx4KsZcE+uDq5L8TsC9xyHDQeYyd5wPyOrcvTJkPBEYJCIKjJral/LihMVaXOMva4/ghLYKe47oWoikv",
+	"8DQfWx/49uDsOvOiNATKsQBHojUKMOAmiO1u1TBo263dDn34vRySazPw1H3WP6F+TbclympaDSJsvRXW",
+	"KZ2LJt4+1fOutXCrMXnIcphXABRYVh3FHlFcNUx2p4uXOjl7zvpWd/YY1HHVuDAgakhQZ1G+hg9QynlI",
+	"NhZ/1bcjR6mX81C1NFgjabpU805j5+6T9Ucqnwehx1Ojnqr1lbcG4ParprH/Pahq/uDPauET4KEFoFZj",
+	"6/dcnSKouKE7wBbiniqO8Z7ykGXTXQVZQYDqgrFHNuUb3alsWroz2rNsal3WHoNsuithMSBqSGlnUX5P",
+	"OkA25SHZ+ORY2cs/fNlU3K0tV81G0nTJpp3Gzt0n649UNg1Cb4Vs2jaAu5JNm1TNH/wZJJsGUKinxjpY",
+	"fUg9KtqIHIM/azPO8Ln1gXJuxYfhg5g3oOofDU90LIoLDmAVYzbjSkCGcMX4ofKBsmXlR9X/O77oaBR8",
+	"mQoW9TJGzlfraVBTESIPzQC45zgh83E4Ywl4T92nLsqus/8CAAD//5FMGcdyNwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
