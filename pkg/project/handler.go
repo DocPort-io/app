@@ -1,6 +1,7 @@
 package project
 
 import (
+	"app/pkg/api"
 	"app/pkg/platform/handler"
 	"encoding/json"
 	"errors"
@@ -62,7 +63,7 @@ func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, project.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toProjectResponse(project))
 }
 
 // List godoc
@@ -86,7 +87,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, ToListResponse(projects, limit, offset))
+	handler.WriteJson(w, http.StatusOK, toListProjectsResponse(projects, limit, offset))
 }
 
 // Create godoc
@@ -101,7 +102,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 //	@failure	500		{object}	handler.ErrorResponse
 //	@router		/api/v1/projects [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req CreateProjectRequest
+	var req api.CreateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
@@ -112,7 +113,10 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.service.Create(r.Context(), req)
+	project, err := h.service.Create(r.Context(), CreateProjectRequest{
+		Slug: req.Slug,
+		Name: req.Name,
+	})
 	if errors.Is(err, ErrProjectAlreadyExists) {
 		writeProjectAlreadyExistsError(w)
 		return
@@ -122,7 +126,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusCreated, project.ToResponse())
+	handler.WriteJson(w, http.StatusCreated, toProjectResponse(project))
 }
 
 // Update godoc
@@ -166,7 +170,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, project.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toProjectResponse(project))
 }
 
 // Delete godoc
@@ -214,4 +218,26 @@ func writeProjectAlreadyExistsError(w http.ResponseWriter) {
 
 func parseProjectId(r *http.Request) (int64, error) {
 	return strconv.ParseInt(chi.URLParam(r, "projectId"), 10, 64)
+}
+
+func toProjectResponse(p Project) api.ProjectResponse {
+	return api.ProjectResponse{
+		Id:        p.ID,
+		CreatedAt: p.CreatedAt,
+		UpdatedAt: p.UpdatedAt,
+		Slug:      p.Slug,
+		Name:      p.Name,
+	}
+}
+
+func toListProjectsResponse(p []Project, limit, offset int64) api.ListProjectsResponse {
+	items := make([]api.ProjectResponse, len(p))
+	for i, project := range p {
+		items[i] = toProjectResponse(project)
+	}
+	return api.ListProjectsResponse{
+		Limit:    limit,
+		Offset:   offset,
+		Projects: items,
+	}
 }
