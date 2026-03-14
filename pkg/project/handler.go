@@ -9,16 +9,14 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 )
 
 type Handler struct {
-	service  Service
-	validate *validator.Validate
+	service Service
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{service: service, validate: validator.New()}
+	return &Handler{service: service}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
@@ -73,11 +71,6 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
 	project, err := h.service.Create(r.Context(), CreateProjectRequest{
 		Slug: req.Slug,
 		Name: req.Name,
@@ -104,11 +97,6 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	var req api.UpdateProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
-		return
-	}
-
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
 		return
 	}
 
