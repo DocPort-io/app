@@ -8,7 +8,7 @@ servers:
 paths:
   /api/v1/projects:
     get:
-      operationId: findProjects
+      operationId: listProjects
       summary: Find all projects
       tags:
         - projects
@@ -26,10 +26,32 @@ paths:
           $ref: '#/components/responses/BadRequest'
         500:
           $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createProject
+      summary: Create a new project
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
   /api/v1/projects/{projectId}:
     get:
-      operationId: findProjectById
-      summary: Find project by ID
+      operationId: getProjectById
+      summary: Get a project by ID
       tags:
         - projects
       parameters:
@@ -47,12 +69,53 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
+    put:
+      operationId: updateProjectById
+      summary: Update a project by ID
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteProjectById
+      summary: Delete a project by ID
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   parameters:
     Limit:
       name: limit
       in: query
+      description: Maximum of items to return per page
       required: false
       schema:
         type: integer
@@ -62,6 +125,7 @@ components:
     Offset:
       name: offset
       in: query
+      description: Offset of items to skip
       required: false
       schema:
         type: integer
@@ -146,6 +210,34 @@ components:
           type: string
           format: date-time
           example: '2026-01-01T00:00:00.000Z'
+        slug:
+          type: string
+          pattern: '^[a-z0-9-_]+$'
+          example: my-project
+        name:
+          type: string
+          example: My Project
+
+    CreateProjectRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-_]+$'
+          example: my-project
+        name:
+          type: string
+          example: My Project
+
+    UpdateProjectRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
         slug:
           type: string
           pattern: '^[a-z0-9-_]+$'
