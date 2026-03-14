@@ -27,7 +27,7 @@ func NewHandler(service Service, authMiddleware *middleware.AuthMiddleware) *Han
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Route("/users", func(r chi.Router) {
+	r.Route("/v1/users", func(r chi.Router) {
 		r.Use(h.authMiddleware.Authenticate)
 		r.Post("/", h.CreateUser)
 

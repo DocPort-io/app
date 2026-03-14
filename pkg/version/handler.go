@@ -21,7 +21,7 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Route("/versions", func(r chi.Router) {
+	r.Route("/v1/versions", func(r chi.Router) {
 		r.Get("/", h.List)
 		r.Post("/", h.Create)
 

@@ -2,5 +2,5 @@
 package: api
 generate:
   models: true
-  std-http-server: true
-output: ./pkg/api/api.gen.go
+  embedded-spec: true
+output: api.gen.go
