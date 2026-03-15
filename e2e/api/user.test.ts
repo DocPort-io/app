@@ -19,7 +19,7 @@ test.describe("Users", () => {
   test.describe("User", () => {
     test.describe("Create", () => {
       test("should return 200", async ({ request, defaultToken }) => {
-        const response = await request.post("/api/v1/users/", {
+        const response = await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
@@ -34,7 +34,7 @@ test.describe("Users", () => {
       });
 
       test("should return 400 for missing name", async ({ request, defaultToken }) => {
-        const response = await request.post("/api/v1/users/", {
+        const response = await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
@@ -48,7 +48,7 @@ test.describe("Users", () => {
       });
 
       test("should return 400 for missing email", async ({ request, defaultToken }) => {
-        const response = await request.post("/api/v1/users/", {
+        const response = await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
@@ -64,7 +64,7 @@ test.describe("Users", () => {
       test("should return 409 for duplicate email", async ({ request, defaultToken }) => {
         const email = `john-${uuid.v4()}@example.com`;
 
-        await request.post("/api/v1/users/", {
+        await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
@@ -75,7 +75,7 @@ test.describe("Users", () => {
           }
         });
 
-        const response = await request.post("/api/v1/users/", {
+        const response = await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
@@ -92,7 +92,7 @@ test.describe("Users", () => {
 
     test.describe("Information", () => {
       test("should return 200 for valid user", async ({ request, defaultToken }) => {
-        const createResponse = await request.post("/api/v1/users/", {
+        const createResponse = await request.post("/api/v1/users", {
           headers: {
             "Authorization": `Bearer ${defaultToken}`
           },
