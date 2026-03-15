@@ -394,8 +394,95 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/InternalServerError'
-
+  /api/v1/users:
+    post:
+      operationId: createUser
+      summary: Create a new user
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{userId}:
+    get:
+      operationId: getUserById
+      summary: Get a user by ID
+      tags:
+        - users
+      parameters:
+        - $ref: '#/components/parameters/PathUserId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/me:
+    get:
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user
+      tags:
+        - users
+      security:
+        - OpenIdConnect: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/me/token-info:
+    get:
+      operationId: getAuthenticatedUserTokenInfo
+      summary: Get the authenticated user token info
+      tags:
+        - users
+      security:
+        - OpenIdConnect: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 components:
+  securitySchemes:
+    OpenIdConnect:
+      type: openIdConnect
+      openIdConnectUrl: 'https://keycloak.docport.io/realms/docport-dev/.well-known/openid-configuration'
   parameters:
     QueryLimit:
       name: limit
@@ -406,7 +493,6 @@ components:
         type: integer
         format: int64
         example: 100
-
     QueryOffset:
       name: offset
       in: query
@@ -416,7 +502,6 @@ components:
         type: integer
         format: int64
         example: 0
-
     QueryProjectId:
       name: projectId
       in: query
@@ -425,7 +510,6 @@ components:
       schema:
         type: integer
         format: int64
-
     QueryVersionId:
       name: versionId
       in: query
@@ -435,7 +519,6 @@ components:
         type: integer
         format: int64
         example: 1
-
     PathProjectId:
       name: projectId
       in: path
@@ -443,7 +526,6 @@ components:
       schema:
         type: integer
         format: int64
-
     PathVersionId:
       name: versionId
       in: path
@@ -451,7 +533,6 @@ components:
       schema:
         type: integer
         format: int64
-
     PathFileId:
       name: fileId
       in: path
@@ -459,7 +540,13 @@ components:
       schema:
         type: integer
         format: int64
-
+    PathUserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
   responses:
     NotFound:
       description: Not Found
@@ -467,28 +554,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-
     BadRequest:
       description: Bad Request
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-
     Conflict:
       description: Conflict
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-
     InternalServerError:
       description: Internal Server Error
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-
   schemas:
     ErrorResponse:
       type: object
@@ -497,7 +580,6 @@ components:
       properties:
         message:
           type: string
-
     ListProjectsResponse:
       type: object
       required:
@@ -517,7 +599,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectResponse'
-
     ProjectResponse:
       type: object
       required:
@@ -546,7 +627,6 @@ components:
         name:
           type: string
           example: My Project
-
     CreateProjectRequest:
       type: object
       required:
@@ -560,7 +640,6 @@ components:
         name:
           type: string
           example: My Project
-
     UpdateProjectRequest:
       type: object
       required:
@@ -574,7 +653,6 @@ components:
         name:
           type: string
           example: My Project
-
     ListVersionsResponse:
       type: object
       required:
@@ -594,7 +672,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VersionResponse'
-
     VersionResponse:
       type: object
       required:
@@ -628,7 +705,6 @@ components:
           type: integer
           format: int64
           example: 1
-
     CreateVersionRequest:
       type: object
       required:
@@ -646,7 +722,6 @@ components:
           type: integer
           format: int64
           example: 1
-
     UpdateVersionRequest:
       type: object
       required:
@@ -659,7 +734,6 @@ components:
           type: string
           example: First version of the project
           nullable: true
-
     AttachFileToVersionRequest:
       type: object
       required:
@@ -669,7 +743,6 @@ components:
           type: integer
           format: int64
           example: 1
-
     DetachFileFromVersionRequest:
       type: object
       required:
@@ -679,7 +752,6 @@ components:
           type: integer
           format: int64
           example: 1
-
     ListFilesResponse:
       type: object
       required:
@@ -699,7 +771,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FileResponse'
-
     FileResponse:
       type: object
       required:
@@ -738,7 +809,6 @@ components:
         isComplete:
           type: boolean
           example: true
-
     CreateFileRequest:
       type: object
       required:
@@ -747,3 +817,59 @@ components:
         name:
           type: string
           example: my-file.txt
+    UserResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - email
+        - emailVerified
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        emailVerified:
+          type: boolean
+          example: true
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+        - emailVerified
+      properties:
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        emailVerified:
+          type: boolean
+          example: true
+    TokenInfoResponse:
+      type: object
+      required:
+        - subject
+      properties:
+        subject:
+          type: string

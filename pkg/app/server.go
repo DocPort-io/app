@@ -3,9 +3,9 @@ package app
 import (
 	"app/pkg/api"
 	"app/pkg/file"
+	"app/pkg/platform/auth"
 	"app/pkg/platform/config"
 	"app/pkg/platform/handler"
-	platformMiddleware "app/pkg/platform/middleware"
 	"app/pkg/platform/swagger"
 	"app/pkg/project"
 	"app/pkg/user"
@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -44,7 +45,7 @@ func NewServer() *http.Server {
 	fileService := file.NewFileService(fileRepository, fileStorage)
 	userService := user.NewService(userRepository)
 
-	authMiddleware, err := platformMiddleware.NewAuthMiddleware(cfg)
+	authenticator, err := auth.NewAuthenticator(cfg)
 	if err != nil {
 		log.Fatalf("creating auth middleware failed: %v", err)
 	}
@@ -53,6 +54,9 @@ func NewServer() *http.Server {
 		DoNotValidateServers: true,
 		ErrorHandler: func(w http.ResponseWriter, message string, statusCode int) {
 			handler.WriteError(w, statusCode, message)
+		},
+		Options: openapi3filter.Options{
+			AuthenticationFunc: authenticator.Authenticate,
 		},
 	})
 
@@ -67,7 +71,7 @@ func NewServer() *http.Server {
 	projectHandler := project.NewHandler(projectService)
 	versionHandler := version.NewHandler(versionService)
 	fileHandler := file.NewHandler(fileService)
-	userHandler := user.NewHandler(userService, authMiddleware)
+	userHandler := user.NewHandler(userService)
 
 	router.Route("/api", func(r chi.Router) {
 		r.Use(oapiMiddleware)

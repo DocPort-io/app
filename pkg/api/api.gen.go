@@ -17,6 +17,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	OpenIdConnectScopes = "OpenIdConnect.Scopes"
+)
+
 // AttachFileToVersionRequest defines model for AttachFileToVersionRequest.
 type AttachFileToVersionRequest struct {
 	FileId int64 `json:"fileId"`
@@ -31,6 +35,13 @@ type CreateFileRequest struct {
 type CreateProjectRequest struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
+}
+
+// CreateUserRequest defines model for CreateUserRequest.
+type CreateUserRequest struct {
+	Email         openapi_types.Email `json:"email"`
+	EmailVerified bool                `json:"emailVerified"`
+	Name          string              `json:"name"`
 }
 
 // CreateVersionRequest defines model for CreateVersionRequest.
@@ -91,6 +102,11 @@ type ProjectResponse struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+// TokenInfoResponse defines model for TokenInfoResponse.
+type TokenInfoResponse struct {
+	Subject string `json:"subject"`
+}
+
 // UpdateProjectRequest defines model for UpdateProjectRequest.
 type UpdateProjectRequest struct {
 	Name string `json:"name"`
@@ -101,6 +117,16 @@ type UpdateProjectRequest struct {
 type UpdateVersionRequest struct {
 	Description *string `json:"description,omitempty"`
 	Name        string  `json:"name"`
+}
+
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	CreatedAt     time.Time           `json:"createdAt"`
+	Email         openapi_types.Email `json:"email"`
+	EmailVerified bool                `json:"emailVerified"`
+	Id            int64               `json:"id"`
+	Name          string              `json:"name"`
+	UpdatedAt     time.Time           `json:"updatedAt"`
 }
 
 // VersionResponse defines model for VersionResponse.
@@ -118,6 +144,9 @@ type PathFileId = int64
 
 // PathProjectId defines model for PathProjectId.
 type PathProjectId = int64
+
+// PathUserId defines model for PathUserId.
+type PathUserId = int64
 
 // PathVersionId defines model for PathVersionId.
 type PathVersionId = int64
@@ -196,6 +225,9 @@ type CreateProjectJSONRequestBody = CreateProjectRequest
 // UpdateProjectByIdJSONRequestBody defines body for UpdateProjectById for application/json ContentType.
 type UpdateProjectByIdJSONRequestBody = UpdateProjectRequest
 
+// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
+type CreateUserJSONRequestBody = CreateUserRequest
+
 // CreateVersionJSONRequestBody defines body for CreateVersion for application/json ContentType.
 type CreateVersionJSONRequestBody = CreateVersionRequest
 
@@ -211,34 +243,40 @@ type DetachFileFromVersionJSONRequestBody = DetachFileFromVersionRequest
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

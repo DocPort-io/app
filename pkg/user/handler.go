@@ -1,34 +1,30 @@
 package user
 
 import (
+	"app/pkg/api"
+	"app/pkg/platform/auth"
 	"app/pkg/platform/handler"
-	"app/pkg/platform/middleware"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type Handler struct {
-	service        Service
-	validate       *validator.Validate
-	authMiddleware *middleware.AuthMiddleware
+	service Service
 }
 
-func NewHandler(service Service, authMiddleware *middleware.AuthMiddleware) *Handler {
+func NewHandler(service Service) *Handler {
 	return &Handler{
-		service:        service,
-		validate:       validator.New(),
-		authMiddleware: authMiddleware,
+		service: service,
 	}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Route("/v1/users", func(r chi.Router) {
-		r.Use(h.authMiddleware.Authenticate)
 		r.Post("/", h.CreateUser)
 
 		r.Route("/me", func(r chi.Router) {
@@ -42,19 +38,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	})
 }
 
-// GetMe godoc
-//
-//	@summary	Get current user
-//	@tags		users
-//	@accept		json
-//	@produce	json
-//	@success	200	{object}	UserResponse
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@security	OAuth2AccessCode
-//	@router		/api/v1/users/me [get]
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
-	tokenContext := middleware.GetTokenContextFromContext(r.Context())
+	err, tokenContext := auth.GetToken(r)
+	if err != nil {
+		handler.WriteInvalidRequestPayloadError(w)
+		return
+	}
 
 	user, err := h.service.GetByKeycloakReference(r.Context(), tokenContext.Subject)
 	if errors.Is(err, ErrUserNotFound) {
@@ -66,27 +55,19 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, user.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toUserResponse(user))
 }
 
 func (h *Handler) GetMyTokenInfo(w http.ResponseWriter, r *http.Request) {
-	tokenContext := middleware.GetTokenContextFromContext(r.Context())
+	err, tokenContext := auth.GetToken(r)
+	if err != nil {
+		handler.WriteInvalidRequestPayloadError(w)
+		return
+	}
+
 	handler.WriteJson(w, http.StatusOK, toTokenInfoResponse(tokenContext))
 }
 
-// GetUser godoc
-//
-//	@summary	Get a user
-//	@tags		users
-//	@accept		json
-//	@produce	json
-//	@param		userId	path		uint	true	"User identifier"
-//	@success	200		{object}	UserResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	404		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@security	OAuth2AccessCode
-//	@router		/api/v1/users/{userId} [get]
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := parseUserId(r)
 	if err != nil {
@@ -104,34 +85,21 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, user.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toUserResponse(user))
 }
 
-// CreateUser godoc
-//
-//	@summary	Create a user
-//	@tags		users
-//	@accept		json
-//	@produce	json
-//	@param		request	body		CreateUserRequest	true	"Create a user"
-//	@success	201		{object}	UserResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	409		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/users [post]
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var req CreateUserRequest
+	var req api.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	user, err := h.service.CreateUser(r.Context(), req)
+	user, err := h.service.CreateUser(r.Context(), CreateUserRequest{
+		Name:          req.Name,
+		Email:         string(req.Email),
+		EmailVerified: req.EmailVerified,
+	})
 	if errors.Is(err, ErrUserAlreadyExists) {
 		writeUserAlreadyExistsError(w)
 		return
@@ -141,7 +109,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, user.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toUserResponse(user))
 }
 
 func writeInvalidUserIdError(w http.ResponseWriter) {
@@ -160,12 +128,19 @@ func parseUserId(r *http.Request) (int64, error) {
 	return strconv.ParseInt(chi.URLParam(r, "userId"), 10, 64)
 }
 
-type TokenInfoResponse struct {
-	Subject string `json:"sub"`
+func toUserResponse(u User) api.UserResponse {
+	return api.UserResponse{
+		Id:            u.ID,
+		CreatedAt:     u.CreatedAt,
+		UpdatedAt:     u.UpdatedAt,
+		Name:          u.Name,
+		Email:         openapi_types.Email(u.Email),
+		EmailVerified: u.EmailVerified,
+	}
 }
 
-func toTokenInfoResponse(tokenContext middleware.TokenContext) TokenInfoResponse {
-	return TokenInfoResponse{
+func toTokenInfoResponse(tokenContext auth.TokenContext) api.TokenInfoResponse {
+	return api.TokenInfoResponse{
 		Subject: tokenContext.Subject,
 	}
 }
