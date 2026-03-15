@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	openapi_types "github.com/oapi-codegen/runtime/types"
+	openapitypes "github.com/oapi-codegen/runtime/types"
 )
 
 type Handler struct {
@@ -134,7 +134,7 @@ func toUserResponse(u User) api.UserResponse {
 		CreatedAt:     u.CreatedAt,
 		UpdatedAt:     u.UpdatedAt,
 		Name:          u.Name,
-		Email:         openapi_types.Email(u.Email),
+		Email:         openapitypes.Email(u.Email),
 		EmailVerified: u.EmailVerified,
 	}
 }

@@ -16,10 +16,6 @@ import (
 	"github.com/lestrrat-go/jwx/v3/jwt"
 )
 
-type contextKey string
-
-const tokenContextKey contextKey = "token_context"
-
 type Authenticator struct {
 	config config.Config
 	cache  *jwk.Cache
