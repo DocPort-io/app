@@ -743,6 +743,7 @@ components:
           type: integer
           format: int64
           example: 1
+          minimum: 0
     DetachFileFromVersionRequest:
       type: object
       required:
@@ -752,6 +753,7 @@ components:
           type: integer
           format: int64
           example: 1
+          minimum: 0
     ListFilesResponse:
       type: object
       required:
