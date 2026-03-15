@@ -81,7 +81,13 @@ func (m *Authenticator) Authenticate(ctx context.Context, input *openapi3filter.
 	return nil
 }
 
-func GetToken(request *http.Request) (error, TokenContext) {
+// GetUnverifiedToken parses a JWT from the request and extracts claims without
+// verifying the token's signature. This function MUST ONLY be called on
+// requests that have already been authenticated and whose JWT has already
+// been validated (e.g. by Authenticator.Authenticate). Do not use this
+// helper to perform authentication or authorization decisions on
+// unauthenticated requests.
+func GetUnverifiedToken(request *http.Request) (error, TokenContext) {
 	err, unverifiedToken := checkToken(request)
 	if err != nil {
 		return err, TokenContext{}
