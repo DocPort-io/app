@@ -15,9 +15,6 @@ jobs:
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
-    env:
-      SQLC_VERSION: v1.30.0
-      SWAG_VERSION: v1.16.6
     services:
       postgres:
         image: postgres:18
