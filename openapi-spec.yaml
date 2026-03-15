@@ -493,6 +493,8 @@ components:
         type: integer
         format: int64
         example: 100
+        minimum: 1
+        maximum: 100
     QueryOffset:
       name: offset
       in: query
@@ -502,6 +504,7 @@ components:
         type: integer
         format: int64
         example: 0
+        minimum: 0
     QueryProjectId:
       name: projectId
       in: query
@@ -722,6 +725,7 @@ components:
           type: integer
           format: int64
           example: 1
+          minimum: 1
     UpdateVersionRequest:
       type: object
       required:
@@ -743,7 +747,7 @@ components:
           type: integer
           format: int64
           example: 1
-          minimum: 0
+          minimum: 1
     DetachFileFromVersionRequest:
       type: object
       required:
@@ -753,7 +757,7 @@ components:
           type: integer
           format: int64
           example: 1
-          minimum: 0
+          minimum: 1
     ListFilesResponse:
       type: object
       required:
@@ -868,6 +872,7 @@ components:
         emailVerified:
           type: boolean
           example: true
+          default: false
     TokenInfoResponse:
       type: object
       required:
