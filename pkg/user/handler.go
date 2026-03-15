@@ -39,7 +39,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 }
 
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
-	err, tokenContext := auth.GetToken(r)
+	err, tokenContext := auth.GetUnverifiedToken(r)
 	if err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
@@ -59,7 +59,7 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetMyTokenInfo(w http.ResponseWriter, r *http.Request) {
-	err, tokenContext := auth.GetToken(r)
+	err, tokenContext := auth.GetUnverifiedToken(r)
 	if err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
