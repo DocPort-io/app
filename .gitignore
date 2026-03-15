@@ -33,7 +33,6 @@ go.work.sum
 # .vscode/
 
 # Generated files
-pkg/docs
 pkg/database
 
 # Development files

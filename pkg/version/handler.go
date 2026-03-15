@@ -1,6 +1,7 @@
 package version
 
 import (
+	"app/pkg/api"
 	"app/pkg/platform/handler"
 	"encoding/json"
 	"errors"
@@ -8,20 +9,18 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 )
 
 type Handler struct {
-	service  Service
-	validate *validator.Validate
+	service Service
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{service: service, validate: validator.New()}
+	return &Handler{service: service}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Route("/versions", func(r chi.Router) {
+	r.Route("/v1/versions", func(r chi.Router) {
 		r.Get("/", h.List)
 		r.Post("/", h.Create)
 
@@ -35,18 +34,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	})
 }
 
-// GetById godoc
-//
-//	@summary	Get a version
-//	@tags		versions
-//	@accept		json
-//	@produce	json
-//	@param		versionId	path		uint	true	"Version identifier"
-//	@success	200			{object}	VersionResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	404			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/versions/{versionId} [get]
 func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 	id, err := parseVersionId(r)
 	if err != nil {
@@ -64,22 +51,9 @@ func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, version.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toVersionResponse(version))
 }
 
-// List godoc
-//
-//	@summary	Find all versions
-//	@tags		versions
-//	@accept		json
-//	@produce	json
-//	@param		projectId	query		uint	false	"Project identifier"
-//	@param		limit		query		uint	false	"Max items per page (1-100)"
-//	@param		offset		query		uint	false	"Items to skip before starting to collect the result set"
-//	@success	200			{object}	ListVersionsResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/versions [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := handler.ParsePagination(r)
 
@@ -95,33 +69,21 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, ToListResponse(versions, limit, offset))
+	handler.WriteJson(w, http.StatusOK, toListVersionsResponse(versions, limit, offset))
 }
 
-// Create godoc
-//
-//	@summary	Create a version
-//	@tags		versions
-//	@accept		json
-//	@produce	json
-//	@param		request	body		CreateVersionRequest	true	"Create a version"
-//	@success	201		{object}	VersionResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/versions [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req CreateVersionRequest
+	var req api.CreateVersionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	version, err := h.service.Create(r.Context(), req)
+	version, err := h.service.Create(r.Context(), CreateVersionRequest{
+		Name:        req.Name,
+		Description: req.Description,
+		ProjectId:   req.ProjectId,
+	})
 	if errors.Is(err, ErrVersionAlreadyExists) {
 		writeVersionAlreadyExistsError(w)
 		return
@@ -131,22 +93,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusCreated, version.ToResponse())
+	handler.WriteJson(w, http.StatusCreated, toVersionResponse(version))
 }
 
-// Update godoc
-//
-//	@summary	Update a version
-//	@tags		versions
-//	@accept		json
-//	@produce	json
-//	@param		versionId	path		uint					true	"Version identifier"
-//	@param		request		body		UpdateVersionRequest	true	"Update a version"
-//	@success	200			{object}	VersionResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	404			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/versions/{versionId} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := parseVersionId(r)
 	if err != nil {
@@ -154,18 +103,16 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateVersionRequest
+	var req api.UpdateVersionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	version, err := h.service.Update(r.Context(), id, req)
+	version, err := h.service.Update(r.Context(), id, UpdateVersionRequest{
+		Name:        req.Name,
+		Description: req.Description,
+	})
 	if errors.Is(err, ErrVersionNotFound) {
 		writeVersionNotFoundError(w)
 		return
@@ -175,19 +122,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, version.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toVersionResponse(version))
 }
 
-// Delete godoc
-//
-//	@summary	Delete a version
-//	@tags		versions
-//	@accept		json
-//	@param		versionId	path	uint	true	"Version identifier"
-//	@success	204
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/versions/{versionId} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseVersionId(r)
 	if err != nil {
@@ -208,18 +145,6 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// AttachFile godoc
-//
-//	@summary	Attaches a file to a version
-//	@tags		versions
-//	@accept		json
-//	@param		versionId	path	uint				true	"Version identifier"
-//	@param		request		body	AttachFileRequest	true	"File to attach"
-//	@success	204
-//	@failure	400	{object}	handler.ErrorResponse
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/versions/{versionId}/attach-file [patch]
 func (h *Handler) AttachFile(w http.ResponseWriter, r *http.Request) {
 	id, err := parseVersionId(r)
 	if err != nil {
@@ -227,18 +152,15 @@ func (h *Handler) AttachFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req AttachFileRequest
+	var req api.AttachFileToVersionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	err = h.service.AttachFile(r.Context(), id, req)
+	err = h.service.AttachFile(r.Context(), id, AttachFileRequest{
+		FileID: req.FileId,
+	})
 	if errors.Is(err, ErrVersionNotFound) {
 		writeVersionNotFoundError(w)
 		return
@@ -255,18 +177,6 @@ func (h *Handler) AttachFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// DetachFile godoc
-//
-//	@summary	Detach a file from a version
-//	@tags		versions
-//	@accept		json
-//	@param		versionId	path	uint				true	"Version identifier"
-//	@param		request		body	DetachFileRequest	true	"File to detach"
-//	@success	204
-//	@failure	400	{object}	handler.ErrorResponse
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/versions/{versionId}/detach-file [patch]
 func (h *Handler) DetachFile(w http.ResponseWriter, r *http.Request) {
 	id, err := parseVersionId(r)
 	if err != nil {
@@ -274,18 +184,15 @@ func (h *Handler) DetachFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req DetachFileRequest
+	var req api.DetachFileFromVersionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	err = h.service.DetachFile(r.Context(), id, req)
+	err = h.service.DetachFile(r.Context(), id, DetachFileRequest{
+		FileID: req.FileId,
+	})
 	if errors.Is(err, ErrVersionNotFound) {
 		writeVersionNotFoundError(w)
 		return
@@ -333,4 +240,27 @@ func writeInvalidProjectIdError(w http.ResponseWriter) {
 
 func writeVersionFileAlreadyAttachedError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusConflict, "version file already attached")
+}
+
+func toVersionResponse(v Version) api.VersionResponse {
+	return api.VersionResponse{
+		Id:          v.ID,
+		CreatedAt:   v.CreatedAt,
+		UpdatedAt:   v.UpdatedAt,
+		Name:        v.Name,
+		Description: v.Description,
+		ProjectId:   v.ProjectID,
+	}
+}
+
+func toListVersionsResponse(versions []Version, limit, offset int64) api.ListVersionsResponse {
+	items := make([]api.VersionResponse, len(versions))
+	for i, version := range versions {
+		items[i] = toVersionResponse(version)
+	}
+	return api.ListVersionsResponse{
+		Limit:    limit,
+		Offset:   offset,
+		Versions: items,
+	}
 }

@@ -1,6 +1,7 @@
 package file
 
 import (
+	"app/pkg/api"
 	"app/pkg/platform/handler"
 	"encoding/json"
 	"errors"
@@ -12,20 +13,18 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 )
 
 type Handler struct {
-	service  Service
-	validate *validator.Validate
+	service Service
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{service: service, validate: validator.New()}
+	return &Handler{service: service}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Route("/files", func(r chi.Router) {
+	r.Route("/v1/files", func(r chi.Router) {
 		r.Get("/", h.List)
 		r.Post("/", h.Create)
 
@@ -38,18 +37,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	})
 }
 
-// GetById godoc
-//
-//	@summary	Get a file
-//	@tags		files
-//	@accept		json
-//	@produce	json
-//	@param		fileId	path		uint	true	"File identifier"
-//	@success	200		{object}	FileResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	404		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/files/{fileId} [get]
 func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 	id, err := parseFileId(r)
 	if err != nil {
@@ -67,22 +54,9 @@ func (h *Handler) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, file.ToResponse())
+	handler.WriteJson(w, http.StatusOK, toFileResponse(file))
 }
 
-// List godoc
-//
-//	@summary	Find all files
-//	@tags		files
-//	@accept		json
-//	@produce	json
-//	@param		versionId	query		uint	false	"Version identifier"
-//	@param		limit		query		uint	false	"Max items per page (1-100)"
-//	@param		offset		query		uint	false	"Items to skip before starting to collect the result set"
-//	@success	200			{object}	ListFilesResponse
-//	@failure	400			{object}	handler.ErrorResponse
-//	@failure	500			{object}	handler.ErrorResponse
-//	@router		/api/v1/files [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	limit, offset := handler.ParsePagination(r)
 
@@ -98,33 +72,19 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusOK, ToListResponse(files, limit, offset))
+	handler.WriteJson(w, http.StatusOK, toListFilesResponse(files, limit, offset))
 }
 
-// Create godoc
-//
-//	@summary	Create a file
-//	@tags		files
-//	@accept		json
-//	@produce	json
-//	@param		request	body		CreateFileRequest	true	"Create a file"
-//	@success	201		{object}	FileResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/files [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req CreateFileRequest
+	var req api.CreateFileRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handler.WriteInvalidRequestPayloadError(w)
 		return
 	}
 
-	if err := h.validate.Struct(req); err != nil {
-		handler.WriteValidationError(w, err)
-		return
-	}
-
-	file, err := h.service.Create(r.Context(), req)
+	file, err := h.service.Create(r.Context(), CreateFileRequest{
+		Name: req.Name,
+	})
 	if errors.Is(err, ErrFileAlreadyExist) {
 		writeFileAlreadyExistsError(w)
 		return
@@ -134,23 +94,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusCreated, file.ToResponse())
+	handler.WriteJson(w, http.StatusCreated, toFileResponse(file))
 }
 
-// Upload godoc
-//
-//	@summary	Upload a file
-//	@tags		files
-//	@accept		multipart/form-data
-//	@produce	json
-//	@param		fileId	path		uint	true	"File identifier"
-//	@param		file	formData	file	true	"File to upload"
-//	@success	201		{object}	FileResponse
-//	@failure	400		{object}	handler.ErrorResponse
-//	@failure	404		{object}	handler.ErrorResponse
-//	@failure	409		{object}	handler.ErrorResponse
-//	@failure	500		{object}	handler.ErrorResponse
-//	@router		/api/v1/files/{fileId}/upload [post]
 func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	id, err := parseFileId(r)
 	if err != nil {
@@ -168,7 +114,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	req := UploadFileRequest{File: multipartFile, FileHeader: multipartFileHeader}
 
-	uploadResult, err := h.service.UploadFile(r.Context(), id, req)
+	file, err := h.service.UploadFile(r.Context(), id, req)
 	if errors.Is(err, ErrFileNotFound) {
 		writeFileNotFoundError(w)
 		return
@@ -182,20 +128,9 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJson(w, http.StatusCreated, uploadResult.ToResponse())
+	handler.WriteJson(w, http.StatusCreated, toFileResponse(file))
 }
 
-// Download godoc
-//
-//	@summary	Download a file
-//	@tags		files
-//	@accept		json
-//	@param		fileId	path	uint	true	"File identifier"
-//	@success	200
-//	@failure	400	{object}	handler.ErrorResponse
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/files/{fileId}/download [get]
 func (h *Handler) Download(w http.ResponseWriter, r *http.Request) {
 	id, err := parseFileId(r)
 	if err != nil {
@@ -240,17 +175,6 @@ func (h *Handler) Download(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, file.Name, file.UpdatedAt, reader)
 }
 
-// Delete godoc
-//
-//	@summary	Delete a file
-//	@tags		files
-//	@accept		json
-//	@produce	json
-//	@param		fileId	path	uint	true	"File identifier"
-//	@success	204
-//	@failure	404	{object}	handler.ErrorResponse
-//	@failure	500	{object}	handler.ErrorResponse
-//	@router		/api/v1/files/{fileId} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := parseFileId(r)
 	if err != nil {
@@ -310,4 +234,28 @@ func parseVersionId(r *http.Request) (*int64, error) {
 
 func writeInvalidVersionIdError(w http.ResponseWriter) {
 	handler.WriteError(w, http.StatusBadRequest, "invalid version id")
+}
+
+func toFileResponse(f File) api.FileResponse {
+	return api.FileResponse{
+		Id:         f.ID,
+		CreatedAt:  f.CreatedAt,
+		UpdatedAt:  f.UpdatedAt,
+		Name:       f.Name,
+		Size:       f.Size,
+		MimeType:   f.MimeType,
+		IsComplete: f.IsComplete,
+	}
+}
+
+func toListFilesResponse(files []File, limit, offset int64) api.ListFilesResponse {
+	items := make([]api.FileResponse, len(files))
+	for i, file := range files {
+		items[i] = toFileResponse(file)
+	}
+	return api.ListFilesResponse{
+		Files:  items,
+		Limit:  limit,
+		Offset: offset,
+	}
 }

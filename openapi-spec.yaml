@@ -1,0 +1,882 @@
+openapi: 3.0.3
+info:
+  title: DocPort.io API
+  description: DocPort.io API documentation
+  version: 0.0.1
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /api/v1/projects:
+    get:
+      operationId: listProjects
+      summary: Find all projects
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProjectsResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createProject
+      summary: Create a new project
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/projects/{projectId}:
+    get:
+      operationId: getProjectById
+      summary: Get a project by ID
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/PathProjectId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      operationId: updateProjectById
+      summary: Update a project by ID
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/PathProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteProjectById
+      summary: Delete a project by ID
+      tags:
+        - projects
+      parameters:
+        - $ref: '#/components/parameters/PathProjectId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions:
+    get:
+      operationId: listVersions
+      summary: Find all versions
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+        - $ref: '#/components/parameters/QueryProjectId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVersionsResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createVersion
+      summary: Create a new version
+      tags:
+        - versions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVersionRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}:
+    get:
+      operationId: getVersionById
+      summary: Get a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      operationId: updateVersionById
+      summary: Update a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVersionRequest'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteVersionById
+      summary: Delete a version by ID
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}/attach-file:
+    patch:
+      operationId: attachFileToVersion
+      summary: Attach a file to a version
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachFileToVersionRequest'
+      responses:
+        204:
+          description: No Content
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/versions/{versionId}/detach-file:
+    patch:
+      operationId: detachFileFromVersion
+      summary: Detach a file from a version
+      tags:
+        - versions
+      parameters:
+        - $ref: '#/components/parameters/PathVersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetachFileFromVersionRequest'
+      responses:
+        204:
+          description: No Content
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files:
+    get:
+      operationId: listFiles
+      summary: Find all files
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+        - $ref: '#/components/parameters/QueryVersionId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: createFile
+      summary: Create a new file
+      tags:
+        - files
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFileRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}:
+    get:
+      operationId: getFileById
+      summary: Get a file by ID
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteFileById
+      summary: Delete a file by ID
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        204:
+          description: No Content
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}/upload:
+    post:
+      operationId: uploadFile
+      summary: Upload a file
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/files/{fileId}/download:
+    get:
+      operationId: downloadFile
+      summary: Download a file
+      tags:
+        - files
+      parameters:
+        - $ref: '#/components/parameters/PathFileId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users:
+    post:
+      operationId: createUser
+      summary: Create a new user
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{userId}:
+    get:
+      operationId: getUserById
+      summary: Get a user by ID
+      tags:
+        - users
+      parameters:
+        - $ref: '#/components/parameters/PathUserId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/me:
+    get:
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user
+      tags:
+        - users
+      security:
+        - OpenIdConnect: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/me/token-info:
+    get:
+      operationId: getAuthenticatedUserTokenInfo
+      summary: Get the authenticated user token info
+      tags:
+        - users
+      security:
+        - OpenIdConnect: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    OpenIdConnect:
+      type: openIdConnect
+      openIdConnectUrl: 'https://keycloak.docport.io/realms/docport-dev/.well-known/openid-configuration'
+  parameters:
+    QueryLimit:
+      name: limit
+      in: query
+      description: Maximum of items to return per page
+      required: false
+      schema:
+        type: integer
+        format: int64
+        example: 100
+        minimum: 1
+        maximum: 100
+    QueryOffset:
+      name: offset
+      in: query
+      description: Offset of items to skip
+      required: false
+      schema:
+        type: integer
+        format: int64
+        example: 0
+        minimum: 0
+    QueryProjectId:
+      name: projectId
+      in: query
+      description: Project ID
+      required: false
+      schema:
+        type: integer
+        format: int64
+    QueryVersionId:
+      name: versionId
+      in: query
+      description: Version ID
+      required: false
+      schema:
+        type: integer
+        format: int64
+        example: 1
+    PathProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PathVersionId:
+      name: versionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PathFileId:
+      name: fileId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PathUserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ListProjectsResponse:
+      type: object
+      required:
+        - limit
+        - offset
+        - projects
+      properties:
+        limit:
+          type: integer
+          format: int64
+          example: 100
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectResponse'
+    ProjectResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - slug
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        slug:
+          type: string
+          pattern: '^[a-z0-9-_]+$'
+          example: my-project
+        name:
+          type: string
+          example: My Project
+    CreateProjectRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-_]+$'
+          example: my-project
+        name:
+          type: string
+          example: My Project
+    UpdateProjectRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-_]+$'
+          example: my-project
+        name:
+          type: string
+          example: My Project
+    ListVersionsResponse:
+      type: object
+      required:
+        - limit
+        - offset
+        - versions
+      properties:
+        limit:
+          type: integer
+          format: int64
+          example: 100
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionResponse'
+    VersionResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - description
+        - projectId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          example: 1
+    CreateVersionRequest:
+      type: object
+      required:
+        - name
+        - projectId
+      properties:
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          example: 1
+          minimum: 1
+    UpdateVersionRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Version 1.0
+        description:
+          type: string
+          example: First version of the project
+          nullable: true
+    AttachFileToVersionRequest:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          format: int64
+          example: 1
+          minimum: 1
+    DetachFileFromVersionRequest:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          format: int64
+          example: 1
+          minimum: 1
+    ListFilesResponse:
+      type: object
+      required:
+        - limit
+        - offset
+        - files
+      properties:
+        limit:
+          type: integer
+          format: int64
+          example: 100
+        offset:
+          type: integer
+          format: int64
+          example: 0
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileResponse'
+    FileResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - size
+        - mimeType
+        - isComplete
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: my-file.txt
+        size:
+          type: integer
+          format: int64
+          example: 1024
+          nullable: true
+        mimeType:
+          type: string
+          example: text/plain
+          nullable: true
+        isComplete:
+          type: boolean
+          example: true
+    CreateFileRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: my-file.txt
+    UserResponse:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - name
+        - email
+        - emailVerified
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-01-01T00:00:00.000Z'
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        emailVerified:
+          type: boolean
+          example: true
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+        - emailVerified
+      properties:
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        emailVerified:
+          type: boolean
+          example: true
+          default: false
+    TokenInfoResponse:
+      type: object
+      required:
+        - subject
+      properties:
+        subject:
+          type: string
