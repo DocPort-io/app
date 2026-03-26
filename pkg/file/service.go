@@ -85,11 +85,9 @@ func (s *service) UploadFile(ctx context.Context, id int64, req UploadFileReques
 		return File{}, err
 	}
 
-	mimeTypeString := mimeType.String()
-
 	file.Size = &req.FileHeader.Size
 	file.Path = &assetPath
-	file.MimeType = &mimeTypeString
+	file.MimeType = new(mimeType.String())
 	file.IsComplete = true
 
 	file, err = s.repository.Update(ctx, file)

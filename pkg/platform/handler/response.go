@@ -40,8 +40,7 @@ func WriteValidationError(w http.ResponseWriter, err error) {
 }
 
 func formatValidationError(err error) string {
-	var ve validator.ValidationErrors
-	if errors.As(err, &ve) {
+	if ve, ok := errors.AsType[validator.ValidationErrors](err); ok {
 		return ve[0].Field() + " " + ve[0].Tag()
 	}
 	return "validation failed"
