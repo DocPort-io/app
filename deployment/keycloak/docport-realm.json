@@ -1,0 +1,49 @@
+{
+  "realm": "docport",
+  "enabled": true,
+  "displayName": "DocPort",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "clients": [
+    {
+      "clientId": "docport-frontend",
+      "name": "DocPort Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:*",
+        "https://localhost:*"
+      ],
+      "webOrigins": [
+        "http://localhost:*",
+        "https://localhost:*"
+      ],
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Standard DocPort user"
+      },
+      {
+        "name": "admin",
+        "description": "DocPort administrator"
+      }
+    ]
+  },
+  "defaultRoles": ["user"]
+}
