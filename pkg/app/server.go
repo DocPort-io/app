@@ -10,6 +10,7 @@ import (
 	"app/pkg/project"
 	"app/pkg/user"
 	"app/pkg/version"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -32,8 +33,8 @@ func NewServer() *http.Server {
 		log.Fatalf("failed to get swagger spec: %v", err)
 	}
 
-	fileStorage := NewFileStorage(cfg)
-	queries := NewDatabase(cfg.Database.DSN)
+	fileStorage := NewFileStorage(cfg.Storage)
+	queries := NewDatabase(cfg.Database)
 
 	projectRepository := project.NewRepository(queries)
 	versionRepository := version.NewRepository(queries)
@@ -45,7 +46,7 @@ func NewServer() *http.Server {
 	fileService := file.NewFileService(fileRepository, fileStorage)
 	userService := user.NewService(userRepository)
 
-	authenticator, err := auth.NewAuthenticator(cfg)
+	authenticator, err := auth.NewAuthenticator(cfg.Auth)
 	if err != nil {
 		log.Fatalf("creating auth middleware failed: %v", err)
 	}
@@ -84,7 +85,7 @@ func NewServer() *http.Server {
 	swagger.SetupRoutes(router, openapi)
 
 	return &http.Server{
-		Addr:    net.JoinHostPort(cfg.Server.Bind, cfg.Server.Port),
+		Addr:    net.JoinHostPort(cfg.Server.Bind, fmt.Sprintf("%d", cfg.Server.Port)),
 		Handler: router,
 	}
 }

@@ -1,13 +1,12 @@
 [server]
-host = "localhost:8080"
 bind = "127.0.0.1"
-port = "8080"
+port = 8080
 
 [database]
-dsn = "postgres://postgres:postgres@localhost:5432/docport-dev?sslmode=disable"
+dsn = "postgres://postgres:postgres@localhost:5432/docport?sslmode=disable"
 
 [auth]
-jwksUrl = ""
+jwks_url = "https://keycloak/realms/docport/protocol/openid-connect/certs"
 scopes = [] # Add required token scopes here. Leave empty if you don't want to validate scopes.
 
 [storage]

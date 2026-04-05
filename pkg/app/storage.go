@@ -7,10 +7,10 @@ import (
 	"log"
 )
 
-func NewFileStorage(cfg config.Config) storage.FileStorage {
-	backend := storage.Type(cfg.Storage.Provider)
+func NewFileStorage(cfg config.StorageConfig) storage.FileStorage {
+	backend := storage.Type(cfg.Provider)
 	if backend == storage.TypeFileSystem {
-		fileStorage, err := storage.NewFilesystemStorage(cfg.Storage.Path)
+		fileStorage, err := storage.NewFilesystemStorage(cfg.Path)
 		if err != nil {
 			log.Fatalf("failed to initialize file storage backend %s: %s\n", backend, err)
 		}

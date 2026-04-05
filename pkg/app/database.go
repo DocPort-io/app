@@ -1,6 +1,7 @@
 package app
 
 import (
+	"app/pkg/platform/config"
 	"context"
 	"database/sql"
 	"errors"
@@ -18,10 +19,10 @@ import (
 	"app/pkg/database"
 )
 
-func NewDatabase(dsn string) *database.Queries {
+func NewDatabase(config config.DatabaseConfig) *database.Queries {
 	ctx := context.Background()
 
-	sqlDB, err := sql.Open("pgx", dsn)
+	sqlDB, err := sql.Open("pgx", config.DSN)
 	if err != nil {
 		log.Fatalf("failed to open database: %s\n", err)
 	}
@@ -57,7 +58,7 @@ func NewDatabase(dsn string) *database.Queries {
 		log.Fatalf("failed to close database connection: %s\n", err)
 	}
 
-	pool, err := pgxpool.New(ctx, dsn)
+	pool, err := pgxpool.New(ctx, config.DSN)
 	if err != nil {
 		log.Fatalf("failed to create database connection pool: %s\n", err)
 	}

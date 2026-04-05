@@ -4,7 +4,7 @@ services:
   database:
     image: postgres:18.3
     environment:
-      POSTGRES_DB: "docport-dev"
+      POSTGRES_DB: "docport"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     ports:

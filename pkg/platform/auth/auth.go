@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/lestrrat-go/httprc/v3"
@@ -17,12 +18,13 @@ import (
 )
 
 type Authenticator struct {
-	config config.Config
+	config config.AuthConfig
 	cache  *jwk.Cache
 }
 
-func NewAuthenticator(config config.Config) (*Authenticator, error) {
-	ctx := context.Background()
+func NewAuthenticator(config config.AuthConfig) (*Authenticator, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	httpClient := httprc.NewClient()
 
@@ -32,7 +34,7 @@ func NewAuthenticator(config config.Config) (*Authenticator, error) {
 		return nil, err
 	}
 
-	if err := cache.Register(ctx, config.Auth.JWKSUrl); err != nil {
+	if err := cache.Register(ctx, config.JWKSUrl); err != nil {
 		log.Printf("error registering JWKS: %v", err)
 		return nil, err
 	}
@@ -47,7 +49,7 @@ func (m *Authenticator) Authenticate(ctx context.Context, input *openapi3filter.
 			return err
 		}
 
-		keySet, err := m.cache.Lookup(ctx, m.config.Auth.JWKSUrl)
+		keySet, err := m.cache.Lookup(ctx, m.config.JWKSUrl)
 		if err != nil {
 			log.Printf("error looking up jwk set: %v", err)
 			return errors.New("internal server error")
@@ -69,8 +71,8 @@ func (m *Authenticator) Authenticate(ctx context.Context, input *openapi3filter.
 
 		scopes := strings.Split(scopeString, " ")
 
-		if len(m.config.Auth.Scopes) > 0 {
-			for _, scope := range m.config.Auth.Scopes {
+		if len(m.config.Scopes) > 0 {
+			for _, scope := range m.config.Scopes {
 				if !slices.Contains(scopes, scope) {
 					return errors.New(fmt.Sprintf("missing scope %s", scope))
 				}

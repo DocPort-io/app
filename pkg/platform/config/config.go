@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -16,9 +17,8 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `mapstructure:"host" validate:"required"`
 	Bind string `mapstructure:"bind" validate:"required"`
-	Port string `mapstructure:"port" validate:"required"`
+	Port int    `mapstructure:"port" validate:"required,min=1,max=65535"`
 }
 
 type DatabaseConfig struct {
@@ -26,7 +26,7 @@ type DatabaseConfig struct {
 }
 
 type AuthConfig struct {
-	JWKSUrl string   `mapstructure:"jwksUrl" validate:"required"`
+	JWKSUrl string   `mapstructure:"jwks_url" validate:"required"`
 	Scopes  []string `mapstructure:"scopes"`
 }
 
@@ -36,22 +36,35 @@ type StorageConfig struct {
 }
 
 func Load() (Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("toml")
-	viper.AddConfigPath("/etc/docport/")
-	viper.AddConfigPath("$HOME/.docport")
-	viper.AddConfigPath(".")
+	v := viper.New()
 
-	viper.SetEnvPrefix("docport")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv()
+	v.SetConfigName("config")
+	v.SetConfigType("toml")
+	v.AddConfigPath("/etc/docport/")
+	v.AddConfigPath("$HOME/.docport")
+	v.AddConfigPath(".")
 
-	if err := viper.ReadInConfig(); err != nil {
-		return Config{}, fmt.Errorf("error reading config file: %w", err)
+	v.SetDefault("server.bind", "0.0.0.0")
+	v.SetDefault("server.port", 8080)
+	v.SetDefault("database.dsn", "postgres://postgres:postgres@localhost:5432/docport?sslmode=disable")
+	v.SetDefault("auth.jwks_url", "https://keycloak/realms/docport/protocol/openid-connect/certs")
+	v.SetDefault("auth.scopes", []string{})
+	v.SetDefault("storage.provider", "filesystem")
+	v.SetDefault("storage.path", "./storage")
+
+	v.SetEnvPrefix("docport")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	if err := v.ReadInConfig(); err != nil {
+		var notFound viper.ConfigFileNotFoundError
+		if !errors.As(err, &notFound) {
+			return Config{}, fmt.Errorf("error reading config file: %w", err)
+		}
 	}
 
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	if err := v.Unmarshal(&cfg); err != nil {
 		return Config{}, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
