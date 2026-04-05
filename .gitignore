@@ -32,9 +32,6 @@ go.work.sum
 .idea/
 # .vscode/
 
-# Generated files
-pkg/database
-
 # Development files
 *.db
 storage/

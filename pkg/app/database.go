@@ -1,7 +1,6 @@
 package app
 
 import (
-	appRoot "app"
 	"context"
 	"database/sql"
 	"errors"
@@ -32,7 +31,7 @@ func NewDatabase(dsn string) *database.Queries {
 		log.Fatalf("failed to create database driver: %s\n", err)
 	}
 
-	iofsDriver, err := iofs.New(appRoot.MigrationsFS, "migrations")
+	iofsDriver, err := iofs.New(database.Migrations, "migrations")
 	if err != nil {
 		log.Fatalf("failed to create migration source: %s\n", err)
 	}
